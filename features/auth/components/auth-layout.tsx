@@ -2,18 +2,12 @@
 
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
-import { Globe24Regular, WeatherMoon24Regular, WeatherSunny24Regular } from '@fluentui/react-icons';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { Globe24Regular } from '@fluentui/react-icons';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
-    const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => setMounted(true), []);
 
     const toggleLanguage = () => {
         const nextLocale = locale === 'en' ? 'ar' : 'en';
@@ -32,16 +26,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                     <Globe24Regular />
                     <span>{locale.toUpperCase()}</span>
                 </button>
-
-                {mounted && (
-                    <button
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="p-2 rounded-full hover:bg-surface transition-colors"
-                        title="Toggle Theme"
-                    >
-                        {theme === 'dark' ? <WeatherSunny24Regular /> : <WeatherMoon24Regular />}
-                    </button>
-                )}
             </header>
 
             {/* Main Content with Premium Animation */}
@@ -50,8 +34,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                     {children}
                 </div>
             </main>
-
-
         </div>
     );
 }

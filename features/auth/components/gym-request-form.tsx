@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRequestAccessSchema } from '../validations';
 import { useRequestAccessMutation } from '../services/auth.service';
-import { Building24Regular, Mail24Regular, Phone24Regular, Location24Regular, ContactCard24Regular, Briefcase24Regular, ArrowUpload24Regular, Image24Regular, SpinnerIos20Regular, ArrowRight24Regular } from '@fluentui/react-icons';
+import { ArrowUpload24Regular, Image24Regular, SpinnerIos20Regular, ArrowRight24Regular } from '@fluentui/react-icons';
 import { useRef } from 'react';
 
 interface GymRequestFormProps {
@@ -39,127 +39,97 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
             }}
         >
             {({ isSubmitting, values, setFieldValue }) => (
-                <Form className="space-y-5 animate-premium-in">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
+                <Form className="space-y-6 animate-premium-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Gym Name */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.gymName')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-foreground/30 pointer-events-none">
-                                    <Building24Regular />
-                                </div>
-                                <Field
-                                    name="gymName"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                    placeholder={t('Auth.gymNamePlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="gymName" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <Field
+                                name="gymName"
+                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                placeholder={t('Auth.gymNamePlaceholder')}
+                            />
+                            <ErrorMessage name="gymName" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
-
 
                         {/* Phone */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.phone')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-foreground/30 pointer-events-none">
-                                    <Phone24Regular />
-                                </div>
-                                <Field
-                                    name="phone"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                    placeholder={t('Auth.phonePlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="phone" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <Field
+                                name="phone"
+                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                placeholder={t('Auth.phonePlaceholder')}
+                            />
+                            <ErrorMessage name="phone" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
 
                         {/* Email */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.email')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-foreground/30 pointer-events-none">
-                                    <Mail24Regular />
-                                </div>
-                                <Field
-                                    name="email"
-                                    type="email"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                    placeholder={t('Auth.emailPlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="email" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <Field
+                                name="email"
+                                type="email"
+                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                placeholder={t('Auth.emailPlaceholder')}
+                            />
+                            <ErrorMessage name="email" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
 
                         {/* Gym Address */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.gymAddress')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-foreground/30 pointer-events-none">
-                                    <Location24Regular />
-                                </div>
-                                <Field
-                                    name="gymAddress"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                    placeholder={t('Auth.gymAddressPlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="gymAddress" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <Field
+                                name="gymAddress"
+                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                placeholder={t('Auth.gymAddressPlaceholder')}
+                            />
+                            <ErrorMessage name="gymAddress" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
 
                         {/* Contact Person */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.contactPerson')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-foreground/30 pointer-events-none">
-                                    <ContactCard24Regular />
-                                </div>
-                                <Field
-                                    name="contactPerson"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                    placeholder={t('Auth.contactPersonPlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="contactPerson" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <Field
+                                name="contactPerson"
+                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                placeholder={t('Auth.contactPersonPlaceholder')}
+                            />
+                            <ErrorMessage name="contactPerson" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
 
                         {/* Position */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.position')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center text-foreground/30 pointer-events-none">
-                                    <Briefcase24Regular />
-                                </div>
-                                <Field
-                                    name="position"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                    placeholder={t('Auth.positionPlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="position" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <Field
+                                name="position"
+                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                placeholder={t('Auth.positionPlaceholder')}
+                            />
+                            <ErrorMessage name="position" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
+                    </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Gym License */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.gymLicense')}
                             </label>
                             <div
                                 onClick={() => gymLicenseRef.current?.click()}
-                                className="relative w-full py-4 px-4 bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group min-h-[100px]"
+                                className="relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]"
                             >
                                 <input
                                     ref={gymLicenseRef}
@@ -168,20 +138,20 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                     className="hidden"
                                     onChange={(e) => setFieldValue('gymLicense', e.currentTarget.files?.[0])}
                                 />
-                                <ArrowUpload24Regular className="text-foreground/30 group-hover:text-primary transition-colors h-8 w-8" />
-                                <span className="text-sm font-medium text-foreground/60 text-center">{values.gymLicense ? (values.gymLicense as File).name : t('Auth.gymLicense')}</span>
+                                <ArrowUpload24Regular className="text-foreground/20 group-hover:text-primary transition-colors h-8 w-8" />
+                                <span className="text-xs font-medium text-foreground/40 text-center">{values.gymLicense ? (values.gymLicense as File).name : t('Auth.gymLicense')}</span>
                             </div>
-                            <ErrorMessage name="gymLicense" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <ErrorMessage name="gymLicense" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                         </div>
 
                         {/* Facility Photos */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-foreground/50 px-1">
+                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
                                 {t('Auth.facilityPhotos')}
                             </label>
                             <div
                                 onClick={() => facilityPhotosRef.current?.click()}
-                                className="relative w-full py-4 px-4 bg-foreground/5 border-2 border-dashed border-foreground/10 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group min-h-[100px]"
+                                className="relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]"
                             >
                                 <input
                                     ref={facilityPhotosRef}
@@ -191,8 +161,8 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                     className="hidden"
                                     onChange={(e) => setFieldValue('facilityPhotos', e.currentTarget.files)}
                                 />
-                                <Image24Regular className="text-foreground/30 group-hover:text-primary transition-colors h-8 w-8" />
-                                <span className="text-sm font-medium text-foreground/60 text-center">{values.facilityPhotos ? t('Auth.photosSelected', { count: (values.facilityPhotos as FileList).length }) : t('Auth.facilityPhotos')}</span>
+                                <Image24Regular className="text-foreground/20 group-hover:text-primary transition-colors h-8 w-8" />
+                                <span className="text-xs font-medium text-foreground/40 text-center">{values.facilityPhotos ? t('Auth.photosSelected', { count: (values.facilityPhotos as FileList).length }) : t('Auth.facilityPhotos')}</span>
                             </div>
                         </div>
                     </div>
@@ -201,13 +171,13 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-12 py-4 bg-primary text-primary-foreground rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer"
+                            className="w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase tracking-wider"
                         >
                             {isSubmitting ? (
                                 <SpinnerIos20Regular className="animate-spin" />
                             ) : (
                                 <>
-                                    {t('Auth.submit')}
+                                    {t('Auth.submitApplication')}
                                     <ArrowRight24Regular className="group-hover:translate-x-1 transition-transform rtl:rotate-180" />
                                 </>
                             )}

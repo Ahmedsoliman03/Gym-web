@@ -16,10 +16,21 @@ export default function LoginForm() {
 
     return (
         <div className="space-y-6">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">{t('Auth.login')}</h1>
-                <p className="text-foreground/60 text-sm">{t('Auth.welcomeBack')}</p>
+            <div className="space-y-1 text-center flex flex-col items-center">
+                <h1 className="text-3xl font-black tracking-tight inline-flex items-baseline gap-1">
+                    <span className="animate-[typing_2s_steps(20)_forwards] overflow-hidden whitespace-nowrap border-r-2 border-primary pr-1 max-w-0 [animation-fill-mode:forwards]">
+                        Welcome to gym
+                    </span>
+                </h1>
+                <p className="text-foreground/60 text-[13px]">{t('Auth.welcomeBack')}</p>
             </div>
+
+            <style jsx>{`
+                @keyframes typing {
+                    from { max-width: 0; }
+                    to { max-width: 100%; border-color: transparent; }
+                }
+            `}</style>
 
             <Formik
                 initialValues={{ email: '', password: '' }}
@@ -75,7 +86,7 @@ export default function LoginForm() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer"
+                            className="w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg tracking-tight"
                         >
                             {isSubmitting ? (
                                 <SpinnerIos20Regular className="animate-spin" />
@@ -90,15 +101,42 @@ export default function LoginForm() {
                 )}
             </Formik>
 
-            <div className="text-center pt-4 flex flex-col gap-2">
-                <Link href="/request-access" className="text-sm font-medium text-primary hover:underline">
-                    {t('Auth.requestAccess')}
-                </Link>
-                <div className="text-xs text-foreground/40 font-medium pt-2">
-                    {t('Auth.noAccount')}{' '}
-                    <Link href="/register" className="text-primary hover:underline">
-                        {t('Auth.registerHere')}
+            <div className="mt-8 pt-6 border-t border-white/5 space-y-6">
+                {/* Primary Actions Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                    <Link href="/request-access" className="group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all">
+                        <span className="text-primary font-bold text-sm tracking-tight">{t('Auth.requestAccess')}</span>
+                        <span className="text-[9px] text-foreground/30 uppercase tracking-[0.1em] font-black group-hover:text-foreground/50 transition-colors">{t('Auth.gymsAndCoaches')}</span>
                     </Link>
+                    <Link href="/activate" className="group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all">
+                        <span className="text-primary font-bold text-sm tracking-tight">{t('Auth.activateProfile')}</span>
+                        <span className="text-[9px] text-foreground/30 uppercase tracking-[0.15em] font-black group-hover:text-foreground/50 transition-colors">Invite Code</span>
+                    </Link>
+                </div>
+
+                {/* Secondary Links */}
+                <div className="flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-2 text-[13px] font-medium">
+                        <span className="text-foreground/40">{t('Auth.noAccount')}</span>
+                        <Link href="/register" className="text-white hover:text-primary transition-all font-bold">
+                            {t('Auth.registerHere')}
+                        </Link>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-[13px] font-medium">
+                        <span className="text-foreground/40">{t('Auth.needHelp')}</span>
+                        <a 
+                            href="https://wa.me/201159133110" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-primary transition-all font-bold group flex items-center gap-1"
+                        >
+                            {t('Auth.contactSupport')}
+                            <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

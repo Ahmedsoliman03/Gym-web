@@ -24,19 +24,19 @@
 }
 
 :root {
-  --background: #FDFDFD;
-  --foreground: #111827;
-  --primary: #2ec284;
-  --primary-foreground: #FFFFFF;
-  --surface: #FFFFFF;
+  --background: #0B0F1A;
+  --foreground: #F9FAFB;
+  --primary: #22C55E;
+  --primary-foreground: #000;
+  --surface: #161B2B;
   --radius: 0.5rem;
 }
 
 .dark {
   --background: #0B0F1A;
   --foreground: #F9FAFB;
-  --primary: #2ec284;
-  --primary-foreground: #FFFFFF;
+  --primary: #22C55E;
+  --primary-foreground: #000;
   --surface: #161B2B;
 }
 
@@ -56,6 +56,10 @@
 @layer utilities {
   .animate-premium-in {
     animation: premium-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .input-dark {
+    @apply bg-[#0D121F] border-none focus:ring-2 focus:ring-primary/20 transition-all outline-none rounded-xl;
   }
 }
 
