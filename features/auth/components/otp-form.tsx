@@ -86,8 +86,8 @@ export default function OtpForm() {
                                 <SpinnerIos20Regular className="animate-spin" />
                             ) : (
                                 <>
-                                    {t('Auth.verifyAndComplete')}
-                                    <ArrowRight24Regular className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    <span>{t('Auth.verifyAndComplete')}</span>
+                                    <ArrowRight24Regular className="w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block" />
                                 </>
                             )}
                         </button>

@@ -1,6 +1,7 @@
 {
     "Auth": {
         "login": "Secure Entrance",
+        "welcomeTitle": "Welcome to gym",
         "welcomeBack": "Step back into the elite circle and manage your network.",
         "register": "Join as a Client",
         "registerSubtitle": "Ready to transform your workflow? Create your account to start booking services.",

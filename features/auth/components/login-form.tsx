@@ -17,18 +17,35 @@ export default function LoginForm() {
     return (
         <div className="space-y-6">
             <div className="space-y-1 text-center flex flex-col items-center">
-                <h1 className="text-3xl font-black tracking-tight inline-flex items-baseline gap-1">
-                    <span className="animate-[typing_2s_steps(20)_forwards] overflow-hidden whitespace-nowrap border-r-2 border-primary pr-1 max-w-0 [animation-fill-mode:forwards]">
-                        Welcome to gym
+                <h1 className="text-3xl font-black tracking-tight flex items-center justify-center">
+                    <span className="animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap">
+                        {t('Auth.welcomeTitle')}
                     </span>
                 </h1>
                 <p className="text-foreground/60 text-[13px]">{t('Auth.welcomeBack')}</p>
             </div>
 
             <style jsx>{`
+                .animate-typing {
+                    display: inline-block;
+                    width: 0;
+                    animation: 
+                        typing 2s steps(30, end) forwards,
+                        blink-caret .75s step-end infinite;
+                }
+
                 @keyframes typing {
-                    from { max-width: 0; }
-                    to { max-width: 100%; border-color: transparent; }
+                    from { width: 0 }
+                    to { width: 100% }
+                }
+
+                @keyframes blink-caret {
+                    from, to { border-color: transparent }
+                    50% { border-color: var(--primary) }
+                }
+
+                :global(.dark) .animate-typing {
+                    --primary: #22C55E;
                 }
             `}</style>
 
@@ -92,8 +109,8 @@ export default function LoginForm() {
                                 <SpinnerIos20Regular className="animate-spin" />
                             ) : (
                                 <>
-                                    {t('Auth.submit')}
-                                    <ArrowRight24Regular className="group-hover:translate-x-1 transition-transform rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+                                    <span>{t('Auth.submit')}</span>
+                                    <ArrowRight24Regular className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block" />
                                 </>
                             )}
                         </button>
@@ -131,8 +148,8 @@ export default function LoginForm() {
                             rel="noopener noreferrer"
                             className="text-white hover:text-primary transition-all font-bold group flex items-center gap-1"
                         >
-                            {t('Auth.contactSupport')}
-                            <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <span>{t('Auth.contactSupport')}</span>
+                            <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform rtl:rotate-180 rtl:group-hover:-translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                 <path d="M5 12h14M12 5l7 7-7 7" />
                             </svg>
                         </a>

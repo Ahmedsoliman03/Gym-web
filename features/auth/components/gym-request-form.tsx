@@ -177,8 +177,8 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                 <SpinnerIos20Regular className="animate-spin" />
                             ) : (
                                 <>
-                                    {t('Auth.submitApplication')}
-                                    <ArrowRight24Regular className="group-hover:translate-x-1 transition-transform rtl:rotate-180" />
+                                    <span>{t('Auth.submitApplication')}</span>
+                                    <ArrowRight24Regular className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block" />
                                 </>
                             )}
                         </button>
