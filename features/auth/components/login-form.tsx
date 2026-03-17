@@ -16,6 +16,19 @@ export default function LoginForm() {
 
     return (
         <div className="space-y-6">
+            {/* Fake Logo */}
+            <div className="flex justify-center mb-8">
+                <Link href="/" className="flex items-center gap-2 group">
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-primary-foreground transform group-hover:rotate-6 transition-transform shadow-lg shadow-primary/20">
+                        G
+                    </div>
+                    <div className="flex flex-col text-left">
+                        <span className="font-black text-xl tracking-tighter leading-none">GYM ELITE</span>
+                        <span className="text-[10px] text-primary font-bold tracking-[0.2em] uppercase leading-none">Inner Circle</span>
+                    </div>
+                </Link>
+            </div>
+
             <div className="space-y-1 text-center flex flex-col items-center">
                 <h1 className="text-3xl font-black tracking-tight flex items-center justify-center">
                     <span className="animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap">

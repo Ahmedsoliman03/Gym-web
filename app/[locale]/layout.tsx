@@ -14,6 +14,8 @@ export const metadata: Metadata = {
     description: "Gym "
 };
 
+import { Navbar } from '@/components/navbar';
+
 export default async function LocaleLayout({
     children,
     params
@@ -39,6 +41,7 @@ export default async function LocaleLayout({
                         forcedTheme="dark"
                         disableTransitionOnChange
                     >
+                        <Navbar />
                         {children}
                     </ThemeProvider>
                 </NextIntlClientProvider>
