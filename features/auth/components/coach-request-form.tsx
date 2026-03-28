@@ -4,11 +4,113 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRequestAccessSchema } from '../validations';
 import { useRequestAccessMutation } from '../services/auth.service';
-import { ChevronDown24Regular, ArrowUpload24Regular, SpinnerIos20Regular, ArrowRight24Regular } from '@fluentui/react-icons';
-import { useRef } from 'react';
+import { ChevronDown24Regular, ArrowUpload24Regular, SpinnerIos20Regular, ArrowRight24Regular, Dismiss20Regular } from '@fluentui/react-icons';
+import { useRef, useState, useEffect } from 'react';
 
 interface CoachRequestFormProps {
     onSuccess: () => void;
+}
+
+interface Option {
+    label: string;
+    value: string;
+}
+
+interface CustomMultiSelectProps {
+    name: string;
+    value: string[];
+    onChange: (value: string[]) => void;
+    options: Option[];
+    placeholder: string;
+}
+
+function CustomMultiSelect({ value, onChange, options, placeholder }: CustomMultiSelectProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const toggleOption = (val: string) => {
+        const newValue = value.includes(val)
+            ? value.filter((v) => v !== val)
+            : [...value, val];
+        onChange(newValue);
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full min-h-[52px] pl-4 pr-10 py-2.5 bg-[#0D121F] border-2 transition-all duration-300 cursor-pointer flex flex-wrap gap-2 items-center rounded-xl ${
+                    isOpen ? 'border-primary/30 ring-4 ring-primary/10' : 'border-transparent'
+                }`}
+            >
+                {value.length === 0 && (
+                    <span className="text-foreground/40 text-sm font-medium">{placeholder}</span>
+                )}
+                {value.map((val) => {
+                    const option = options.find((o) => o.value === val);
+                    return (
+                        <div
+                            key={val}
+                            className="flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-lg text-xs font-bold border border-primary/20 animate-premium-in group/tag"
+                        >
+                            {option?.label}
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleOption(val);
+                                }}
+                                className="hover:text-red-400 transition-colors flex items-center justify-center p-0.5 rounded-md hover:bg-black/20"
+                            >
+                                <Dismiss20Regular className="h-3 w-3" />
+                            </button>
+                        </div>
+                    );
+                })}
+                <div className="absolute inset-y-0 right-3 flex items-center text-foreground/30 pointer-events-none transition-colors duration-200">
+                    <ChevronDown24Regular className={`h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`} />
+                </div>
+            </div>
+
+            {isOpen && (
+                <div className="absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in backdrop-blur-xl">
+                    <div className="max-h-60 overflow-y-auto py-2 custom-scrollbar">
+                        {options.map((option) => {
+                            const isSelected = value.includes(option.value);
+                            return (
+                                <div
+                                    key={option.value}
+                                    onClick={() => toggleOption(option.value)}
+                                    className={`px-4 py-3.5 flex items-center justify-between cursor-pointer transition-all duration-200 hover:bg-primary/5 active:scale-[0.98] ${
+                                        isSelected ? 'bg-primary/5' : ''
+                                    }`}
+                                >
+                                    <span className={`text-sm font-bold transition-colors ${isSelected ? 'text-primary' : 'text-foreground/70'}`}>
+                                        {option.label}
+                                    </span>
+                                    {isSelected ? (
+                                        <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(34,197,94,0.8)]" />
+                                    ) : (
+                                        <div className="h-2 w-2 rounded-full bg-white/5 border border-white/10" />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
@@ -25,7 +127,7 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 name: '',
                 email: '',
                 phone: '',
-                specialization: '',
+                specialization: [] as string[],
                 experience: '',
                 workplace: '',
                 socialMedia: '',
@@ -69,27 +171,23 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                     </div>
 
                     {/* Specialization */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <label className="text-[11px] font-bold text-foreground/50 px-1">
                             {t('Auth.primarySpecialization')}
                         </label>
-                        <div className="relative group/select">
-                            <Field
-                                as="select"
-                                name="specialization"
-                                className="w-full pl-4 pr-10 py-3.5 bg-[#0D121F] border border-transparent rounded-xl transition-all duration-200 outline-none appearance-none cursor-pointer text-sm font-bold text-foreground relative z-0"
-                            >
-                                <option value="" disabled className="bg-[#161B2B] text-foreground/50">{t('Auth.primarySpecialization')}</option>
-                                <option value="Bodybuilding" className="bg-[#161B2B] text-foreground">{t('Auth.bodybuilding') || 'Bodybuilding'}</option>
-                                <option value="Yoga" className="bg-[#161B2B] text-foreground">{t('Auth.yoga') || 'Yoga'}</option>
-                                <option value="CrossFit" className="bg-[#161B2B] text-foreground">{t('Auth.crossfit') || 'CrossFit'}</option>
-                                <option value="Nutrition" className="bg-[#161B2B] text-foreground">{t('Auth.nutrition') || 'Nutrition'}</option>
-                                <option value="HIIT" className="bg-[#161B2B] text-foreground">High-Intensity Interval Training (HIIT)</option>
-                            </Field>
-                            <div className="absolute inset-y-0 right-3 flex items-center text-foreground/30 pointer-events-none transition-colors duration-200 z-10">
-                                <ChevronDown24Regular />
-                            </div>
-                        </div>
+                        <CustomMultiSelect
+                            name="specialization"
+                            value={values.specialization as string[]}
+                            onChange={(vals) => setFieldValue('specialization', vals)}
+                            options={[
+                                { label: t('Auth.bodybuilding') || 'Bodybuilding', value: 'Bodybuilding' },
+                                { label: t('Auth.yoga') || 'Yoga', value: 'Yoga' },
+                                { label: t('Auth.crossfit') || 'CrossFit', value: 'CrossFit' },
+                                { label: t('Auth.nutrition') || 'Nutrition', value: 'Nutrition' },
+                                { label: 'High-Intensity Interval Training (HIIT)', value: 'HIIT' }
+                            ]}
+                            placeholder={t('Auth.primarySpecialization')}
+                        />
                         <ErrorMessage name="specialization" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
                     </div>
 

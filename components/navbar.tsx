@@ -31,10 +31,12 @@ export const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 px-6 md:px-12 py-4 ${scrolled
-          ? "bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-2xl shadow-black/50"
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 px-6 md:px-12 py-4
+         ${scrolled
+          ? " backdrop-blur-xl shadow-2xl shadow-black/50"
           : "bg-transparent"
-        }`}
+        }
+        `}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
@@ -56,15 +58,28 @@ export const Navbar = () => {
               { label: "Gyms", href: "/gyms" },
               { label: "Job Board", href: "/jobs" },
               { label: "Plans", href: "/plans" },
-            ].map((link) => (
-              <Link
-                key={link.label}
-                href={link.href as any}
-                className="text-sm font-bold text-foreground/60 hover:text-primary transition-colors tracking-wide uppercase"
-              >
-                {link.label}
-              </Link>
-            ))}
+            ].map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href as any}
+                  className={`text-sm font-bold transition-all tracking-wide uppercase relative group/nav ${
+                    isActive ? "text-primary" : "text-foreground/60 hover:text-primary"
+                  }`}
+                >
+                  {link.label}
+                  {/* Active Indicator Line */}
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                  )}
+                  {/* Hover Indicator Line */}
+                  {!isActive && (
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 origin-center opacity-50" />
+                  )}
+                </Link>
+              );
+            })}
           </div>
         )}
 
@@ -95,12 +110,20 @@ export const Navbar = () => {
 
               <Link
                 href="/coach-profile"
-                className="flex items-center gap-3 pl-1 pr-4 py-1 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group"
+                className={`flex items-center gap-3 pl-1 pr-4 py-1 transition-all group rounded-full border ${
+                  pathname === '/coach-profile'
+                    ? "bg-primary/20 border-primary/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                    : "bg-white/5 border-white/10 hover:bg-white/10 overflow-hidden"
+                }`}
               >
-                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center overflow-hidden">
-                  <User size={18} className="text-primary" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  pathname === '/coach-profile' ? "bg-primary text-primary-foreground" : "bg-primary/20 border border-primary/30 text-primary"
+                }`}>
+                  <User size={18} />
                 </div>
-                <span className="text-sm font-bold text-foreground/80 group-hover:text-foreground hidden sm:block">Marcus</span>
+                <span className={`text-sm font-bold group-hover:text-foreground hidden sm:block ${
+                  pathname === '/coach-profile' ? "text-primary" : "text-foreground/80"
+                }`}>Marcus</span>
               </Link>
 
               <Link

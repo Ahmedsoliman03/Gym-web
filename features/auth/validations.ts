@@ -40,7 +40,7 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
     }),
 
     // Coach Fields
-    specialization: Yup.string().when('type', {
+    specialization: Yup.array().of(Yup.string()).min(1, t('Validation.required', { field: t('Auth.primarySpecialization') })).when('type', {
         is: 'coach',
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.primarySpecialization') })),
         otherwise: (schema) => schema.optional(),
