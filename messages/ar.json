@@ -112,5 +112,29 @@
         "certifications": "الشهادات",
         "gymLicense": "ترخيص الجيم",
         "facilityPhotos": "صور المكان"
+    },
+    "Coaches": {
+        "title": "مدربو",
+        "subtitle": "الأداء الفائق",
+        "description": "احصل على وصول إلى نخبة مدربي الأداء في العالم. قم بالتصفية حسب الانضباط والخبرة والتخصص.",
+        "searchPlaceholder": "البحث بالاسم أو الفئة...",
+        "allSpecialties": "جميع التخصصات",
+        "reset": "إعادة تعيين",
+        "strength": "قوة",
+        "endurance": "تحمل",
+        "mobility": "مرونة",
+        "nutrition": "تغذية",
+        "featuredStaff": "طاقم الأداء المتميز",
+        "showingExperts": "عرض {count} من الخبراء",
+        "yearsExp": "{years} سنوات خبرة",
+        "profile": "عرض الملف الشخصي",
+        "noCoaches": "لم يتم العثور على مدربين يطابقون معاييرك",
+        "clearFilters": "مسح جميع الفلاتر",
+        "discoverMore": "اكتشف المزيد من الطاقم",
+        "editorial": "Elite Kinetic © 2024",
+        "privacy": "سياسة الخصوصية",
+        "terms": "شروط الخدمة",
+        "support": "الدعم",
+        "contact": "اتصل بنا"
     }
 }

@@ -112,5 +112,29 @@
         "certifications": "Certifications",
         "gymLicense": "Gym License",
         "facilityPhotos": "Facility Photos"
+    },
+    "Coaches": {
+        "title": "Coaches of",
+        "subtitle": "Peak Performance",
+        "description": "Access the world's most elite performance coaches. Filter by discipline, experience, and specialization.",
+        "searchPlaceholder": "Search by name or tier...",
+        "allSpecialties": "All Specialties",
+        "reset": "Reset",
+        "strength": "Strength",
+        "endurance": "Endurance",
+        "mobility": "Mobility",
+        "nutrition": "Nutrition",
+        "featuredStaff": "Featured Performance Staff",
+        "showingExperts": "Showing {count} Elite Experts",
+        "yearsExp": "{years} Years Pro Exp",
+        "profile": "View Profile",
+        "noCoaches": "No coaches found matching your criteria",
+        "clearFilters": "Clear all filters",
+        "discoverMore": "Discover More Staff",
+        "editorial": "The Obsidian Performance Editorial © 2024",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "support": "Support",
+        "contact": "Contact"
     }
 }
