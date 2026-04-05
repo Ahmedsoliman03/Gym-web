@@ -87,6 +87,10 @@ export function JobFeed() {
               </div>
 
               <div className={styles.footerActions}>
+                <button className={styles.applyButton}>
+                  <Zap size={18} fill="currentColor" />
+                  <span>{t('applyNow')}</span>
+                </button>
                 <button className={styles.actionButton}>
                   <Bookmark size={18} />
                   <span>{t('savePost')}</span>
@@ -95,10 +99,7 @@ export function JobFeed() {
                   <Share2 size={18} />
                   <span>{t('sharePost')}</span>
                 </button>
-                <button className={styles.applyButton}>
-                  <Zap size={18} fill="currentColor" />
-                  <span>{t('applyNow')}</span>
-                </button>
+
               </div>
             </article>
           ))}
