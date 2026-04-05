@@ -15,7 +15,7 @@ interface GymCardProps {
 }
 
 const styles = {
-  card: "group bg-surface rounded-2xl overflow-hidden hover:translate-y-[-12px] transition-all duration-500 border border-white/5 shadow-2xl animate-premium-in",
+  card: "group bg-surface rounded-2xl overflow-hidden transition-all duration-500 border border-white/5 shadow-2xl animate-premium-in",
   imageContainer: "relative aspect-video overflow-hidden",
   image: "object-cover transition-all duration-700 scale-105 group-hover:scale-110",
   imageOverlay: "absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent flex flex-col justify-end p-6",
@@ -38,7 +38,7 @@ export function GymCard({ gym, index }: GymCardProps) {
           className={styles.image}
         />
         <div className={styles.imageOverlay}>
-           <span className={styles.location}>{gym.location}</span>
+          <span className={styles.location}>{gym.location}</span>
         </div>
       </div>
 

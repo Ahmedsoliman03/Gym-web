@@ -1,6 +1,6 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Bell, Search, Menu, User, LogOut, Globe } from "lucide-react";
+import { Bell, Search, Menu, User, LogOut, Globe, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
 
@@ -43,11 +43,32 @@ const styles = {
   `,
   logoutButton: "p-2.5 text-foreground/40 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all border border-transparent hover:border-red-500/10 group",
   logoutIcon: "group-hover:translate-x-0.5 transition-transform",
-  mobileMenu: "md:hidden p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all"
+  mobileMenuBtn: (isOpen: boolean) => `
+    md:hidden p-2.5 rounded-xl transition-all z-[110] relative
+    ${isOpen ? "text-primary bg-primary/10" : "text-foreground/40 hover:text-foreground hover:bg-white/5"}
+  `,
+  mobileOverlay: (isOpen: boolean) => `
+    fixed inset-0 bg-background/80 backdrop-blur-xl z-[100] transition-all duration-500
+    ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
+  `,
+  mobileMenu: (isOpen: boolean) => `
+    fixed top-0 right-0 bottom-0 w-full md:w-[400px] bg-background/95 border-l border-white/5 z-[105] p-12 transition-all duration-500 flex flex-col justify-center
+    ${isOpen ? "translate-x-0" : "translate-x-full"}
+  `,
+  mobileMenuHeader: "mb-12 flex items-center justify-between",
+  mobileCloseBtn: "p-2.5 text-foreground/40 hover:text-primary hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
+  mobileNav: "flex flex-col gap-6",
+  mobileNavLink: (isActive: boolean) => `
+    text-xl font-black transition-all tracking-tighter uppercase flex items-center gap-4 group/mobile 
+    ${isActive ? "text-primary" : "text-foreground/40 hover:text-primary"}
+  `,
+  mobileLinkDot: "w-3 h-3 rounded-full bg-primary transform scale-0 group-hover/mobile:scale-100 transition-transform",
+  mobileFooter: "mt-auto pt-12 border-t border-white/5 opacity-50 text-xs font-bold tracking-widest uppercase"
 };
 
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const locale = useLocale();
   const router = useRouter();
@@ -56,6 +77,13 @@ export const Navbar = () => {
     pathname.includes('/register') ||
     pathname.includes('/request-access') ||
     pathname.includes('/activate');
+
+  const navLinks = [
+    { label: "Coaches", href: "/coaches" },
+    { label: "Gyms", href: "/gyms" },
+    { label: "Job Board", href: "/jobs" },
+    { label: "Plans", href: "/plans" },
+  ];
 
   const toggleLanguage = () => {
     const nextLocale = locale === 'en' ? 'ar' : 'en';
@@ -70,87 +98,146 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   return (
-    <nav className={styles.nav(scrolled)}>
-      <div className={styles.container}>
-        {/* Logo */}
-        <Link href="/" className={styles.logo}>
-          <div className={styles.logoIcon}>G</div>
-          <div className={styles.logoTextWrapper}>
-            <span className={styles.logoTitle}>GYM ELITE</span>
-            <span className={styles.logoSubtitle}>Inner Circle</span>
-          </div>
-        </Link>
+    <>
+      <nav className={styles.nav(scrolled)}>
+        <div className={styles.container}>
+          {/* Logo */}
+          <Link href="/" className={styles.logo} onClick={() => setIsOpen(false)}>
+            <div className={styles.logoIcon}>G</div>
+            <div className={styles.logoTextWrapper}>
+              <span className={styles.logoTitle}>GYM ELITE</span>
+              <span className={styles.logoSubtitle}>Inner Circle</span>
+            </div>
+          </Link>
 
-        {/* Desktop Navigation */}
-        {!isAuthPage && (
-          <div className={styles.desktopNav}>
-            {[
-              { label: "Coaches", href: "/coaches" },
-              { label: "Gyms", href: "/gyms" },
-              { label: "Job Board", href: "/jobs" },
-              { label: "Plans", href: "/plans" },
-            ].map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.label}
-                  href={link.href as any}
-                  className={styles.navLink(isActive)}
-                >
-                  {link.label}
-                  {isActive ? (
-                    <div className={styles.activeIndicator} />
-                  ) : (
-                    <div className={styles.hoverIndicator} />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Right Actions */}
-        <div className={styles.rightActions}>
-          <button onClick={toggleLanguage} className={styles.langButton} title="Switch Language">
-            <Globe size={18} />
-            <span className={styles.langText}>{locale}</span>
-          </button>
-
+          {/* Desktop Navigation */}
           {!isAuthPage && (
-            <>
-              <button className={styles.actionButton}>
-                <Search size={20} />
-              </button>
-
-              <button className={styles.notifButton}>
-                <span className={styles.notifBadge} />
-                <Bell size={20} />
-              </button>
-
-              <div className={styles.divider} />
-
-              <Link
-                href="/coach-profile"
-                className={styles.profileLink(pathname === '/coach-profile')}
-              >
-                <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
-                  <User size={18} />
-                </div>
-                <span className={styles.profileName(pathname === '/coach-profile')}>Marcus</span>
-              </Link>
-
-              <Link href="/login" className={styles.logoutButton} title="Logout">
-                <LogOut size={20} className={styles.logoutIcon} />
-              </Link>
-
-              <button className={styles.mobileMenu}>
-                <Menu size={24} />
-              </button>
-            </>
+            <div className={styles.desktopNav}>
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href as any}
+                    className={styles.navLink(isActive)}
+                  >
+                    {link.label}
+                    {isActive ? (
+                      <div className={styles.activeIndicator} />
+                    ) : (
+                      <div className={styles.hoverIndicator} />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
           )}
+
+          {/* Right Actions */}
+          <div className={styles.rightActions}>
+            <button onClick={toggleLanguage} className={styles.langButton} title="Switch Language">
+              <Globe size={18} />
+              <span className={styles.langText}>{locale}</span>
+            </button>
+
+            {!isAuthPage && (
+              <>
+                <button className={styles.actionButton}>
+                  <Search size={20} />
+                </button>
+
+                <button className={styles.notifButton}>
+                  <span className={styles.notifBadge} />
+                  <Bell size={20} />
+                </button>
+
+                <div className={styles.divider} />
+
+                <Link
+                  href="/coach-profile"
+                  className={styles.profileLink(pathname === '/coach-profile')}
+                >
+                  <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
+                    <User size={18} />
+                  </div>
+                  <span className={styles.profileName(pathname === '/coach-profile')}>Marcus</span>
+                </Link>
+
+                <Link href="/login" className={styles.logoutButton} title="Logout">
+                  <LogOut size={20} className={styles.logoutIcon} />
+                </Link>
+
+                <button
+                  className={styles.mobileMenuBtn(isOpen)}
+                  onClick={() => setIsOpen(!isOpen)}
+                >
+                  {isOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={styles.mobileOverlay(isOpen)}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* Mobile Menu Content */}
+      <div className={styles.mobileMenu(isOpen)}>
+        <div className={styles.mobileMenuHeader}>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>G</div>
+            <div className={styles.logoTextWrapper}>
+              <span className={styles.logoTitle}>GYM ELITE</span>
+              <span className={styles.logoSubtitle}>Premium Experience</span>
+            </div>
+          </div>
+          <button 
+            className={styles.mobileCloseBtn}
+            onClick={() => setIsOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className={styles.mobileNav}>
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.label}
+                href={link.href as any}
+                className={styles.mobileNavLink(isActive)}
+                onClick={() => setIsOpen(false)}
+              >
+                <div className={styles.mobileLinkDot} />
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className={styles.mobileFooter}>
+          Gym Elite Inner Circle © 2026
         </div>
       </div>
-    </nav>
+    </>
   );
 };
+
