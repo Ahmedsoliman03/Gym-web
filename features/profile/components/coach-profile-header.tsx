@@ -2,12 +2,28 @@
 
 import Image from "next/image";
 import { MessageSquare, Settings } from "lucide-react";
-// import { clsx, type ClassValue } from "clsx";
-// import { twMerge } from "tailwind-merge";
 
-// function cn(...inputs: ClassValue[]) {
-//   return twMerge(clsx(inputs));
-// }
+const styles = {
+  container: "relative w-full rounded-3xl bg-surface p-8 overflow-hidden animate-premium-in border border-white/5",
+  contentWrapper: "flex flex-col md:flex-row items-center md:items-end gap-8",
+  avatarWrapper: "relative",
+  avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
+  avatarInner: "w-full h-full rounded-full overflow-hidden relative",
+  avatarImage: "object-cover",
+  statusBadge: "absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface",
+  infoWrapper: "flex-1 text-center md:text-left",
+  titleAndTier: "flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2",
+  name: "text-4xl font-bold text-foreground tracking-tight",
+  tier: "bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase tracking-wider",
+  title: "text-foreground/60 text-lg mb-6",
+  statsGrid: "flex flex-wrap justify-center md:justify-start gap-8",
+  statItem: "flex flex-col",
+  statValue: "text-2xl font-bold text-foreground",
+  statLabel: "text-xs text-foreground/40 uppercase tracking-widest",
+  actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
+  primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
+  secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+};
 
 interface CoachProfileHeaderProps {
   name: string;
@@ -28,50 +44,50 @@ export const CoachProfileHeader = ({
   image,
 }: CoachProfileHeaderProps) => {
   return (
-    <div className="relative w-full rounded-3xl bg-surface p-8 overflow-hidden animate-premium-in border border-white/5">
-      <div className="flex flex-col md:flex-row items-center md:items-end gap-8">
+    <div className={styles.container}>
+      <div className={styles.contentWrapper}>
         {/* Profile Picture */}
-        <div className="relative">
-          <div className="w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden">
-            <div className="w-full h-full rounded-full overflow-hidden relative">
+        <div className={styles.avatarWrapper}>
+          <div className={styles.avatarBorder}>
+            <div className={styles.avatarInner}>
               <Image
                 src={image}
                 alt={name}
                 fill
-                className="object-cover"
+                className={styles.avatarImage}
               />
             </div>
           </div>
-          <div className="absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface" />
+          <div className={styles.statusBadge} />
         </div>
 
         {/* Info */}
-        <div className="flex-1 text-center md:text-left">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-            <h1 className="text-4xl font-bold text-foreground tracking-tight">{name}</h1>
-            <span className="bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase tracking-wider">
+        <div className={styles.infoWrapper}>
+          <div className={styles.titleAndTier}>
+            <h1 className={styles.name}>{name}</h1>
+            <span className={styles.tier}>
               {tier}
             </span>
           </div>
-          <p className="text-foreground/60 text-lg mb-6">{title}</p>
+          <p className={styles.title}>{title}</p>
 
-          <div className="flex flex-wrap justify-center md:justify-start gap-8">
+          <div className={styles.statsGrid}>
             {stats.map((stat, index) => (
-              <div key={index} className="flex flex-col">
-                <span className="text-2xl font-bold text-foreground">{stat.value}</span>
-                <span className="text-xs text-foreground/40 uppercase tracking-widest">{stat.label}</span>
+              <div key={index} className={styles.statItem}>
+                <span className={styles.statValue}>{stat.value}</span>
+                <span className={styles.statLabel}>{stat.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto">
-          <button className="flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+        <div className={styles.actionsWrapper}>
+          <button className={styles.primaryBtn}>
             <MessageSquare size={18} />
             Chat
           </button>
-          <button className="flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+          <button className={styles.secondaryBtn}>
             <Settings size={18} />
             Edit Profile
           </button>

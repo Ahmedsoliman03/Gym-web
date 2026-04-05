@@ -1,0 +1,50 @@
+export const GYMS = [
+  {
+    id: 1,
+    name: 'Elite Performance Center',
+    location: 'Downtown, Cairo',
+    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
+    rating: 4.9,
+    memberCount: '1.2k+',
+  },
+  {
+    id: 2,
+    name: 'Iron Forge Gym',
+    location: 'Nasr City, Cairo',
+    image: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop',
+    rating: 4.8,
+    memberCount: '800+',
+  },
+  {
+    id: 3,
+    name: 'Zenith Yoga Studio',
+    location: 'Zamalek, Cairo',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2120&auto=format&fit=crop',
+    rating: 5.0,
+    memberCount: '300+',
+  },
+  {
+    id: 4,
+    name: 'The Crossfit Box',
+    location: 'Maadi, Cairo',
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop',
+    rating: 4.7,
+    memberCount: '500+',
+  },
+  {
+    id: 5,
+    name: 'Olympic Gold Gym',
+    location: '6th of October City',
+    image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2075&auto=format&fit=crop',
+    rating: 4.9,
+    memberCount: '2.5k+',
+  },
+  {
+    id: 6,
+    name: 'Victory Martial Arts',
+    location: 'Sheikh Zayed City',
+    image: 'https://images.unsplash.com/photo-1552072805-2a9039d00e57?q=80&w=2070&auto=format&fit=crop',
+    rating: 4.6,
+    memberCount: '400+',
+  }
+];

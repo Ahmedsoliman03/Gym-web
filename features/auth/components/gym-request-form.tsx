@@ -7,6 +7,21 @@ import { useRequestAccessMutation } from '../services/auth.service';
 import { ArrowUpload24Regular, Image24Regular, SpinnerIos20Regular, ArrowRight24Regular } from '@fluentui/react-icons';
 import { useRef } from 'react';
 
+const styles = {
+  form: "space-y-6 animate-premium-in",
+  gridWrapper: "grid grid-cols-1 md:grid-cols-2 gap-4",
+  fieldWrapper: "space-y-2",
+  label: "text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider",
+  input: "w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium",
+  error: "text-red-500 text-[10px] mt-1 px-1",
+  uploadContainer: "relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]",
+  uploadIcon: "text-foreground/20 group-hover:text-primary transition-colors h-8 w-8",
+  uploadText: "text-xs font-medium text-foreground/40 text-center",
+  submitWrapper: "flex justify-center pt-2",
+  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase tracking-wider",
+  submitIcon: "group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block"
+};
+
 interface GymRequestFormProps {
     onSuccess: () => void;
 }
@@ -39,97 +54,97 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
             }}
         >
             {({ isSubmitting, values, setFieldValue }) => (
-                <Form className="space-y-6 animate-premium-in">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form className={styles.form}>
+                    <div className={styles.gridWrapper}>
                         {/* Gym Name */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.gymName')}
                             </label>
                             <Field
                                 name="gymName"
-                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                className={styles.input}
                                 placeholder={t('Auth.gymNamePlaceholder')}
                             />
-                            <ErrorMessage name="gymName" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="gymName" component="div" className={styles.error} />
                         </div>
 
                         {/* Phone */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.phone')}
                             </label>
                             <Field
                                 name="phone"
-                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                className={styles.input}
                                 placeholder={t('Auth.phonePlaceholder')}
                             />
-                            <ErrorMessage name="phone" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="phone" component="div" className={styles.error} />
                         </div>
 
                         {/* Email */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.email')}
                             </label>
                             <Field
                                 name="email"
                                 type="email"
-                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                className={styles.input}
                                 placeholder={t('Auth.emailPlaceholder')}
                             />
-                            <ErrorMessage name="email" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="email" component="div" className={styles.error} />
                         </div>
 
                         {/* Gym Address */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.gymAddress')}
                             </label>
                             <Field
                                 name="gymAddress"
-                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                className={styles.input}
                                 placeholder={t('Auth.gymAddressPlaceholder')}
                             />
-                            <ErrorMessage name="gymAddress" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="gymAddress" component="div" className={styles.error} />
                         </div>
 
                         {/* Contact Person */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.contactPerson')}
                             </label>
                             <Field
                                 name="contactPerson"
-                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                className={styles.input}
                                 placeholder={t('Auth.contactPersonPlaceholder')}
                             />
-                            <ErrorMessage name="contactPerson" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="contactPerson" component="div" className={styles.error} />
                         </div>
 
                         {/* Position */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.position')}
                             </label>
                             <Field
                                 name="position"
-                                className="w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium"
+                                className={styles.input}
                                 placeholder={t('Auth.positionPlaceholder')}
                             />
-                            <ErrorMessage name="position" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="position" component="div" className={styles.error} />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className={styles.gridWrapper}>
                         {/* Gym License */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.gymLicense')}
                             </label>
                             <div
                                 onClick={() => gymLicenseRef.current?.click()}
-                                className="relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]"
+                                className={styles.uploadContainer}
                             >
                                 <input
                                     ref={gymLicenseRef}
@@ -138,20 +153,20 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                     className="hidden"
                                     onChange={(e) => setFieldValue('gymLicense', e.currentTarget.files?.[0])}
                                 />
-                                <ArrowUpload24Regular className="text-foreground/20 group-hover:text-primary transition-colors h-8 w-8" />
-                                <span className="text-xs font-medium text-foreground/40 text-center">{values.gymLicense ? (values.gymLicense as File).name : t('Auth.gymLicense')}</span>
+                                <ArrowUpload24Regular className={styles.uploadIcon} />
+                                <span className={styles.uploadText}>{values.gymLicense ? (values.gymLicense as File).name : t('Auth.gymLicense')}</span>
                             </div>
-                            <ErrorMessage name="gymLicense" component="div" className="text-red-500 text-[10px] mt-1 px-1" />
+                            <ErrorMessage name="gymLicense" component="div" className={styles.error} />
                         </div>
 
                         {/* Facility Photos */}
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.facilityPhotos')}
                             </label>
                             <div
                                 onClick={() => facilityPhotosRef.current?.click()}
-                                className="relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]"
+                                className={styles.uploadContainer}
                             >
                                 <input
                                     ref={facilityPhotosRef}
@@ -161,24 +176,24 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                     className="hidden"
                                     onChange={(e) => setFieldValue('facilityPhotos', e.currentTarget.files)}
                                 />
-                                <Image24Regular className="text-foreground/20 group-hover:text-primary transition-colors h-8 w-8" />
-                                <span className="text-xs font-medium text-foreground/40 text-center">{values.facilityPhotos ? t('Auth.photosSelected', { count: (values.facilityPhotos as FileList).length }) : t('Auth.facilityPhotos')}</span>
+                                <Image24Regular className={styles.uploadIcon} />
+                                <span className={styles.uploadText}>{values.facilityPhotos ? t('Auth.photosSelected', { count: (values.facilityPhotos as FileList).length }) : t('Auth.facilityPhotos')}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-center pt-2">
+                    <div className={styles.submitWrapper}>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase tracking-wider"
+                            className={styles.submitButton}
                         >
                             {isSubmitting ? (
                                 <SpinnerIos20Regular className="animate-spin" />
                             ) : (
                                 <>
                                     <span>{t('Auth.submitApplication')}</span>
-                                    <ArrowRight24Regular className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block" />
+                                    <ArrowRight24Regular className={styles.submitIcon} />
                                 </>
                             )}
                         </button>

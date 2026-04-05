@@ -6,7 +6,7 @@ export const COACHES = [
     rating: 4.9,
     reviews: 124,
     tier: 'Elite Tier',
-    specializations: ['Boadybuilding', 'Nutrition'],
+    specializations: ['Bodybuilding', 'Nutrition'],
   },
   {
     id: 2,
@@ -24,7 +24,7 @@ export const COACHES = [
     rating: 4.8,
     reviews: 210,
     tier: 'Elite Tier',
-    specializations: ['Crossfit', 'High- Intensity Interval Training (HIT)'],
+    specializations: ['CrossFit'],
   },
   {
     id: 4,
@@ -42,7 +42,7 @@ export const COACHES = [
     rating: 4.7,
     reviews: 92,
     tier: 'Professional',
-    specializations: ['Boadybuilding', 'Crossfit'],
+    specializations: ['Bodybuilding', 'CrossFit'],
   },
   {
     id: 6,
@@ -51,16 +51,9 @@ export const COACHES = [
     rating: 5.0,
     reviews: 342,
     tier: 'Master Coach',
-    specializations: ['Nutrition', 'High- Intensity Interval Training (HIT)'],
+    specializations: ['Nutrition'],
   },
 ];
 
-export const SPECIALIZATIONS = [
-  'Boadybuilding',
-  'Yoga',
-  'Crossfit',
-  'Nutrition',
-  'High- Intensity Interval Training (HIT)',
-];
 
 export const COMMON_COACH_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDgkQ8-wvw6v7v9XLC-WSYRNRna8y44_LwY7-_r2GxJHsNZmKSCHlzYquNzMuupj6-TZoK6AG3uArjMUCNFBG3e30n05NYk1EoOCirpn1C0h3gDeoAXFvnN8VEKNr5HkBGOkxf2eSfCeLxWG1FgpzySmjfuoqBxE0ifOE1MQLMj4jx3GnZGlA7zi0qJDD_x3EfyPRbfk6skUDvgE-35KPKVUcjhJtAiHmfxbi-jDCm0nGwnzFNRL2bOh5KWQrjX0H5qjA-Bj-_2y8Wo';

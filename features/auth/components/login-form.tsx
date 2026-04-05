@@ -8,6 +8,41 @@ import { Mail24Regular, LockClosed24Regular, ArrowRight24Regular, SpinnerIos20Re
 import { Link } from '@/i18n/routing';
 import { useState } from 'react';
 
+const styles = {
+  container: "space-y-6",
+  logoWrapper: "flex justify-center mb-8",
+  logo: "flex items-center gap-2 group",
+  logoIcon: "w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-primary-foreground transform group-hover:rotate-6 transition-transform shadow-lg shadow-primary/20",
+  logoTextWrapper: "flex flex-col text-left",
+  logoTitle: "font-black text-xl tracking-tighter leading-none",
+  logoSubtitle: "text-[10px] text-primary font-bold tracking-[0.2em] uppercase leading-none",
+  header: "space-y-1 text-center flex flex-col items-center",
+  title: "text-3xl font-black tracking-tight flex items-center justify-center",
+  typingEffect: "animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap",
+  subtitle: "text-foreground/60 text-[13px]",
+  form: "space-y-4",
+  fieldWrapper: "space-y-1",
+  label: "text-xs font-semibold uppercase tracking-wider text-foreground/50 px-1",
+  inputWrapper: "relative",
+  inputIcon: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground/30",
+  input: "w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
+  inputPassword: "w-full pl-10 pr-12 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
+  eyeButton: "absolute inset-y-0 right-0 pr-3 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
+  error: "text-red-500 text-xs mt-1 px-1",
+  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg tracking-tight",
+  footer: "mt-8 pt-6 border-t border-white/5 space-y-6",
+  actionGrid: "grid grid-cols-2 gap-3",
+  actionLink: "group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all",
+  actionLinkTitle: "text-primary font-bold text-sm tracking-tight",
+  actionLinkSubtitle: "text-[9px] text-foreground/30 uppercase tracking-[0.1em] font-black group-hover:text-foreground/50 transition-colors",
+  secondaryWrapper: "flex flex-col items-center gap-3",
+  secondaryText: "flex items-center gap-2 text-[13px] font-medium",
+  dimText: "text-foreground/40",
+  boldLink: "text-white hover:text-primary transition-all font-bold",
+  supportLink: "text-white hover:text-primary transition-all font-bold group flex items-center gap-1",
+  supportIcon: "w-3 h-3 group-hover:translate-x-0.5 transition-transform rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+};
+
 export default function LoginForm() {
     const t = useTranslations();
     const login = useLoginMutation();
@@ -15,27 +50,24 @@ export default function LoginForm() {
     const validationSchema = getLoginSchema(t);
 
     return (
-        <div className="space-y-6">
-            {/* Fake Logo */}
-            <div className="flex justify-center mb-8">
-                <Link href="/" className="flex items-center gap-2 group">
-                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-primary-foreground transform group-hover:rotate-6 transition-transform shadow-lg shadow-primary/20">
-                        G
-                    </div>
-                    <div className="flex flex-col text-left">
-                        <span className="font-black text-xl tracking-tighter leading-none">GYM ELITE</span>
-                        <span className="text-[10px] text-primary font-bold tracking-[0.2em] uppercase leading-none">Inner Circle</span>
+        <div className={styles.container}>
+            <div className={styles.logoWrapper}>
+                <Link href="/" className={styles.logo}>
+                    <div className={styles.logoIcon}>G</div>
+                    <div className={styles.logoTextWrapper}>
+                        <span className={styles.logoTitle}>GYM ELITE</span>
+                        <span className={styles.logoSubtitle}>Inner Circle</span>
                     </div>
                 </Link>
             </div>
 
-            <div className="space-y-1 text-center flex flex-col items-center">
-                <h1 className="text-3xl font-black tracking-tight flex items-center justify-center">
-                    <span className="animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap">
+            <div className={styles.header}>
+                <h1 className={styles.title}>
+                    <span className={styles.typingEffect}>
                         {t('Auth.welcomeTitle')}
                     </span>
                 </h1>
-                <p className="text-foreground/60 text-[13px]">{t('Auth.welcomeBack')}</p>
+                <p className={styles.subtitle}>{t('Auth.welcomeBack')}</p>
             </div>
 
             <style jsx>{`
@@ -68,55 +100,55 @@ export default function LoginForm() {
                 onSubmit={(values) => login.mutate(values)}
             >
                 {({ isSubmitting }) => (
-                    <Form className="space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-foreground/50 px-1">
+                    <Form className={styles.form}>
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.email')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground/30">
+                            <div className={styles.inputWrapper}>
+                                <div className={styles.inputIcon}>
                                     <Mail24Regular />
                                 </div>
                                 <Field
                                     name="email"
                                     type="email"
-                                    className="w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                                    className={styles.input}
                                     placeholder={t('Auth.emailPlaceholder')}
                                 />
                             </div>
-                            <ErrorMessage name="email" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <ErrorMessage name="email" component="div" className={styles.error} />
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-foreground/50 px-1">
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
                                 {t('Auth.password')}
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground/30">
+                            <div className={styles.inputWrapper}>
+                                <div className={styles.inputIcon}>
                                     <LockClosed24Regular />
                                 </div>
                                 <Field
                                     name="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    className="w-full pl-10 pr-12 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                                    className={styles.inputPassword}
                                     placeholder="••••••••"
-                                />
+                                /  >
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer"
+                                    className={styles.eyeButton}
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                 >
                                     {showPassword ? <EyeOff24Regular /> : <Eye24Regular />}
                                 </button>
                             </div>
-                            <ErrorMessage name="password" component="div" className="text-red-500 text-xs mt-1 px-1" />
+                            <ErrorMessage name="password" component="div" className={styles.error} />
                         </div>
 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg tracking-tight"
+                            className={styles.submitButton}
                         >
                             {isSubmitting ? (
                                 <SpinnerIos20Regular className="animate-spin" />
@@ -131,38 +163,36 @@ export default function LoginForm() {
                 )}
             </Formik>
 
-            <div className="mt-8 pt-6 border-t border-white/5 space-y-6">
-                {/* Primary Actions Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                    <Link href="/request-access" className="group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all">
-                        <span className="text-primary font-bold text-sm tracking-tight">{t('Auth.requestAccess')}</span>
-                        <span className="text-[9px] text-foreground/30 uppercase tracking-[0.1em] font-black group-hover:text-foreground/50 transition-colors">{t('Auth.gymsAndCoaches')}</span>
+            <div className={styles.footer}>
+                <div className={styles.actionGrid}>
+                    <Link href="/request-access" className={styles.actionLink}>
+                        <span className={styles.actionLinkTitle}>{t('Auth.requestAccess')}</span>
+                        <span className={styles.actionLinkSubtitle}>{t('Auth.gymsAndCoaches')}</span>
                     </Link>
-                    <Link href="/activate" className="group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all">
-                        <span className="text-primary font-bold text-sm tracking-tight">{t('Auth.activateProfile')}</span>
-                        <span className="text-[9px] text-foreground/30 uppercase tracking-[0.15em] font-black group-hover:text-foreground/50 transition-colors">Invite Code</span>
+                    <Link href="/activate" className={styles.actionLink}>
+                        <span className={styles.actionLinkTitle}>{t('Auth.activateProfile')}</span>
+                        <span className={styles.actionLinkSubtitle}>Invite Code</span>
                     </Link>
                 </div>
 
-                {/* Secondary Links */}
-                <div className="flex flex-col items-center gap-3">
-                    <div className="flex items-center gap-2 text-[13px] font-medium">
-                        <span className="text-foreground/40">{t('Auth.noAccount')}</span>
-                        <Link href="/register" className="text-white hover:text-primary transition-all font-bold">
+                <div className={styles.secondaryWrapper}>
+                    <div className={styles.secondaryText}>
+                        <span className={styles.dimText}>{t('Auth.noAccount')}</span>
+                        <Link href="/register" className={styles.boldLink}>
                             {t('Auth.registerHere')}
                         </Link>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-[13px] font-medium">
-                        <span className="text-foreground/40">{t('Auth.needHelp')}</span>
+                    <div className={styles.secondaryText}>
+                        <span className={styles.dimText}>{t('Auth.needHelp')}</span>
                         <a 
                             href="https://wa.me/201159133110" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-white hover:text-primary transition-all font-bold group flex items-center gap-1"
+                            className={styles.supportLink}
                         >
                             <span>{t('Auth.contactSupport')}</span>
-                            <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform rtl:rotate-180 rtl:group-hover:-translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <svg className={styles.supportIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                 <path d="M5 12h14M12 5l7 7-7 7" />
                             </svg>
                         </a>
