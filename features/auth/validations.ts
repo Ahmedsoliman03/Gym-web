@@ -28,6 +28,16 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.gymAddress') })),
         otherwise: (schema) => schema.optional(),
     }),
+    city: Yup.string().when('type', {
+        is: 'gym',
+        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.selectCity') })),
+        otherwise: (schema) => schema.optional(),
+    }),
+    area: Yup.string().when('type', {
+        is: 'gym',
+        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.selectArea') })),
+        otherwise: (schema) => schema.optional(),
+    }),
     contactPerson: Yup.string().when('type', {
         is: 'gym',
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.contactPerson') })),

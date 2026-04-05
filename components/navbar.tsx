@@ -41,7 +41,7 @@ const styles = {
     text-sm font-bold group-hover:text-foreground hidden sm:block 
     ${isActive ? "text-primary" : "text-foreground/80"}
   `,
-  logoutButton: "p-2.5 text-foreground/40 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all border border-transparent hover:border-red-500/10 group",
+  logoutButton: "hidden md:flex p-2.5 text-foreground/40 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all border border-transparent hover:border-red-500/10 group",
   logoutIcon: "group-hover:translate-x-0.5 transition-transform",
   mobileMenuBtn: (isOpen: boolean) => `
     md:hidden p-2.5 rounded-xl transition-all z-[110] relative
@@ -63,6 +63,7 @@ const styles = {
     ${isActive ? "text-primary" : "text-foreground/40 hover:text-primary"}
   `,
   mobileLinkDot: "w-3 h-3 rounded-full bg-primary transform scale-0 group-hover/mobile:scale-100 transition-transform",
+  mobileLogoutLink: "mt-8 pt-8 border-t border-white/5 text-xl font-black transition-all tracking-tighter uppercase flex items-center gap-4 group/mobile text-red-500/60 hover:text-red-500",
   mobileFooter: "mt-auto pt-12 border-t border-white/5 opacity-50 text-xs font-bold tracking-widest uppercase"
 };
 
@@ -231,6 +232,14 @@ export const Navbar = () => {
               </Link>
             );
           })}
+          <Link
+            href="/login"
+            className={styles.mobileLogoutLink}
+            onClick={() => setIsOpen(false)}
+          >
+            <LogOut size={24} />
+            Logout
+          </Link>
         </div>
 
         <div className={styles.mobileFooter}>

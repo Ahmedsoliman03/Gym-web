@@ -87,7 +87,35 @@
         "verifyIdentity": "تحقق من الهوية",
         "otpSubtitle": "لقد أرسلنا رمزاً مكوناً من 6 أرقام إلى جهازك المسجل.",
         "resendCode": "إعادة إرسال الرمز",
-        "gymsAndCoaches": "للصالات الرياضية والمدربين"
+        "gymsAndCoaches": "للصالات والمدربين",
+        "selectCity": "اختر المدينة",
+        "selectArea": "اختر المنطقة",
+        "cairo": "القاهرة",
+        "giza": "الجيزة",
+        "maadi": "المعادي",
+        "nasrCity": "مدينة نصر",
+        "heliopolis": "مصر الجديدة",
+        "newCairo": "القاهرة الجديدة",
+        "zamalek": "الزمالك",
+        "shubra": "شبرا",
+        "abbassia": "العباسية",
+        "gardenCity": "جاردن سيتي",
+        "mokattam": "المقطم",
+        "sheraton": "مساكن شيراتون",
+        "ainShams": "عين شمس",
+        "mataria": "المطرية",
+        "october": "6 أكتوبر",
+        "sheikhZayed": "الشيخ زايد",
+        "haram": "الهرم",
+        "kerdasa": "كرداسة",
+        "dokki": "الدقي",
+        "mohandessin": "المهندسين",
+        "faisal": "فيصل",
+        "agouza": "العجوزة",
+        "warraq": "الوراق",
+        "bulaqDakrour": "بولاق الدكرور",
+        "firdos": "الفردوس",
+        "hadaeqAhram": "حدائق الأهرام"
     },
     "Validation": {
         "required": "{field} مطلوب",
@@ -140,5 +168,21 @@
         "terms": "شروط الخدمة",
         "support": "الدعم",
         "contact": "اتصل بنا"
+    },
+    "NotFound": {
+        "title": "404",
+        "subtitle": "الصفحة غير موجودة",
+        "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها إلى مكان آخر.",
+        "button": "العودة للرئيسية"
+    },
+    "Jobs": {
+        "tag": "مسارات مهنية",
+        "title": "خلاصة الوظائف المتميزة",
+        "openOpportunities": "أدوار مهنية متاحة",
+        "description": "ربط نخبة محترفي اللياقة البدنية في العالم بالمنشآت المتطورة في جميع أنحاء العالم.",
+        "applyNow": "قدم الآن",
+        "savePost": "حفظ",
+        "sharePost": "مشاركة",
+        "featured": "مميز"
     }
 }

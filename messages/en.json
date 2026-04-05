@@ -87,7 +87,35 @@
         "verifyIdentity": "Verify Identity",
         "otpSubtitle": "We've sent a 6-digit code to your registered device.",
         "resendCode": "Resend Code",
-        "gymsAndCoaches": "For Gyms & Coaches"
+        "gymsAndCoaches": "For Gyms & Coaches",
+        "selectCity": "Select City",
+        "selectArea": "Select Area",
+        "cairo": "Cairo",
+        "giza": "Giza",
+        "maadi": "Maadi",
+        "nasrCity": "Nasr City",
+        "heliopolis": "Heliopolis",
+        "newCairo": "New Cairo",
+        "zamalek": "Zamalek",
+        "shubra": "Shubra",
+        "abbassia": "Abbassia",
+        "gardenCity": "Garden City",
+        "mokattam": "Mokattam",
+        "sheraton": "Sheraton",
+        "ainShams": "Ain Shams",
+        "mataria": "El Matareya",
+        "october": "6th of October",
+        "sheikhZayed": "Sheikh Zayed",
+        "haram": "Al-Haram",
+        "kerdasa": "Kerdasa",
+        "dokki": "Dokki",
+        "mohandessin": "Mohandessin",
+        "faisal": "Faisal",
+        "agouza": "Agouza",
+        "warraq": "Warraq",
+        "bulaqDakrour": "Bulaq Al Dakrour",
+        "firdos": "Al Firdos",
+        "hadaeqAhram": "Hadaeq Al Ahram"
     },
     "Validation": {
         "required": "{field} is required",
@@ -140,5 +168,21 @@
         "terms": "Terms of Service",
         "support": "Support",
         "contact": "Contact"
+    },
+    "NotFound": {
+        "title": "404",
+        "subtitle": "Page Not Found",
+        "description": "The page you are looking for doesn't exist or has been moved to another coordinate.",
+        "button": "Return to Home"
+    },
+    "Jobs": {
+        "tag": "Career Pathways",
+        "title": "Elite Career Feed",
+        "openOpportunities": "Professional Roles Available",
+        "description": "Connecting the world's most elite fitness professionals with state-of-the-art facilities across the globe.",
+        "applyNow": "Apply Now",
+        "savePost": "Save",
+        "sharePost": "Share",
+        "featured": "Featured"
     }
 }
