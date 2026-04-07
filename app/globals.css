@@ -76,6 +76,9 @@
     scrollbar-color: rgba(34, 197, 94, 0.2) transparent;
   }
 
+
+
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
