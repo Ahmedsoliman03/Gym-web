@@ -241,9 +241,9 @@ export const Navbar = () => {
           </Link>
         </div>
 
-        <div className={styles.mobileFooter}>
+        {/* <div className={styles.mobileFooter}>
           Gym Elite Inner Circle © 2026
-        </div>
+        </div> */}
       </div>
     </>
   );

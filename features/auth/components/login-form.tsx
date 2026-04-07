@@ -9,38 +9,38 @@ import { Link } from '@/i18n/routing';
 import { useState } from 'react';
 
 const styles = {
-  container: "space-y-6",
-  logoWrapper: "flex justify-center mb-8",
-  logo: "flex items-center gap-2 group",
-  logoIcon: "w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-primary-foreground transform group-hover:rotate-6 transition-transform shadow-lg shadow-primary/20",
-  logoTextWrapper: "flex flex-col text-left",
-  logoTitle: "font-black text-xl tracking-tighter leading-none",
-  logoSubtitle: "text-[10px] text-primary font-bold tracking-[0.2em] uppercase leading-none",
-  header: "space-y-1 text-center flex flex-col items-center",
-  title: "text-3xl font-black tracking-tight flex items-center justify-center",
-  typingEffect: "animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap",
-  subtitle: "text-foreground/60 text-[13px]",
-  form: "space-y-4",
-  fieldWrapper: "space-y-1",
-  label: "text-xs font-semibold uppercase tracking-wider text-foreground/50 px-1",
-  inputWrapper: "relative",
-  inputIcon: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground/30",
-  input: "w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
-  inputPassword: "w-full pl-10 pr-12 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
-  eyeButton: "absolute inset-y-0 right-0 pr-3 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
-  error: "text-red-500 text-xs mt-1 px-1",
-  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg tracking-tight",
-  footer: "mt-8 pt-6 border-t border-white/5 space-y-6",
-  actionGrid: "grid grid-cols-2 gap-3",
-  actionLink: "group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all",
-  actionLinkTitle: "text-primary font-bold text-sm tracking-tight",
-  actionLinkSubtitle: "text-[9px] text-foreground/30 uppercase tracking-[0.1em] font-black group-hover:text-foreground/50 transition-colors",
-  secondaryWrapper: "flex flex-col items-center gap-3",
-  secondaryText: "flex items-center gap-2 text-[13px] font-medium",
-  dimText: "text-foreground/40",
-  boldLink: "text-white hover:text-primary transition-all font-bold",
-  supportLink: "text-white hover:text-primary transition-all font-bold group flex items-center gap-1",
-  supportIcon: "w-3 h-3 group-hover:translate-x-0.5 transition-transform rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+    container: "space-y-6",
+    logoWrapper: "flex justify-center mb-8",
+    logo: "flex items-center gap-2 group",
+    logoIcon: "w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-black text-primary-foreground transform group-hover:rotate-6 transition-transform shadow-lg shadow-primary/20",
+    logoTextWrapper: "flex flex-col text-left",
+    logoTitle: "font-black text-xl tracking-tighter leading-none",
+    logoSubtitle: "text-[10px] text-primary font-bold tracking-[0.2em] uppercase leading-none",
+    header: "space-y-1 text-center flex flex-col items-center",
+    title: "text-3xl font-black tracking-tight flex items-center justify-center",
+    typingEffect: "animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap",
+    subtitle: "text-foreground/60 text-[13px]",
+    form: "space-y-4",
+    fieldWrapper: "space-y-1",
+    label: "text-xs font-semibold uppercase tracking-wider text-foreground/50 px-1",
+    inputWrapper: "relative",
+    inputIcon: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground/30",
+    input: "w-full pl-10 pr-4 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
+    inputPassword: "w-full pl-10 pr-12 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
+    eyeButton: "absolute inset-y-0 right-0 pr-3 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
+    error: "text-red-500 text-xs mt-1 px-1",
+    submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg tracking-tight",
+    footer: "mt-8 pt-6 border-t border-white/5 space-y-6",
+    actionGrid: "grid grid-cols-2 gap-3",
+    actionLink: "group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all",
+    actionLinkTitle: "text-primary font-bold text-sm tracking-tight",
+    actionLinkSubtitle: "text-[9px] text-foreground/30 uppercase tracking-[0.1em] font-black group-hover:text-foreground/50 transition-colors",
+    secondaryWrapper: "flex flex-col items-center gap-3",
+    secondaryText: "flex items-center gap-2 text-[13px] font-medium",
+    dimText: "text-foreground/40",
+    boldLink: "text-white hover:text-primary transition-all font-bold",
+    supportLink: "text-white hover:text-primary transition-all font-bold group flex items-center gap-1",
+    supportIcon: "w-3 h-3 group-hover:translate-x-0.5 transition-transform rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
 };
 
 export default function LoginForm() {
@@ -51,15 +51,14 @@ export default function LoginForm() {
 
     return (
         <div className={styles.container}>
-            <div className={styles.logoWrapper}>
+            {/* <div className={styles.logoWrapper}>
                 <Link href="/" className={styles.logo}>
                     <div className={styles.logoIcon}>G</div>
                     <div className={styles.logoTextWrapper}>
                         <span className={styles.logoTitle}>GYM ELITE</span>
-                        <span className={styles.logoSubtitle}>Inner Circle</span>
                     </div>
                 </Link>
-            </div>
+            </div> */}
 
             <div className={styles.header}>
                 <h1 className={styles.title}>
@@ -132,7 +131,7 @@ export default function LoginForm() {
                                     type={showPassword ? 'text' : 'password'}
                                     className={styles.inputPassword}
                                     placeholder="••••••••"
-                                /  >
+                                />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
@@ -182,12 +181,12 @@ export default function LoginForm() {
                             {t('Auth.registerHere')}
                         </Link>
                     </div>
-                    
+
                     <div className={styles.secondaryText}>
                         <span className={styles.dimText}>{t('Auth.needHelp')}</span>
-                        <a 
-                            href="https://wa.me/201159133110" 
-                            target="_blank" 
+                        <a
+                            href="https://wa.me/201159133110"
+                            target="_blank"
                             rel="noopener noreferrer"
                             className={styles.supportLink}
                         >

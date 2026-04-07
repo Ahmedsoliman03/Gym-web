@@ -6,6 +6,15 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-surface: var(--surface);
+  --font-sans: var(--font-family);
+}
+
+:root {
+  --font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+[lang="ar"] {
+  --font-family: var(--font-ibm-plex-arabic), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
