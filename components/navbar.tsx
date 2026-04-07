@@ -22,7 +22,7 @@ const styles = {
   `,
   activeIndicator: "absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]",
   hoverIndicator: "absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 origin-center opacity-50",
-  rightActions: "flex items-center gap-4",
+  rightActions: "flex items-center gap-2 md:gap-4",
   langButton: "p-2.5 text-foreground/40 hover:text-primary hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 flex items-center gap-2",
   langText: "text-xs font-black uppercase",
   actionButton: "hidden sm:flex p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
@@ -118,8 +118,8 @@ export const Navbar = () => {
           <Link href="/" className={styles.logo} onClick={() => setIsOpen(false)}>
             <div className={styles.logoIcon}>G</div>
             <div className={styles.logoTextWrapper}>
-              <span className={styles.logoTitle}>GYM ELITE</span>
-              <span className={styles.logoSubtitle}>Inner Circle</span>
+              <span className={styles.logoTitle}>GymSpot</span>
+
             </div>
           </Link>
 
@@ -204,11 +204,10 @@ export const Navbar = () => {
           <div className={styles.logo}>
             <div className={styles.logoIcon}>G</div>
             <div className={styles.logoTextWrapper}>
-              <span className={styles.logoTitle}>GYM ELITE</span>
-              <span className={styles.logoSubtitle}>Premium Experience</span>
+              <span className={styles.logoTitle}>GymSpot</span>
             </div>
           </div>
-          <button 
+          <button
             className={styles.mobileCloseBtn}
             onClick={() => setIsOpen(false)}
             aria-label="Close menu"
