@@ -44,10 +44,10 @@ const styles = {
   uploadContainer: "relative w-full py-8 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group",
   uploadIconSize: "text-foreground/20 group-hover:text-primary transition-colors h-8 w-8",
   uploadTitle: "text-sm font-bold text-primary",
-  uploadSubtitle: "text-[10px] text-foreground/30 font-medium mt-1 uppercase tracking-wider",
+  uploadSubtitle: "text-[10px] text-foreground/30 font-medium mt-1 uppercase",
   fileName: "text-xs font-medium text-foreground/60 mt-2 truncate max-w-full",
   submitWrapper: "flex justify-center pt-2",
-  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase tracking-wider",
+  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase",
   submitIcon: "group-hover:translate-x-1 transition-transform rtl:rotate-180"
 };
 

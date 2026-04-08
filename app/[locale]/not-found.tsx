@@ -10,15 +10,15 @@ import { Home, MoveLeft } from "lucide-react";
 const styles = {
   container: "min-h-[85vh] flex flex-col items-center justify-center p-6 text-center animate-premium-in relative overflow-hidden",
   glow: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-full max-h-[800px] bg-primary/5 blur-[120px] rounded-full -z-10",
-  badge: "px-4 py-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-xs font-black uppercase tracking-[0.2em] rounded-full mb-8",
+  badge: "px-4 py-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-xs font-black uppercase rounded-full mb-8",
   title: "text-[150px] md:text-[220px] font-black leading-none bg-gradient-to-b from-white to-white/10 bg-clip-text text-transparent mb-6 drop-shadow-2xl",
   content: "max-w-2xl mx-auto flex flex-col items-center",
-  subtitle: "text-2xl md:text-4xl font-black mb-6 tracking-tighter uppercase text-foreground/90",
+  subtitle: "text-2xl md:text-4xl font-black mb-6 uppercase text-foreground/90",
   description: "text-foreground/40 max-w-lg mb-12 text-base md:text-lg leading-relaxed font-medium mx-auto px-4",
   actions: "flex flex-col sm:flex-row items-center gap-4",
-  button: "bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs md:text-sm hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 flex items-center gap-3 group relative overflow-hidden",
+  button: "bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-black uppercase text-xs md:text-sm hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 flex items-center gap-3 group relative overflow-hidden",
   buttonGlow: "absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500",
-  backLink: "text-foreground/40 hover:text-primary p-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2",
+  backLink: "text-foreground/40 hover:text-primary p-4 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2",
   buttonIcon: "group-hover:translate-x-0.5 transition-transform"
 };
 

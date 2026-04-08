@@ -8,8 +8,8 @@ import { JOBS } from '@/constants/jops';
 
 const styles = {
   container: "min-h-screen bg-background text-foreground pt-24 pb-12 px-6 md:px-12",
-  main: "max-w-4xl mx-auto w-full",
-  feedGrid: "flex flex-col gap-12 mt-12",
+  main: " mx-auto w-full",
+  feedGrid: "flex flex-col gap-12 mt-12 max-w-4xl mx-auto",
   card: "bg-surface rounded-2xl overflow-hidden group transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 animate-premium-in",
   cardHeader: "flex items-center justify-between p-6",
   // ... existing styles ...
@@ -20,7 +20,7 @@ const styles = {
   menuButton: "text-foreground/40 hover:text-primary transition-colors",
   imageWrapper: "relative aspect-video md:aspect-[21/9] overflow-hidden",
   image: "w-full h-full object-cover transition-transform duration-700 group-hover:scale-105",
-  badge: "absolute top-6 right-6 bg-primary/90 text-primary-foreground px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md",
+  badge: "absolute top-6 right-6 bg-primary/90 text-primary-foreground px-4 py-1 rounded-full text-[10px] font-black uppercase backdrop-blur-md",
   contentBody: "p-8",
   jobTitle: "text-3xl md:text-4xl font-headline font-bold mb-2 group-hover:text-primary transition-colors",
   metaGrid: "flex flex-wrap gap-4 items-center text-sm font-bold text-foreground/40 mb-6",
@@ -28,8 +28,8 @@ const styles = {
   salary: "text-primary",
   description: "text-foreground/60 leading-relaxed max-w-2xl",
   footerActions: "px-8 pb-8 flex flex-col sm:flex-row gap-4",
-  actionButton: "flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-white/5 text-foreground hover:bg-white/10 transition-all active:scale-95 font-bold text-sm uppercase tracking-widest",
-  applyButton: "flex-[2] flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-primary text-primary-foreground font-black hover:opacity-90 transition-all active:scale-95 shadow-[0_10px_30px_rgba(34,197,94,0.15)] text-sm uppercase tracking-widest"
+  actionButton: "flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-white/5 text-foreground hover:bg-white/10 transition-all active:scale-95 font-bold text-sm uppercase",
+  applyButton: "flex-[2] flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-primary text-primary-foreground font-black hover:opacity-90 transition-all active:scale-95 shadow-[0_10px_30px_rgba(34,197,94,0.15)] text-sm uppercase"
 };
 
 

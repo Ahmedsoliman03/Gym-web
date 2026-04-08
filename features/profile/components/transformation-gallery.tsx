@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
+import { useTranslations } from "next-intl";
 
 const styles = {
   container: "bg-surface p-8 rounded-3xl border border-white/5 overflow-hidden",
   header: "flex justify-between items-center mb-6 px-2",
-  title: "text-xl font-bold text-foreground uppercase tracking-wider text-primary",
+  title: "text-xl font-bold text-foreground uppercase text-primary",
   controls: "flex gap-2",
   controlBtn: "p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-foreground/40 hover:text-foreground active:scale-95",
   galleryWrapper: "relative",
@@ -16,7 +17,7 @@ const styles = {
   itemImage: "object-cover transition-transform duration-700 group-hover:scale-105",
   itemOverlay: "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-6",
   itemName: "text-foreground font-bold text-xl",
-  itemDuration: "text-primary font-bold text-sm uppercase tracking-widest mt-1",
+  itemDuration: "text-primary font-bold text-sm uppercase mt-1",
   indicatorWrapper: "flex justify-center gap-1.5 mt-2",
   indicator: (isActive: boolean) => `h-1 rounded-full transition-all duration-300 ${isActive ? 'w-6 bg-primary' : 'w-2 bg-white/10'}`
 };
@@ -34,8 +35,8 @@ interface TransformationGalleryProps {
 export const TransformationGallery = ({
   transformations,
 }: TransformationGalleryProps) => {
+  const t = useTranslations("Profile");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -45,45 +46,39 @@ export const TransformationGallery = ({
     }
   };
 
-  const handleScroll = () => {
-    if (scrollRef.current) {
-        const index = Math.round(scrollRef.current.scrollLeft / scrollRef.current.clientWidth);
-        setActiveIndex(index);
-    }
-  };
+
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>
-          Transformation Gallery
+          {t('transformationGallery')}
         </h2>
         <div className={styles.controls}>
-            <button 
-                onClick={() => scroll("left")}
-                className={styles.controlBtn}
-            >
-                <ChevronRight size={20} className="rotate-180" />
-            </button>
-            <button 
-                onClick={() => scroll("right")}
-                className={styles.controlBtn}
-            >
-                <ChevronRight size={20} />
-            </button>
+          <button
+            onClick={() => scroll("left")}
+            className={styles.controlBtn}
+          >
+            <ChevronRight size={20} className="rotate-180" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            className={styles.controlBtn}
+          >
+            <ChevronRight size={20} />
+          </button>
         </div>
       </div>
 
       <div className={styles.galleryWrapper}>
-        <div 
-            ref={scrollRef}
-            onScroll={handleScroll}
-            className={styles.scrollContainer}
+        <div
+          ref={scrollRef}
+          className={styles.scrollContainer}
         >
           {transformations.map((item, index) => (
-            <div 
-                key={index} 
-                className={styles.itemWrapper}
+            <div
+              key={index}
+              className={styles.itemWrapper}
             >
               <Image
                 src={item.image}
@@ -94,19 +89,14 @@ export const TransformationGallery = ({
               <div className={styles.itemOverlay}>
                 <span className={styles.itemName}>{item.clientName}</span>
                 <span className={styles.itemDuration}>
-                    {item.duration} Transformation
+                  {item.duration} {t('transformation')}
                 </span>
               </div>
             </div>
           ))}
         </div>
-        
-        {/* Custom scrollbar indicator */}
-        <div className={styles.indicatorWrapper}>
-            {transformations.map((_, i) => (
-                <div key={i} className={styles.indicator(i === activeIndex)} />
-            ))}
-        </div>
+
+
       </div>
 
       <style jsx>{`

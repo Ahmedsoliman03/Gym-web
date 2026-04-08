@@ -3,6 +3,7 @@
 import { GymProfile } from "../mock-data";
 import { MapPin, Star, Users, Clock } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 const styles = {
   container: "space-y-8 animate-premium-in",
@@ -18,7 +19,7 @@ const styles = {
   gridWrapper: "grid grid-cols-1 lg:grid-cols-3 gap-8",
   mainColumn: "lg:col-span-2 space-y-8",
   card: "bg-surface p-8 rounded-3xl border border-white/5",
-  sectionTitle: "text-xl font-bold mb-4 text-primary uppercase tracking-wider",
+  sectionTitle: "text-xl font-bold mb-4 text-primary uppercase",
   description: "text-foreground/70 leading-relaxed italic",
   programsGrid: "grid grid-cols-2 md:grid-cols-4 gap-4",
   programTag: "p-4 bg-white/5 rounded-2xl border border-white/10 text-center font-bold text-sm",
@@ -29,6 +30,8 @@ const styles = {
 };
 
 export const GymProfileView = ({ data }: { data: GymProfile }) => {
+  const t = useTranslations("Profile");
+
   return (
     <div className={styles.container}>
       {/* Gym Header */}
@@ -45,13 +48,13 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
           <h1 className={styles.title}>{data.name}</h1>
           <div className={styles.statsList}>
             <span className={styles.statItem}><MapPin size={16} /> {data.location}</span>
-            <span className={styles.statItem}><Star size={16} className={styles.ratingStar} /> {data.rating} Rating</span>
-            <span className={styles.statItem}><Users size={16} /> {data.memberCount} Members</span>
+            <span className={styles.statItem}><Star size={16} className={styles.ratingStar} /> {data.rating} {t('rating')}</span>
+            <span className={styles.statItem}><Users size={16} /> {data.memberCount} {t('members')}</span>
             <span className={styles.statItem}><Clock size={16} /> {data.workingHours}</span>
           </div>
         </div>
         <button className={styles.primaryBtn}>
-          Book a Tour
+          {t('bookTour')}
         </button>
       </div>
 
@@ -59,13 +62,13 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
         <div className={styles.mainColumn}>
           {/* About */}
           <div className={styles.card}>
-            <h2 className={styles.sectionTitle}>About our facility</h2>
+            <h2 className={styles.sectionTitle}>{t('aboutFacility')}</h2>
             <p className={styles.description}>{data.description}</p>
           </div>
           
           {/* Programs */}
           <div className={styles.card}>
-            <h2 className={styles.sectionTitle}>Active Programs</h2>
+            <h2 className={styles.sectionTitle}>{t('activePrograms')}</h2>
             <div className={styles.programsGrid}>
               {data.programs.map(program => (
                 <div key={program} className={styles.programTag}>
@@ -78,7 +81,7 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
 
         {/* Facilities */}
         <div className={styles.sideColumn}>
-          <h2 className={styles.sectionTitle}>Facilities</h2>
+          <h2 className={styles.sectionTitle}>{t('facilities')}</h2>
           <ul className={styles.facilitiesList}>
             {data.facilities.map(facility => (
               <li key={facility} className={styles.facilityItem}>

@@ -5,7 +5,7 @@ export const COACHES = [
     yearsExp: 12,
     rating: 4.9,
     reviews: 124,
-    tier: 'Elite Tier',
+    tier: 'Bodybuilding',
     specializations: ['Bodybuilding', 'Nutrition'],
   },
   {
@@ -14,7 +14,7 @@ export const COACHES = [
     yearsExp: 8,
     rating: 5.0,
     reviews: 89,
-    tier: 'Master Coach',
+    tier: 'Yoga',
     specializations: ['Yoga', 'Mobility'],
   },
   {
@@ -23,7 +23,7 @@ export const COACHES = [
     yearsExp: 15,
     rating: 4.8,
     reviews: 210,
-    tier: 'Elite Tier',
+    tier: 'CrossFit',
     specializations: ['CrossFit'],
   },
   {
@@ -32,8 +32,8 @@ export const COACHES = [
     yearsExp: 10,
     rating: 4.9,
     reviews: 156,
-    tier: 'Elite Tier',
-    specializations: ['Yoga', 'Nutrition'],
+    tier: 'Mobility',
+    specializations: ['Yoga', 'Nutrition', 'Mobility'],
   },
   {
     id: 5,
@@ -41,8 +41,8 @@ export const COACHES = [
     yearsExp: 6,
     rating: 4.7,
     reviews: 92,
-    tier: 'Professional',
-    specializations: ['Bodybuilding', 'CrossFit'],
+    tier: 'Powerlifting',
+    specializations: ['Bodybuilding', 'Powerlifting'],
   },
   {
     id: 6,
@@ -50,8 +50,8 @@ export const COACHES = [
     yearsExp: 20,
     rating: 5.0,
     reviews: 342,
-    tier: 'Master Coach',
-    specializations: ['Nutrition'],
+    tier: 'Strength & Conditioning',
+    specializations: ['Strength & Conditioning'],
   },
 ];
 

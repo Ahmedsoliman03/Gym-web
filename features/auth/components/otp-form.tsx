@@ -10,7 +10,7 @@ import { useState, useRef } from 'react';
 const styles = {
   container: "space-y-8 animate-premium-in",
   header: "space-y-2 text-center",
-  title: "text-4xl font-black tracking-tight text-white",
+  title: "text-4xl font-black text-white",
   subtitle: "text-foreground/50 text-[13px] leading-relaxed max-w-[280px] mx-auto",
   form: "space-y-8",
   otpWrapper: "flex justify-between gap-2",
@@ -18,7 +18,7 @@ const styles = {
   error: "text-red-500 text-[10px] text-center mt-2",
   resendWrapper: "text-center",
   resendButton: "text-[#3b82f6] hover:underline text-xs font-bold decoration-2 underline-offset-4",
-  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg tracking-tight",
+  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
   submitIcon: "w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block"
 };
 

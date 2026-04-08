@@ -1,11 +1,13 @@
 "use client";
 
 import { Award, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const styles = {
+// ... existing styles ...
   container: "bg-surface p-8 rounded-3xl border border-white/5 space-y-8",
   section: "div",
-  title: "text-xl font-bold text-foreground mb-6 flex items-center gap-2 uppercase tracking-wider text-primary",
+  title: "text-xl font-bold text-foreground mb-6 flex items-center gap-2 uppercase text-primary",
   list: "space-y-3",
   listItem: "flex items-center gap-3 text-foreground/80",
   listIcon: "text-primary shrink-0",
@@ -22,12 +24,14 @@ export const CoachCredentials = ({
   certifications,
   specializations,
 }: CoachCredentialsProps) => {
+  const t = useTranslations("Profile");
+
   return (
     <div className={styles.container}>
       {/* Certifications */}
       <div className={styles.section}>
         <h2 className={styles.title}>
-          <Award size={20} /> Certifications
+          <Award size={20} /> {t('certifications')}
         </h2>
         <ul className={styles.list}>
           {certifications.map((cert, index) => (
@@ -42,7 +46,7 @@ export const CoachCredentials = ({
       {/* Specializations */}
       <div className={styles.section}>
         <h2 className={styles.title}>
-          Specializations
+          {t('specializations')}
         </h2>
         <div className={styles.tagsWrapper}>
           {specializations.map((spec, index) => (

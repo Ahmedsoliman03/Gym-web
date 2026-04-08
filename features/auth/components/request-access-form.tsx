@@ -18,11 +18,11 @@ const styles = {
   },
   container: "space-y-8 animate-premium-in",
   header: "space-y-4 text-center",
-  title: "text-2xl font-black tracking-tight text-white",
-  subtitle: "text-foreground/50 text-[13px] leading-relaxed max-w-sm mx-auto",
+  title: "text-2xl font-black text-white",
+  subtitle: "text-foreground/40 text-sm mt-1",
   formWrapper: "space-y-6",
   typeWrapper: "space-y-3",
-  typeLabel: "text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 px-1",
+  typeLabel: "text-[10px] font-black uppercase text-foreground/40 px-1",
   typeSelector: "flex gap-2 p-1.5 bg-[#0D121F] rounded-xl",
   typeButton: (isActive: boolean) => `
     flex-1 py-3 rounded-lg cursor-pointer transition-all font-bold text-sm 

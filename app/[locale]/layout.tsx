@@ -15,8 +15,8 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-    title: "Gym ",
-    description: "Gym "
+    title: "GymSpot",
+    description: "GymSpot"
 };
 
 import { Navbar } from '@/components/navbar';

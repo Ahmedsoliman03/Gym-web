@@ -4,160 +4,29 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRequestAccessSchema } from '../validations';
 import { useRequestAccessMutation } from '../services/auth.service';
-import { ArrowUpload24Regular, Image24Regular, SpinnerIos20Regular, ArrowRight24Regular, ChevronDown24Regular } from '@fluentui/react-icons';
-import { useRef, useState, useEffect } from 'react';
+import { ArrowUpload24Regular, Image24Regular, SpinnerIos20Regular, ArrowRight24Regular } from '@fluentui/react-icons';
+import { useRef } from 'react';
+import { CustomSelect } from '@/components/ui/custom-select';
+import { CITIES_DATA } from '@/constants/locations';
 
 const styles = {
-    select: {
-        container: "relative",
-        trigger: (isOpen: boolean, disabled?: boolean) => `
-      w-full min-h-[52px] px-4 py-3 bg-[#0D121F] border-2 
-      transition-all duration-300 cursor-pointer flex items-center 
-      rounded-xl 
-      ${isOpen ? 'border-primary/30 ring-4 ring-primary/10' : 'border-transparent'}
-      ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
-    `,
-        placeholder: "text-foreground/40 text-sm font-medium",
-        value: "text-foreground text-sm font-bold",
-        chevronWrapper: "absolute inset-y-0 right-3 flex items-center text-foreground/30 pointer-events-none transition-colors duration-200",
-        chevron: (isOpen: boolean) => `h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`,
-        dropdown: "absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in backdrop-blur-xl",
-        optionsList: "max-h-60 overflow-y-auto py-2 custom-scrollbar",
-        option: (isSelected: boolean) => `
-      px-4 py-3.5 flex items-center justify-between cursor-pointer 
-      transition-all duration-200 hover:bg-primary/5 active:scale-[0.98] 
-      ${isSelected ? 'bg-primary/5' : ''}
-    `,
-        optionText: (isSelected: boolean) => `text-sm font-bold transition-colors ${isSelected ? 'text-primary' : 'text-foreground/70'}`,
-        optionIndicatorActive: "h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(34,197,94,0.8)]",
-        optionIndicatorInactive: "h-2 w-2 rounded-full bg-white/5 border border-white/10"
-    },
     form: "space-y-6 animate-premium-in",
     gridWrapper: "grid grid-cols-1 md:grid-cols-2 gap-4",
     fieldWrapper: "space-y-2",
-    label: "text-[11px] font-bold text-foreground/50 px-1 uppercase tracking-wider",
+    label: "text-[11px] font-bold text-foreground/50 px-1 uppercase",
     input: "w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium",
     error: "text-red-500 text-[10px] mt-1 px-1",
     uploadContainer: "relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]",
     uploadIcon: "text-foreground/20 group-hover:text-primary transition-colors h-8 w-8",
     uploadText: "text-xs font-medium text-foreground/40 text-center",
     submitWrapper: "flex justify-center pt-2",
-    submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase tracking-wider",
+    submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase",
     submitIcon: "group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block"
 };
-
-interface Option {
-    label: string;
-    value: string;
-}
-
-interface CustomSingleSelectProps {
-    name: string;
-    value: string;
-    onChange: (value: string) => void;
-    options: Option[];
-    placeholder: string;
-    disabled?: boolean;
-}
-
-function CustomSingleSelect({ value, onChange, options, placeholder, disabled }: CustomSingleSelectProps) {
-    const [isOpen, setIsOpen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const selectedOption = options.find(o => o.value === value);
-
-    return (
-        <div className={styles.select.container} ref={containerRef}>
-            <div
-                onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={styles.select.trigger(isOpen, disabled)}
-            >
-                {!value ? (
-                    <span className={styles.select.placeholder}>{placeholder}</span>
-                ) : (
-                    <span className={styles.select.value}>{selectedOption?.label}</span>
-                )}
-                <div className={styles.select.chevronWrapper}>
-                    <ChevronDown24Regular className={styles.select.chevron(isOpen)} />
-                </div>
-            </div>
-
-            {isOpen && (
-                <div className={styles.select.dropdown}>
-                    <div className={styles.select.optionsList}>
-                        {options.map((option) => {
-                            const isSelected = value === option.value;
-                            return (
-                                <div
-                                    key={option.value}
-                                    onClick={() => {
-                                        onChange(option.value);
-                                        setIsOpen(false);
-                                    }}
-                                    className={styles.select.option(isSelected)}
-                                >
-                                    <span className={styles.select.optionText(isSelected)}>
-                                        {option.label}
-                                    </span>
-                                    {isSelected ? (
-                                        <div className={styles.select.optionIndicatorActive} />
-                                    ) : (
-                                        <div className={styles.select.optionIndicatorInactive} />
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
 
 interface GymRequestFormProps {
     onSuccess: () => void;
 }
-
-const CITIES_DATA: Record<string, string[]> = {
-    cairo: [
-        'maadi',
-        'nasrCity',
-        'heliopolis',
-        'newCairo',
-        'zamalek',
-        'shubra',
-        'abbassia',
-        'gardenCity',
-        'mokattam',
-        'sheraton',
-        'ainShams',
-        'mataria',
-    ],
-    giza: [
-        'october',
-        'sheikhZayed',
-        'haram',
-        'kerdasa',
-        'dokki',
-        'mohandessin',
-        'faisal',
-        'agouza',
-        'warraq',
-        'bulaqDakrour',
-        'firdos',
-        'hadaeqAhram'
-    ]
-};
 
 export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
     const t = useTranslations();
@@ -248,10 +117,9 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                             <label className={styles.label}>
                                 {t('Auth.selectCity')}
                             </label>
-                            <CustomSingleSelect
-                                name="city"
+                            <CustomSelect
                                 value={values.city}
-                                onChange={(val) => {
+                                onChange={(val: string) => {
                                     setFieldValue('city', val);
                                     setFieldValue('area', '');
                                 }}
@@ -269,10 +137,9 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                             <label className={styles.label}>
                                 {t('Auth.selectArea')}
                             </label>
-                            <CustomSingleSelect
-                                name="area"
+                            <CustomSelect
                                 value={values.area}
-                                onChange={(val) => setFieldValue('area', val)}
+                                onChange={(val: string) => setFieldValue('area', val)}
                                 options={values.city ? CITIES_DATA[values.city].map(area => ({
                                     label: t(`Auth.${area}`),
                                     value: area

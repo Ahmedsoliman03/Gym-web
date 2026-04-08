@@ -17,15 +17,15 @@ const styles = {
   headerContent: "px-6 mx-auto",
   gridContainer: "px-6 max-w-[1920px] mx-auto pt-12",
   titleRow: "flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-white/5 pb-8 gap-4",
-  titleLabel: "font-headline text-3xl font-black tracking-tight uppercase",
+  titleLabel: "font-headline text-3xl font-black uppercase",
   titleUnderline: "h-1 w-20 bg-primary mt-4",
-  showingText: "font-body text-foreground/40 text-sm tracking-[0.3em] uppercase font-bold",
+  showingText: "font-body text-foreground/40 text-sm uppercase font-bold",
   grid: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8",
   emptyState: "py-32 text-center animate-premium-in",
   emptyIconWrapper: "inline-block p-6 bg-white/5 rounded-full mb-6",
   emptyIcon: "material-symbols-outlined text-5xl text-foreground/20",
-  emptyText: "text-foreground/60 font-body text-xl font-bold uppercase tracking-widest",
-  clearButton: "mt-6 text-primary font-headline font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all"
+  emptyText: "text-foreground/60 font-body text-xl font-bold uppercase",
+  clearButton: "mt-6 text-primary font-headline font-black uppercase hover:brightness-110 transition-all font-bold"
 };
 
 export function CoachesView() {

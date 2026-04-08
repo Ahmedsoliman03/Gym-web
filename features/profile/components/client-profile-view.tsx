@@ -2,6 +2,7 @@
 
 import { ClientProfile } from "../mock-data";
 import { TrendingUp, Calendar, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const styles = {
   container: "space-y-8 animate-premium-in",
@@ -9,15 +10,17 @@ const styles = {
   avatarWrapper: "w-24 h-24 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center overflow-hidden",
   avatarIcon: "text-primary",
   infoWrapper: "flex-1 text-center md:text-left",
+  subtitle: "text-foreground/40 text-sm font-bold uppercase mb-8",
   name: "text-3xl font-bold mb-1",
-  goal: "text-primary font-bold text-sm uppercase tracking-widest",
-  statsList: "flex gap-4",
-  statCard: "bg-white/5 p-4 rounded-2xl border border-white/5 text-center min-w-[100px]",
-  statValue: "text-xl font-black text-foreground",
-  statLabel: "text-[10px] text-foreground/40 font-bold uppercase tracking-wider",
-  gridWrapper: "grid grid-cols-1 lg:grid-cols-2 gap-8",
+  goal: "text-primary font-bold text-sm uppercase",
+  statsGrid: "grid grid-cols-2 md:grid-cols-4 gap-4 mb-12",
+  statItem: "bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-1",
+  statValue: "text-xl font-bold text-foreground",
+  statLabel: "text-[10px] text-foreground/40 font-bold uppercase",
+  badgeSection: "space-y-4",
+  gridWrapper: "grid grid-cols-1 md:grid-cols-2 gap-8",
   card: "bg-surface p-8 rounded-3xl border border-white/5",
-  cardTitle: "text-xl font-bold mb-6 flex items-center gap-2 text-primary uppercase tracking-wider",
+  cardTitle: "text-xl font-bold mb-6 flex items-center gap-2 text-primary uppercase",
   progressSection: "space-y-6",
   progressHeader: "flex justify-between items-end mb-2",
   progressValue: "text-4xl font-black text-foreground",
@@ -34,6 +37,8 @@ const styles = {
 };
 
 export const ClientProfileView = ({ data }: { data: ClientProfile }) => {
+  const t = useTranslations("Profile");
+
   return (
     <div className={styles.container}>
       {/* Client Header */}
@@ -45,13 +50,13 @@ export const ClientProfileView = ({ data }: { data: ClientProfile }) => {
           <h1 className={styles.name}>{data.name}</h1>
           <p className={styles.goal}>{data.goal}</p>
         </div>
-        <div className={styles.statsList}>
-            {data.stats.map(stat => (
-                <div key={stat.label} className={styles.statCard}>
-                    <div className={styles.statValue}>{stat.value}</div>
-                    <div className={styles.statLabel}>{stat.label}</div>
-                </div>
-            ))}
+        <div className={styles.statsGrid}>
+          {data.stats.map((stat, index) => (
+            <div key={index} className={styles.statItem}>
+              <span className={styles.statValue}>{stat.value}</span>
+              <span className={styles.statLabel}>{t.has(stat.label.toLowerCase()) ? t(stat.label.toLowerCase()) : stat.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -59,16 +64,16 @@ export const ClientProfileView = ({ data }: { data: ClientProfile }) => {
         {/* Progress Card */}
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>
-            <TrendingUp size={20} /> Transformation Progress
+            <TrendingUp size={20} /> {t('transformationProgress')}
           </h2>
           <div className={styles.progressSection}>
             <div className={styles.progressHeader}>
                 <div>
                     <span className={styles.progressValue}>{data.progress}%</span>
-                    <span className={styles.progressUnit}>to goal</span>
+                    <span className={styles.progressUnit}>{t('toGoal')}</span>
                 </div>
                 <div className={styles.projectionWrapper}>
-                    <div className={styles.projectionLabel}>Weight Projection</div>
+                    <div className={styles.projectionLabel}>{t('weightProjection')}</div>
                     <div className={styles.projectionValue}>{data.weight.current} → {data.weight.target}</div>
                 </div>
             </div>
@@ -84,7 +89,7 @@ export const ClientProfileView = ({ data }: { data: ClientProfile }) => {
         {/* Recent Activity */}
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>
-            <Calendar size={20} /> Recent Activity
+            <Calendar size={20} /> {t('recentActivity')}
           </h2>
           <div className={styles.activityContainer}>
             {data.recentActivity.map((activity, i) => (

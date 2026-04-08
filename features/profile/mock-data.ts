@@ -43,8 +43,8 @@ export const mockProfiles: Record<string, CoachProfile | GymProfile | ClientProf
     id: "marcus-thorne",
     type: 'coach',
     name: "Marcus Thorne",
-    title: "Senior Strength & Conditioning Specialist",
-    tier: "Elite Tier",
+    title: "Senior Performance Specialist",
+    tier: "Strength & Conditioning",
     image: "/images/profile/marcus.png",
     stats: [
       { label: "EXP", value: "12y" },
@@ -56,13 +56,13 @@ export const mockProfiles: Record<string, CoachProfile | GymProfile | ClientProf
       description: "My approach is built on the intersection of biological science and brutal consistency. We don't just 'work out'; we execute precise protocols designed to trigger specific physiological adaptations.",
     },
     transformations: [
-      { clientName: "David R.", duration: "12 Weeks", image: "/images/profile/david.png" },
-      { clientName: "Sarah M.", duration: "6 Months", image: "/images/profile/sarah.png" },
-      { clientName: "Mike T.", duration: "8 Months", image: "/images/profile/mike.png" },
+      { clientName: "David", duration: "12 Weeks", image: "/images/profile/david.png" },
+      { clientName: "Sarah", duration: "6 Months", image: "/images/profile/sarah.png" },
+      { clientName: "Mike", duration: "8 Months", image: "/images/profile/mike.png" },
     ],
     credentials: {
       certifications: ["NASM Certified Personal Trainer", "Precision Nutrition L2", "CSCS (NSCA)"],
-      specializations: ["Hypertrophy", "Powerlifting", "Fat Loss", "Mobility"],
+      specializations: ["Bodybuilding", "Powerlifting", "Strength & Conditioning", "Mobility"],
     },
   },
   "elite-hq": {

@@ -20,10 +20,11 @@ const styles = {
   image: "w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100",
   imageOverlay: "absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background via-background/80 to-transparent",
   name: "font-headline text-3xl font-black block mb-1 leading-none uppercase",
-  experience: "font-body text-primary text-xs font-black tracking-[0.2em] uppercase",
+  experience: "font-body text-primary text-xs font-black uppercase",
+  location: "flex items-center gap-1.5 text-foreground/40 text-xs font-bold",
   content: "flex-1",
   tagContainer: "flex flex-wrap gap-2 py-5 px-6",
-  tag: "bg-white/5 text-foreground/40 px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border border-white/5 group-hover:border-primary/20 transition-colors"
+  tag: "bg-white/5 text-foreground/40 px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase border border-white/5 group-hover:border-primary/20 transition-colors"
 };
 
 export function CoachCard({ coach, index }: CoachCardProps) {
@@ -63,6 +64,7 @@ export function CoachCard({ coach, index }: CoachCardProps) {
               </span>
             ))}
           </div>
+
         </div>
       </div>
     </div>

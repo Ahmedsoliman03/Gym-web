@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import { MessageSquare, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 const styles = {
+// ... existing styles ...
   container: "relative w-full rounded-3xl bg-surface p-8 overflow-hidden animate-premium-in border border-white/5",
   contentWrapper: "flex flex-col md:flex-row items-center md:items-end gap-8",
   avatarWrapper: "relative",
@@ -13,13 +16,13 @@ const styles = {
   statusBadge: "absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface",
   infoWrapper: "flex-1 text-center md:text-left",
   titleAndTier: "flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2",
-  name: "text-4xl font-bold text-foreground tracking-tight",
-  tier: "bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase tracking-wider",
-  title: "text-foreground/60 text-lg mb-6",
+  name: "text-4xl font-bold text-foreground",
+  tier: "bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase",
+  title: "text-foreground/40 font-bold",
   statsGrid: "flex flex-wrap justify-center md:justify-start gap-8",
   statItem: "flex flex-col",
   statValue: "text-2xl font-bold text-foreground",
-  statLabel: "text-xs text-foreground/40 uppercase tracking-widest",
+  statLabel: "text-xs text-foreground/40 uppercase",
   actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
   primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
   secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
@@ -43,6 +46,8 @@ export const CoachProfileHeader = ({
   stats,
   image,
 }: CoachProfileHeaderProps) => {
+  const t = useTranslations("Profile");
+
   return (
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
@@ -75,7 +80,9 @@ export const CoachProfileHeader = ({
             {stats.map((stat, index) => (
               <div key={index} className={styles.statItem}>
                 <span className={styles.statValue}>{stat.value}</span>
-                <span className={styles.statLabel}>{stat.label}</span>
+                <span className={styles.statLabel}>
+                  {t.has(stat.label.toLowerCase()) ? t(stat.label.toLowerCase()) : stat.label}
+                </span>
               </div>
             ))}
           </div>
@@ -85,12 +92,12 @@ export const CoachProfileHeader = ({
         <div className={styles.actionsWrapper}>
           <button className={styles.primaryBtn}>
             <MessageSquare size={18} />
-            Chat
+            {t('chat')}
           </button>
-          <button className={styles.secondaryBtn}>
+          <Link href="/profile/edit" className={styles.secondaryBtn}>
             <Settings size={18} />
-            Edit Profile
-          </button>
+            {t('editProfile')}
+          </Link>
         </div>
       </div>
     </div>
