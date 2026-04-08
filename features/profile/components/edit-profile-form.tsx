@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 
 const styles = {
-  container: "max-w-4xl mx-auto px-4 py-12 pb-32",
+  container: "max-w-4xl mx-auto px-4 py-12",
   header: "flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12",
   titleWrapper: "space-y-1",
   titleLabel: "text-4xl font-bold text-foreground uppercase text-shadow-glow",
@@ -27,7 +27,7 @@ const styles = {
   fieldGroup: "grid grid-cols-1 md:grid-cols-2 gap-6",
   inputWrapper: "flex flex-col gap-2",
   label: "text-[10px] font-black text-foreground/40 uppercase ml-1",
-  input: "bg-white/5 border border-white/5 rounded-xl px-4 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-sm ",
+  input: "bg-white/5 py-1 border border-white/5 rounded-xl px-4 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-sm ",
   textarea: "bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-sm min-h-[120px] resize-none",
 
   tagInputWrapper: "space-y-3",
@@ -49,6 +49,7 @@ export const EditProfileForm = () => {
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
   const specMenuRef = useRef<HTMLDivElement>(null);
   const tagInputRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -76,6 +77,7 @@ export const EditProfileForm = () => {
 
   const [formData, setFormData] = useState({
     name: "Marcus Thorne",
+    image: "/images/profile/marcus.png",
     title: "Senior Performance Specialist",
     tier: "Strength & Conditioning",
     philosophyTitle: "Coaching Philosophy",
@@ -84,16 +86,33 @@ export const EditProfileForm = () => {
     certifications: ["NASM CPT", "PN-L2"],
   });
 
+  const [imagePreview, setImagePreview] = useState<string | null>("/images/profile/marcus.png");
   const [newTag, setNewTag] = useState("");
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setFormData(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleAddTag = (list: keyof typeof formData) => {
     if (!newTag.trim()) return;
     const currentList = formData[list] as string[];
-    if (!currentList.includes(newTag)) {
+    if (Array.isArray(currentList) && !currentList.includes(newTag)) {
       setFormData(prev => ({ ...prev, [list]: [...currentList, newTag] }));
     }
     setNewTag("");
@@ -101,7 +120,9 @@ export const EditProfileForm = () => {
 
   const handleRemoveTag = (list: keyof typeof formData, tag: string) => {
     const currentList = formData[list] as string[];
-    setFormData(prev => ({ ...prev, [list]: currentList.filter(t => t !== tag) }));
+    if (Array.isArray(currentList)) {
+      setFormData(prev => ({ ...prev, [list]: currentList.filter(t => t !== tag) }));
+    }
   };
 
   return (
@@ -117,9 +138,20 @@ export const EditProfileForm = () => {
       {/* Main Form Box */}
       <div className={styles.section}>
         <div className={styles.imageUpload}>
-          <div className={styles.avatarCircle}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            accept="image/*"
+            className="hidden"
+          />
+          <div className={styles.avatarCircle} onClick={triggerFileInput}>
             <div className={styles.avatarInner}>
-              <div className="text-foreground/20 italic text-xs">{t('noImage')}</div>
+              {imagePreview ? (
+                <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-foreground/20 italic text-xs">{t('noImage')}</div>
+              )}
               <div className={styles.avatarOverlay}>
                 <Camera className="text-white" size={24} />
               </div>

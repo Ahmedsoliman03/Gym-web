@@ -29,8 +29,8 @@ const styles = {
   notifButton: "relative p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
   notifBadge: "absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse",
   divider: "h-8 w-[1px] bg-white/5 mx-2 hidden sm:block",
-  profileLink: (isActive: boolean) => `
-    flex items-center gap-3 sm:pl-1 sm:pr-4 sm:py-1 transition-all group rounded-full border 
+  profileLink: (isActive: boolean, isRtl: boolean) => `
+    flex items-center gap-3 ${isRtl ? "sm:pl-4 sm:pr-1" : "sm:pl-1 sm:pr-4"} sm:py-1 transition-all group rounded-full border 
     ${isActive ? "bg-primary/20 border-primary/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]" : "bg-white/5 border-white/10 hover:bg-white/10 overflow-hidden"}
   `,
   profileIconWrapper: (isActive: boolean) => `
@@ -74,7 +74,7 @@ export const Navbar = () => {
   const pathname = usePathname();
   const locale = useLocale();
   const router = useRouter();
-
+  const isRtl = locale === 'ar';
   const isAuthPage = pathname.includes('/login') ||
     pathname.includes('/register') ||
     pathname.includes('/request-access') ||
@@ -165,7 +165,7 @@ export const Navbar = () => {
 
                 <Link
                   href="/coach-profile"
-                  className={styles.profileLink(pathname === '/coach-profile')}
+                  className={styles.profileLink(pathname === '/coach-profile', isRtl)}
                 >
                   <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
                     <User size={18} />
