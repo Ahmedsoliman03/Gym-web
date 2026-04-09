@@ -22,7 +22,7 @@ const styles = {
   dropdown: `
     absolute z-50 w-full mt-2 bg-surface border border-white/5 
     rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden 
-    animate-premium-in backdrop-blur-xl
+    backdrop-blur-xl
   `,
   scrollArea: "max-h-60 overflow-y-auto py-2 custom-scrollbar",
   option: (isSelected: boolean) => `

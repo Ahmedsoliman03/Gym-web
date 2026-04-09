@@ -51,14 +51,7 @@ export default function LoginForm() {
 
     return (
         <div className={styles.container}>
-            {/* <div className={styles.logoWrapper}>
-                <Link href="/" className={styles.logo}>
-                    <div className={styles.logoIcon}>G</div>
-                    <div className={styles.logoTextWrapper}>
-                        <span className={styles.logoTitle}>GYM ELITE</span>
-                    </div>
-                </Link>
-            </div> */}
+
 
             <div className={styles.header}>
                 <h1 className={styles.title}>

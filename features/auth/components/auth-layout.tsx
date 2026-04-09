@@ -9,7 +9,7 @@ const styles = {
     w-full ${isWide ? 'max-w-4xl' : 'max-w-md'} 
     bg-surface border border-foreground/5 
     shadow-2xl shadow-primary/5 rounded-3xl p-8 
-    animate-premium-in
+   
   `
 };
 

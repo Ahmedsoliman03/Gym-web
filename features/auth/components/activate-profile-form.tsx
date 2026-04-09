@@ -10,21 +10,25 @@ import {
     Eye24Regular,
     EyeOff24Regular,
     LockClosed24Regular,
-    ArrowRight24Regular
+    ArrowRight24Regular,
+    ArrowLeft24Regular
 } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 
 const styles = {
   success: {
-    container: "text-center space-y-4 animate-premium-in",
+    container: "text-center space-y-4",
     iconWrapper: "flex justify-center text-green-500",
     icon: "w-16 h-16",
     title: "text-2xl font-bold",
     description: "text-foreground/60",
     link: "block text-primary font-medium hover:underline"
   },
-  container: "space-y-8 animate-premium-in max-w-[450px] mx-auto",
+  backButton: "inline-flex items-center gap-2 text-foreground/40 hover:text-primary transition-colors mb-6 group",
+  backIcon: "w-5 h-5 transition-transform group-hover:-translate-x-1",
+  backText: "text-xs font-black uppercase tracking-wider",
+  container: "space-y-8 max-w-[450px] mx-auto",
   header: "space-y-6 text-center",
   badgeWrapper: "flex justify-center",
   badge: "inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full",
@@ -73,6 +77,11 @@ export default function ActivateProfileForm() {
 
     return (
         <div className={styles.container}>
+            <Link href="/login" className={styles.backButton}>
+                <ArrowLeft24Regular className={styles.backIcon} />
+                <span className={styles.backText}>{t('Auth.backToLogin')}</span>
+            </Link>
+
             <div className={styles.header}>
                 <div className={styles.badgeWrapper}>
                     <div className={styles.badge}>

@@ -8,7 +8,7 @@ import { CoachContact } from "./coach-contact";
 import { CoachProfile } from "../mock-data";
 
 const styles = {
-  container: "space-y-8 animate-premium-in",
+  container: "space-y-8",
   philosophyWrapper: "space-y-6",
   gridWrapper: "grid grid-cols-1 lg:grid-cols-3 gap-8",
   mainColumn: "lg:col-span-2",

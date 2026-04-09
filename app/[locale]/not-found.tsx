@@ -8,7 +8,7 @@ import { Home, MoveLeft } from "lucide-react";
  * Adheres to the project's premium dark mode aesthetic
  */
 const styles = {
-  container: "min-h-[85vh] flex flex-col items-center justify-center p-6 text-center animate-premium-in relative overflow-hidden",
+  container: "min-h-[85vh] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden",
   glow: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-full max-h-[800px] bg-primary/5 blur-[120px] rounded-full -z-10",
   badge: "px-4 py-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-xs font-black uppercase rounded-full mb-8",
   title: "text-[150px] md:text-[220px] font-black leading-none bg-gradient-to-b from-white to-white/10 bg-clip-text text-transparent mb-6 drop-shadow-2xl",

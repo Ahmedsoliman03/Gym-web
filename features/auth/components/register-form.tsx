@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
 
 const styles = {
-  container: "space-y-4 animate-premium-in max-w-[420px] mx-auto",
+  container: "space-y-4 max-w-[420px] mx-auto",
   header: "space-y-0.5 text-center",
   title: "text-4xl font-black text-white",
   subtitle: "text-foreground/50 text-[13px] leading-relaxed",

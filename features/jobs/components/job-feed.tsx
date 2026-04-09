@@ -10,7 +10,7 @@ const styles = {
   container: "min-h-screen bg-background text-foreground pt-24 pb-12 px-6 md:px-12",
   main: " mx-auto w-full",
   feedGrid: "flex flex-col gap-12 mt-12 max-w-4xl mx-auto",
-  card: "bg-surface rounded-2xl overflow-hidden group transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 animate-premium-in",
+  card: "bg-surface rounded-2xl overflow-hidden group transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5",
   cardHeader: "flex items-center justify-between p-6",
   // ... existing styles ...
   authorWrapper: "flex items-center gap-4",

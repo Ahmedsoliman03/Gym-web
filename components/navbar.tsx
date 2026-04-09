@@ -170,7 +170,8 @@ export const Navbar = () => {
                   <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
                     <User size={18} />
                   </div>
-                  <span className={styles.profileName(pathname === '/coach-profile')}>Marcus</span>
+                  <span className={styles.profileName(pathname === '/coach-profile')}>gym</span>
+                  {/* <span className={styles.profileName(pathname === '/coach-profile')}>Marcus</span> */}
                 </Link>
 
                 <Link href="/login" className={styles.logoutButton} title={t('logout')}>

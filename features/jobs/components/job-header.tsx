@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 const styles = {
-  header: "mb-16 text-center animate-premium-in",
+  header: "mb-16 text-center",
   tag: "text-primary font-headline font-bold text-sm uppercase mb-4 block",
   title: "text-4xl md:text-8xl font-black uppercase leading-none mb-6 text-foreground",
   statsWrapper: "flex flex-col items-center gap-2",

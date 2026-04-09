@@ -19,7 +19,8 @@
         "passwordPlaceholder": "........",
         "passwordHint": "Must be at least 8 characters long.",
         "createAccount": "Create Account",
-        "alreadyHaveAccount": "Already have an account?",
+        "alreadyHaveAccount": "Already have an account? Sign in",
+        "backToLogin": "Back to Login",
         "signIn": "Sign In",
         "requestAccess": "Professional Access",
         "requestSubtitle": "Apply to join the elite network of gyms and certified coaches.",
@@ -242,8 +243,15 @@
         "addNew": "Add New",
         "selectSpecialties": "Select Specialties",
         "addSelected": "Add Selected ({count})",
+        "transformationDuration": "Transformation Duration",
         "cancelChanges": "Cancel Changes",
-        "saveProfile": "Save Profile"
+        "saveProfile": "Save Profile",
+        "goToPlans": "Go to plans",
+        "facilityGallery": "Facility Gallery",
+        "membershipPlans": "Membership Plans",
+        "getStarted": "Get Started",
+        "facilityView": "Facility View",
+        "peakState": "Peak State"
     },
     "Navbar": {
         "coaches": "Coaches",

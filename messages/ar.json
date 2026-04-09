@@ -19,7 +19,8 @@
         "passwordPlaceholder": "........",
         "passwordHint": "يجب أن تتكون من 8 أحرف على الأقل.",
         "createAccount": "إنشاء حساب",
-        "alreadyHaveAccount": "لديك حساب بالفعل؟",
+        "alreadyHaveAccount": "لديك حساب بالفعل؟ سجل دخولك",
+        "backToLogin": "العودة لتسجيل الدخول",
         "signIn": "تسجيل الدخول",
         "requestAccess": "وصول واحترافي",
         "requestSubtitle": "قدم للانضمام إلى النخبة من النوادي الرياضية والمدربين المعتمدين.",
@@ -242,8 +243,15 @@
         "addNew": "إضافة جديد",
         "selectSpecialties": "اختر التخصصات",
         "addSelected": "إضافة المختار ({count})",
+        "transformationDuration": "مدة التحول",
         "cancelChanges": "إلغاء التغييرات",
-        "saveProfile": "حفظ الملف"
+        "saveProfile": "حفظ الملف",
+        "goToPlans": "الذهاب للخطط",
+        "facilityGallery": "معرض المنشأة",
+        "membershipPlans": "خطط العضوية",
+        "getStarted": "ابدأ الآن",
+        "facilityView": "عرض المنشأة",
+        "peakState": "أقصى أداء"
     },
     "Navbar": {
         "coaches": "المدربين",

@@ -12,7 +12,7 @@ interface CoachesFilterProps {
 }
 
 const styles = {
-  container: "relative group animate-premium-in z-20",
+  container: "relative group z-20",
   glow: "absolute -inset-1 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl blur-xl opacity-25 group-focus-within:opacity-100 transition duration-1000",
   content: "relative flex flex-col lg:flex-row items-stretch lg:items-center bg-surface/40 backdrop-blur-md rounded-2xl p-2 gap-2 border border-white/5 shadow-2xl",
   searchWrapper: "flex flex-1 items-center bg-[#0D121F] rounded-xl px-4 gap-3 border border-white/5 focus-within:border-primary/30 transition-all",

@@ -4,19 +4,23 @@ import { useTranslations } from 'next-intl';
 import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
+import { ArrowLeft } from 'lucide-react';
 import GymRequestForm from './gym-request-form';
 import CoachRequestForm from './coach-request-form';
 
 const styles = {
   submitted: {
-    container: "text-center space-y-4 animate-premium-in",
+    container: "text-center space-y-4",
     iconWrapper: "flex justify-center text-green-500",
     icon: "w-16 h-16",
     title: "text-2xl font-bold",
     description: "text-foreground/60",
     link: "block text-primary font-medium hover:underline"
   },
-  container: "space-y-8 animate-premium-in",
+  backButton: "inline-flex items-center gap-2 text-foreground/40 hover:text-primary transition-colors mb-6 group",
+  backIcon: "w-4 h-4 transition-transform group-hover:-translate-x-1",
+  backText: "text-xs font-black uppercase tracking-wider",
+  container: "space-y-8",
   header: "space-y-4 text-center",
   title: "text-2xl font-black text-white",
   subtitle: "text-foreground/40 text-sm mt-1",
@@ -54,6 +58,11 @@ export default function RequestAccessForm() {
 
     return (
         <div className={styles.container}>
+            <Link href="/login" className={styles.backButton}>
+                <ArrowLeft className={styles.backIcon} />
+                <span className={styles.backText}>{t('Auth.backToLogin')}</span>
+            </Link>
+
             <div className={styles.header}>
                 <h1 className={styles.title}>{t('Auth.requestAccess')}</h1>
                 <p className={styles.subtitle}>

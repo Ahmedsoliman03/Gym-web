@@ -2,9 +2,9 @@ import { useTranslations } from 'next-intl';
 
 const styles = {
   container: "text-center mb-16",
-  title: "font-headline text-5xl md:text-7xl font-black leading-none mb-6 text-glow uppercase animate-premium-in",
+  title: "font-headline text-5xl md:text-7xl font-black leading-none mb-6 text-glow uppercase",
   highlight: "text-primary",
-  description: "font-body text-foreground/60 text-base md:text-lg mb-8 uppercase animate-premium-in max-w-4xl mx-auto"
+  description: "font-body text-foreground/60 text-base md:text-lg mb-8 uppercase max-w-4xl mx-auto"
 };
 
 export function GymsHero() {

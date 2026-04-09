@@ -21,7 +21,7 @@ const styles = {
   titleUnderline: "h-1 w-20 bg-primary mt-4",
   showingText: "font-body text-foreground/40 text-sm uppercase font-bold",
   grid: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8",
-  emptyState: "py-32 text-center animate-premium-in",
+  emptyState: "py-32 text-center",
   emptyIconWrapper: "inline-block p-6 bg-white/5 rounded-full mb-6",
   emptyIcon: "material-symbols-outlined text-5xl text-foreground/20",
   emptyText: "text-foreground/60 font-body text-xl font-bold uppercase",

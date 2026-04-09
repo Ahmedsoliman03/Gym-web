@@ -15,7 +15,7 @@ interface CoachCardProps {
 }
 
 const styles = {
-  card: "group bg-surface rounded-2xl overflow-hidden hover:translate-y-[-12px] transition-all duration-500 border border-white/5 shadow-2xl animate-premium-in",
+  card: "group bg-surface rounded-2xl overflow-hidden hover:translate-y-[-12px] transition-all duration-500 border border-white/5 shadow-2xl",
   imageContainer: "relative aspect-[4/5] overflow-hidden",
   image: "w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100",
   imageOverlay: "absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background via-background/80 to-transparent",

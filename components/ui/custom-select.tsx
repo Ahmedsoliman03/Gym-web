@@ -16,7 +16,7 @@ const styles = {
     value: "text-foreground text-sm font-bold truncate pr-6",
     chevronWrapper: "absolute inset-y-0 right-3 flex items-center text-foreground/30 pointer-events-none transition-colors duration-200",
     chevron: (isOpen: boolean) => `h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`,
-    dropdown: "absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in backdrop-blur-xl",
+    dropdown: "absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl",
     optionsList: "max-h-60 overflow-y-auto py-2 custom-scrollbar",
     option: (isSelected: boolean) => `
       px-4 py-3.5 flex items-center justify-between cursor-pointer 

@@ -10,7 +10,7 @@ import { CustomSelect } from '@/components/ui/custom-select';
 import { CITIES_DATA } from '@/constants/locations';
 
 const styles = {
-    form: "space-y-6 animate-premium-in",
+    form: "space-y-6",
     gridWrapper: "grid grid-cols-1 md:grid-cols-2 gap-4",
     fieldWrapper: "space-y-2",
     label: "text-[11px] font-bold text-foreground/50 px-1 uppercase",

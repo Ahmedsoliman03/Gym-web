@@ -19,6 +19,14 @@ export interface CoachProfile extends ProfileData {
   credentials: { certifications: string[]; specializations: string[] };
 }
 
+export interface GymPlan {
+  name: string;
+  duration: string;
+  price: string;
+  salePrice?: string;
+  features: string[];
+}
+
 export interface GymProfile extends ProfileData {
   type: 'gym';
   rating: string;
@@ -27,6 +35,8 @@ export interface GymProfile extends ProfileData {
   facilities: string[];
   programs: string[];
   workingHours: string;
+  images: string[];
+  plans?: GymPlan[];
 }
 
 export interface ClientProfile extends ProfileData {
@@ -77,6 +87,41 @@ export const mockProfiles: Record<string, CoachProfile | GymProfile | ClientProf
     facilities: ["Olympic Racks", "Recovery Lounge", "Juice Bar", "Indoor Track"],
     programs: ["CrossFit", "Powerlifting Club", "Yoga Flow", "Boxing Foundations"],
     workingHours: "24/7 Access",
+    images: [
+      "/images/profile/gym-1.png",
+      "/images/profile/gym-2.png",
+      "/images/profile/gym-3.png",
+    ],
+    plans: [
+      {
+        name: "Month",
+        duration: "1 Month",
+        price: "1500 EGP",
+        salePrice: "1200 EGP",
+        features: ["3 Inbody", "4 Invitation"]
+      },
+      {
+        name: "3 Months",
+        duration: "3 Months",
+        price: "4000 EGP",
+        salePrice: "3200 EGP",
+        features: ["1 Month Freeze", "3 Inbody", "4 Invitation"]
+      },
+      {
+        name: "6 Months",
+        duration: "6 Months",
+        price: "7000 EGP",
+        salePrice: "5500 EGP",
+        features: ["1 Month Freeze", "3 Inbody", "4 Invitation"]
+      },
+      {
+        name: "Year",
+        duration: "1 Year",
+        price: "12000 EGP",
+        salePrice: "9000 EGP",
+        features: ["1 Month Freeze", "3 Inbody", "4 Invitation"]
+      }
+    ]
   },
   "john-doe": {
     id: "john-doe",

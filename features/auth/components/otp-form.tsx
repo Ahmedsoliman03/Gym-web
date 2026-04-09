@@ -8,7 +8,7 @@ import { useRouter } from '@/i18n/routing';
 import { useState, useRef } from 'react';
 
 const styles = {
-  container: "space-y-8 animate-premium-in",
+  container: "space-y-8",
   header: "space-y-2 text-center",
   title: "text-4xl font-black text-white",
   subtitle: "text-foreground/50 text-[13px] leading-relaxed max-w-[280px] mx-auto",

@@ -18,11 +18,11 @@ const styles = {
       ${isOpen ? 'border-primary/30 ring-4 ring-primary/10' : 'border-transparent'}
     `,
     placeholder: "text-foreground/40 text-sm font-medium",
-    tag: "flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-lg text-xs font-bold border border-primary/20 animate-premium-in group/tag",
+    tag: "flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-lg text-xs font-bold border border-primary/20 group/tag",
     tagClose: "hover:text-red-400 transition-colors flex items-center justify-center p-0.5 rounded-md hover:bg-black/20",
     chevronWrapper: "absolute inset-y-0 right-3 flex items-center text-foreground/30 pointer-events-none transition-colors duration-200",
     chevron: (isOpen: boolean) => `h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`,
-    dropdown: "absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-premium-in backdrop-blur-xl",
+    dropdown: "absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl",
     optionsList: "max-h-60 overflow-y-auto py-2 custom-scrollbar",
     option: (isSelected: boolean) => `
       px-4 py-3.5 flex items-center justify-between cursor-pointer 
@@ -33,7 +33,7 @@ const styles = {
     optionIndicatorActive: "h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(34,197,94,0.8)]",
     optionIndicatorInactive: "h-2 w-2 rounded-full bg-white/5 border border-white/10"
   },
-  form: "space-y-6 animate-premium-in",
+  form: "space-y-6",
   gridWrapper: "grid grid-cols-1 md:grid-cols-2 gap-4",
   fieldWrapper: "space-y-2",
   fieldWrapperRelative: "space-y-2 relative",

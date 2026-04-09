@@ -5,7 +5,7 @@ import { TrendingUp, Calendar, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const styles = {
-  container: "space-y-8 animate-premium-in",
+  container: "space-y-8",
   header: "bg-surface p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row gap-8 items-center",
   avatarWrapper: "w-24 h-24 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center overflow-hidden",
   avatarIcon: "text-primary",

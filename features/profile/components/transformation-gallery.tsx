@@ -30,10 +30,14 @@ interface Transformation {
 
 interface TransformationGalleryProps {
   transformations: Transformation[];
+  title?: string;
+  hideOverlay?: boolean;
 }
 
 export const TransformationGallery = ({
   transformations,
+  title,
+  hideOverlay = false,
 }: TransformationGalleryProps) => {
   const t = useTranslations("Profile");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -46,13 +50,11 @@ export const TransformationGallery = ({
     }
   };
 
-
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>
-          {t('transformationGallery')}
+          {title || t('transformationGallery')}
         </h2>
         <div className={styles.controls}>
           <button
@@ -86,12 +88,14 @@ export const TransformationGallery = ({
                 fill
                 className={styles.itemImage}
               />
-              <div className={styles.itemOverlay}>
-                <span className={styles.itemName}>{item.clientName}</span>
-                <span className={styles.itemDuration}>
-                  {item.duration} {t('transformation')}
-                </span>
-              </div>
+              {!hideOverlay && (
+                <div className={styles.itemOverlay}>
+                  <span className={styles.itemName}>{item.clientName}</span>
+                  <span className={styles.itemDuration}>
+                    {item.duration} {t('transformation')}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>

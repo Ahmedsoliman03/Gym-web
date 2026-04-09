@@ -7,7 +7,7 @@ import { Link } from "@/i18n/routing";
 
 const styles = {
 // ... existing styles ...
-  container: "relative w-full rounded-3xl bg-surface p-8 overflow-hidden animate-premium-in border border-white/5",
+  container: "relative w-full rounded-3xl bg-surface p-8 overflow-hidden border border-white/5",
   contentWrapper: "flex flex-col md:flex-row items-center md:items-end gap-8",
   avatarWrapper: "relative",
   avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
