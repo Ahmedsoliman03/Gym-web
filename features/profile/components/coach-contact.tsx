@@ -4,11 +4,11 @@ import { Instagram, Linkedin, Facebook, Phone as WhatsApp } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const styles = {
-  container: "bg-surface p-8 rounded-3xl border border-white/5 space-y-6",
-  title: "text-xl font-bold text-foreground uppercase text-primary",
-  whatsappBtn: "w-full bg-transparent outline-2 outline-primary text-white font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-[#25D366]/10",
-  socialsWrapper: "flex items-center justify-center gap-4",
-  socialBtn: (color: string) => `w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-foreground/60 transition-all ${color}`
+  container: "bg-surface p-8 rounded-3xl border border-white/5 flex-1 space-y-4",
+  title: "text-base font-bold text-foreground mb-4 uppercase text-primary",
+  whatsappBtn: "w-full bg-transparent outline-2 outline-primary text-white text-sm font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-[#25D366]/10",
+  socialsWrapper: "flex items-center gap-3",
+  socialBtn: (color: string) => `w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-foreground/60 transition-all ${color}`
 };
 
 interface CoachContactProps {

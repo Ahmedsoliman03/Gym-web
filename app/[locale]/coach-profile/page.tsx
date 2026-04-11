@@ -11,7 +11,7 @@ const styles = {
 
 // This page currently hardcodes "marcus-thorne" but logic is ready for dynamic routes
 export default async function ProfilePage() {
-  const profileId = "elite-hq"; // In a real scenario, this comes from params
+  const profileId = "marcus-thorne"; // In a real scenario, this comes from params
   const profile = mockProfiles[profileId];
 
   if (!profile) {

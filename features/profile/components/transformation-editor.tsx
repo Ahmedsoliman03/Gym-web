@@ -17,13 +17,16 @@ const styles = {
   
   inputWrapper: "flex flex-col gap-2",
   label: "text-xs font-black text-foreground/40 uppercase ml-1",
-  input: "bg-white/5 py-4 border border-white/5 rounded-xl px-4 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-base",
+  input: "bg-white/5 py-2.5 border border-white/5 rounded-xl px-4 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-base",
 };
+
+import { CustomSelect } from "@/components/ui/custom-select";
 
 export interface TransformationItem {
   id: string;
   name: string;
-  count: string;
+  durationValue: string;
+  durationUnit: string;
   image: string;
 }
 
@@ -39,6 +42,12 @@ export const TransformationEditor = ({
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
 
+  const durationUnitOptions = [
+    { label: t('weeks'), value: 'weeks' },
+    { label: t('months'), value: 'months' },
+    { label: t('years'), value: 'years' },
+  ];
+
   const scroll = (direction: "left" | "right") => {
     if (sliderRef.current) {
       const scrollAmount = direction === "left" ? -300 : 300;
@@ -50,7 +59,8 @@ export const TransformationEditor = ({
     const newItem: TransformationItem = {
       id: Math.random().toString(36).substr(2, 9),
       name: "",
-      count: "",
+      durationValue: "",
+      durationUnit: "weeks",
       image: ""
     };
     onChange([...transformations, newItem]);
@@ -64,6 +74,30 @@ export const TransformationEditor = ({
     onChange(transformations.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ));
+  };
+
+  const handleBlur = (id: string) => {
+    onChange(transformations.map(item => {
+      if (item.id === id) {
+        let newVal = item.durationValue;
+        let newUnit = item.durationUnit;
+
+        if (newVal === '4' && newUnit === 'weeks') {
+          newVal = '1';
+          newUnit = 'months';
+        } else if (newVal === '12' && newUnit === 'months') {
+          newVal = '1';
+          newUnit = 'years';
+        }
+
+        return { 
+          ...item, 
+          durationValue: newVal,
+          durationUnit: newUnit 
+        };
+      }
+      return item;
+    }));
   };
 
   const handleImageChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,13 +174,29 @@ export const TransformationEditor = ({
               </div>
               <div className={styles.inputWrapper}>
                 <label className={styles.label}>{t('transformationDuration')}</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 3 Months, 2 Years..."
-                  value={item.count}
-                  onChange={(e) => handleUpdate(item.id, 'count', e.target.value)}
-                  className={styles.input}
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={item.durationValue}
+                    onChange={(e) => handleUpdate(item.id, 'durationValue', e.target.value)}
+                    onBlur={() => handleBlur(item.id)}
+                    className={`${styles.input} w-24`}
+                  />
+                  <CustomSelect
+                    value={item.durationUnit}
+                    onChange={(val) => {
+                      handleUpdate(item.id, 'durationUnit', val);
+                      // Trigger blur logic immediately after unit change if we want
+                      // but user said "click out of input"
+                    }}
+                    onBlur={() => handleBlur(item.id)}
+                    options={durationUnitOptions}
+                    placeholder={t('months')}
+                    className="flex-1"
+                    openUpwards
+                  />
+                </div>
               </div>
             </div>
           </div>

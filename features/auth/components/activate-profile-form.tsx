@@ -59,6 +59,7 @@ export default function ActivateProfileForm() {
     const t = useTranslations();
     const [step, setStep] = useState<'form' | 'success'>('form');
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const schema = getActivateProfileSchema(t);
 
@@ -101,7 +102,7 @@ export default function ActivateProfileForm() {
             </div>
 
             <Formik
-                initialValues={{ inviteCode: '', password: '', agreement: false }}
+                initialValues={{ inviteCode: '', password: '', confirmPassword: '', agreement: false }}
                 validationSchema={schema}
                 onSubmit={async (values) => {
                     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -152,6 +153,31 @@ export default function ActivateProfileForm() {
                                 </button>
                             </div>
                             <ErrorMessage name="password" component="div" className={styles.error} />
+                        </div>
+
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
+                                {t('Validation.confirmPassword')}
+                            </label>
+                            <div className={styles.inputWrapper}>
+                                <div className={styles.inputIcon}>
+                                    <LockClosed24Regular className={styles.inputIconSize} />
+                                </div>
+                                <Field
+                                    name="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    className={styles.inputPassword}
+                                    placeholder={t('Auth.passwordPlaceholder')}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className={styles.eyeButton}
+                                >
+                                    {showConfirmPassword ? <EyeOff24Regular className={styles.inputIconSize} /> : <Eye24Regular className={styles.inputIconSize} />}
+                                </button>
+                            </div>
+                            <ErrorMessage name="confirmPassword" component="div" className={styles.error} />
                         </div>
 
                         <div className={styles.submitWrapper}>

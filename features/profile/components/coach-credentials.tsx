@@ -1,48 +1,29 @@
 "use client";
 
-import { Award, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const styles = {
-// ... existing styles ...
-  container: "bg-surface p-8 rounded-3xl border border-white/5 space-y-8",
-  section: "div",
-  title: "text-xl font-bold text-foreground mb-6 flex items-center gap-2 uppercase text-primary",
+  container: "bg-surface p-8 rounded-3xl border border-white/5 flex-1 min-w-[300px]",
+  section: "w-full",
+  title: "text-base font-bold text-foreground mb-4 flex items-center gap-2 uppercase text-primary",
   list: "space-y-3",
   listItem: "flex items-center gap-3 text-foreground/80",
   listIcon: "text-primary shrink-0",
   tagsWrapper: "flex flex-wrap gap-2",
-  tag: "bg-primary/10 text-primary text-xs font-bold px-4 py-2 rounded-lg border border-primary/20",
+  tag: "bg-primary/10 text-primary text-[10px] font-bold px-3 py-1.5 rounded-lg border border-primary/20",
 };
 
 interface CoachCredentialsProps {
-  certifications: string[];
   specializations: string[];
 }
 
 export const CoachCredentials = ({
-  certifications,
   specializations,
 }: CoachCredentialsProps) => {
   const t = useTranslations("Profile");
 
   return (
     <div className={styles.container}>
-      {/* Certifications */}
-      <div className={styles.section}>
-        <h2 className={styles.title}>
-          <Award size={20} /> {t('certifications')}
-        </h2>
-        <ul className={styles.list}>
-          {certifications.map((cert, index) => (
-            <li key={index} className={styles.listItem}>
-              <CheckCircle2 size={18} className={styles.listIcon} />
-              <span>{cert}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       {/* Specializations */}
       <div className={styles.section}>
         <h2 className={styles.title}>

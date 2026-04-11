@@ -32,7 +32,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
     const t = useTranslations();
     const request = useRequestAccessMutation();
     const gymLicenseRef = useRef<HTMLInputElement>(null);
-    const facilityPhotosRef = useRef<HTMLInputElement>(null);
+    const gymPhotoRef = useRef<HTMLInputElement>(null);
 
     const validationSchema = getRequestAccessSchema(t);
 
@@ -47,12 +47,14 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                 city: '',
                 area: '',
                 contactPerson: '',
+                memberCount: '',
                 gymLicense: null,
-                facilityPhotos: null
+                gymPhoto: null
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 await request.mutateAsync(values);
+                console.log(values, "values of gym request form");
                 onSuccess();
             }}
         >
@@ -83,6 +85,21 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                 placeholder={t('Auth.contactPersonPlaceholder')}
                             />
                             <ErrorMessage name="contactPerson" component="div" className={styles.error} />
+                        </div>
+
+
+
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
+                                {t('Auth.memberCount')}
+                            </label>
+                            <Field
+                                name="memberCount"
+                                type="number"
+                                className={styles.input}
+                                placeholder={t('Auth.memberCountPlaceholder')}
+                            />
+                            <ErrorMessage name="memberCount" component="div" className={styles.error} />
                         </div>
 
                         {/* Phone */}
@@ -133,7 +150,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                         </div>
 
                         {/* Area Select */}
-                        <div className={styles.fieldWrapper}>
+                        <div className={`${styles.fieldWrapper} md:col-span-2`}>
                             <label className={styles.label}>
                                 {t('Auth.selectArea')}
                             </label>
@@ -180,6 +197,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                                     type="file"
                                     name="gymLicense"
                                     className="hidden"
+                                    accept="image/*"
                                     onChange={(e) => setFieldValue('gymLicense', e.currentTarget.files?.[0])}
                                 />
                                 <ArrowUpload24Regular className={styles.uploadIcon} />
@@ -188,26 +206,27 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                             <ErrorMessage name="gymLicense" component="div" className={styles.error} />
                         </div>
 
-                        {/* Facility Photos */}
+                        {/* Gym Photo */}
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
-                                {t('Auth.facilityPhotos')}
+                                {t('Auth.gymPhoto')}
                             </label>
                             <div
-                                onClick={() => facilityPhotosRef.current?.click()}
+                                onClick={() => gymPhotoRef.current?.click()}
                                 className={styles.uploadContainer}
                             >
                                 <input
-                                    ref={facilityPhotosRef}
+                                    ref={gymPhotoRef}
                                     type="file"
-                                    name="facilityPhotos"
-                                    multiple
+                                    name="gymPhoto"
                                     className="hidden"
-                                    onChange={(e) => setFieldValue('facilityPhotos', e.currentTarget.files)}
+                                    accept="image/*"
+                                    onChange={(e) => setFieldValue('gymPhoto', e.currentTarget.files?.[0])}
                                 />
                                 <Image24Regular className={styles.uploadIcon} />
-                                <span className={styles.uploadText}>{values.facilityPhotos ? t('Auth.photosSelected', { count: (values.facilityPhotos as FileList).length }) : t('Auth.facilityPhotos')}</span>
+                                <span className={styles.uploadText}>{values.gymPhoto ? (values.gymPhoto as File).name : t('Auth.gymPhoto')}</span>
                             </div>
+                            <ErrorMessage name="gymPhoto" component="div" className={styles.error} />
                         </div>
                     </div>
 

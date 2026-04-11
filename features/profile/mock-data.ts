@@ -14,9 +14,10 @@ export interface CoachProfile extends ProfileData {
   title: string;
   tier: string;
   stats: { label: string; value: string }[];
-  philosophy: { title: string; description: string };
+  description: string;
   transformations: { clientName: string; duration: string; image: string }[];
   credentials: { certifications: string[]; specializations: string[] };
+  plans?: GymPlan[];
 }
 
 export interface GymPlan {
@@ -29,12 +30,9 @@ export interface GymPlan {
 
 export interface GymProfile extends ProfileData {
   type: 'gym';
-  rating: string;
   memberCount: string;
   description: string;
-  facilities: string[];
   programs: string[];
-  workingHours: string;
   images: string[];
   plans?: GymPlan[];
 }
@@ -59,34 +57,42 @@ export const mockProfiles: Record<string, CoachProfile | GymProfile | ClientProf
     stats: [
       { label: "EXP", value: "12y" },
       { label: "CLIENTS", value: "500+" },
-      { label: "RATING", value: "4.9" },
     ],
-    philosophy: {
-      title: "Coaching Philosophy",
-      description: "My approach is built on the intersection of biological science and brutal consistency. We don't just 'work out'; we execute precise protocols designed to trigger specific physiological adaptations.",
-    },
+    description: "My approach is built on the intersection of biological science and brutal consistency. We don't just 'work out'; we execute precise protocols designed to trigger specific physiological adaptations.",
     transformations: [
       { clientName: "David", duration: "12 Weeks", image: "/images/profile/david.png" },
       { clientName: "Sarah", duration: "6 Months", image: "/images/profile/sarah.png" },
       { clientName: "Mike", duration: "8 Months", image: "/images/profile/mike.png" },
     ],
     credentials: {
-      certifications: ["NASM Certified Personal Trainer", "Precision Nutrition L2", "CSCS (NSCA)"],
+      certifications: ["/images/profile/cert-1.png", "/images/profile/cert-2.png", "/images/profile/cert-3.png"],
       specializations: ["Bodybuilding", "Powerlifting", "Strength & Conditioning", "Mobility"],
     },
+    plans: [
+      {
+        name: "Personal Training",
+        duration: "1 Month",
+        price: "3000 EGP",
+        features: ["12 Sessions", "Nutritional Plan", "Weekly Check-ins"]
+      },
+      {
+        name: "Online Coaching",
+        duration: "3 Months",
+        price: "1500 EGP/Mo",
+        salePrice: "1000 EGP/Mo",
+        features: ["Workout Progrram", "Daily Support", "Video Analysis"]
+      }
+    ]
   },
   "elite-hq": {
     id: "elite-hq",
     type: 'gym',
     name: "Elite Performance HQ",
-    location: "Downtown, Cairo",
-    rating: "4.8",
+    location: "23 El-Nasr Road, Victory Square, Maadi, Cairo, Egypt",
     memberCount: "1.2k+",
     image: "/images/profile/gym-logo.png",
     description: "The most advanced training facility in the region. Equipped with Olympic-grade gear and a community of high-performers.",
-    facilities: ["Olympic Racks", "Recovery Lounge", "Juice Bar", "Indoor Track"],
     programs: ["CrossFit", "Powerlifting Club", "Yoga Flow", "Boxing Foundations"],
-    workingHours: "24/7 Access",
     images: [
       "/images/profile/gym-1.png",
       "/images/profile/gym-2.png",

@@ -84,7 +84,6 @@ export const Navbar = () => {
     { label: t('coaches'), href: "/coaches" },
     { label: t('gyms'), href: "/gyms" },
     { label: t('jobBoard'), href: "/jobs" },
-    { label: t('plans'), href: "/plans" },
   ];
 
   const toggleLanguage = () => {

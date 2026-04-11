@@ -54,6 +54,7 @@ export default function RegisterForm() {
     const router = useRouter();
     const register = useRegisterMutation();
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const registerSchema = getRegisterSchema(t);
 
@@ -90,7 +91,7 @@ export default function RegisterForm() {
             </div>
 
             <Formik
-                initialValues={{ fullName: '', email: '', phone: '', password: '' }}
+                initialValues={{ fullName: '', email: '', phone: '', password: '', confirmPassword: '' }}
                 validationSchema={registerSchema}
                 onSubmit={async (values) => {
                     await register.mutateAsync(values);
@@ -154,7 +155,6 @@ export default function RegisterForm() {
                             <ErrorMessage name="phone" component="div" className={styles.error} />
                         </div>
 
-                        {/* Password */}
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
                                 {t('Auth.password')}
@@ -180,6 +180,33 @@ export default function RegisterForm() {
                             </div>
                             <p className={styles.passwordHint}>{t('Auth.passwordHint')}</p>
                             <ErrorMessage name="password" component="div" className={styles.error} />
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
+                                {t('Validation.confirmPassword')}
+                            </label>
+                            <div className={styles.inputWrapper}>
+                                <div className={styles.inputIcon}>
+                                    <LockClosed24Regular className={styles.inputIconSize} />
+                                </div>
+                                <Field
+                                    name="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    className={styles.inputPassword}
+                                    placeholder={t('Auth.passwordPlaceholder')}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className={styles.eyeButton}
+                                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showConfirmPassword ? <EyeOff24Regular className={styles.inputIconSize} /> : <Eye24Regular className={styles.inputIconSize} />}
+                                </button>
+                            </div>
+                            <ErrorMessage name="confirmPassword" component="div" className={styles.error} />
                         </div>
 
                         <div className={styles.submitWrapper}>

@@ -56,20 +56,22 @@ export const TransformationGallery = ({
         <h2 className={styles.title}>
           {title || t('transformationGallery')}
         </h2>
-        <div className={styles.controls}>
-          <button
-            onClick={() => scroll("left")}
-            className={styles.controlBtn}
-          >
-            <ChevronRight size={20} className="rotate-180" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className={styles.controlBtn}
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        {transformations.length > 2 && (
+          <div className={styles.controls}>
+            <button
+              onClick={() => scroll("left")}
+              className={styles.controlBtn}
+            >
+              <ChevronRight size={20} className="rotate-180" />
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              className={styles.controlBtn}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.galleryWrapper}>
@@ -77,27 +79,29 @@ export const TransformationGallery = ({
           ref={scrollRef}
           className={styles.scrollContainer}
         >
-          {transformations.map((item, index) => (
-            <div
-              key={index}
-              className={styles.itemWrapper}
-            >
-              <Image
-                src={item.image}
-                alt={item.clientName}
-                fill
-                className={styles.itemImage}
-              />
-              {!hideOverlay && (
-                <div className={styles.itemOverlay}>
-                  <span className={styles.itemName}>{item.clientName}</span>
-                  <span className={styles.itemDuration}>
-                    {item.duration} {t('transformation')}
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
+          {transformations
+            .filter(item => item.image && item.image.trim() !== "")
+            .map((item, index) => (
+              <div
+                key={index}
+                className={styles.itemWrapper}
+              >
+                <Image
+                  src={item.image}
+                  alt={item.clientName || title || "Transformation"}
+                  fill
+                  className={styles.itemImage}
+                />
+                {!hideOverlay && (
+                  <div className={styles.itemOverlay}>
+                    <span className={styles.itemName}>{item.clientName}</span>
+                    <span className={styles.itemDuration}>
+                      {item.duration} {t('transformation')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
 
 

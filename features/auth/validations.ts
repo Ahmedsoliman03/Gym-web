@@ -43,11 +43,15 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.contactPerson') })),
         otherwise: (schema) => schema.optional(),
     }),
-    position: Yup.string().when('type', {
-        is: 'gym',
-        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.position') })),
-        otherwise: (schema) => schema.optional(),
-    }),
+    memberCount: Yup.number()
+        .typeError(t('Validation.integer'))
+        .positive(t('Validation.positive'))
+        .integer(t('Validation.integer'))
+        .when('type', {
+            is: 'gym',
+            then: (schema) => schema.required(t('Validation.required', { field: t('Auth.memberCount') })),
+            otherwise: (schema) => schema.optional(),
+        }),
 
     // Coach Fields
     specialization: Yup.array().of(Yup.string()).min(1, t('Validation.required', { field: t('Auth.primarySpecialization') })).when('type', {
@@ -55,20 +59,20 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.primarySpecialization') })),
         otherwise: (schema) => schema.optional(),
     }),
-    workplace: Yup.string().when('type', {
+    desc: Yup.string().when('type', {
         is: 'coach',
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.statementOfPurpose') })),
         otherwise: (schema) => schema.optional(),
     }),
-    socialMedia: Yup.string().url(t('Validation.url')).optional(),
+
     experience: Yup.number().positive(t('Validation.positive')).integer(t('Validation.integer')).when('type', {
         is: 'coach',
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.yearsOfExperience') })),
         otherwise: (schema) => schema.optional(),
     }),
-    certifications: Yup.mixed().when('type', {
+    certifications: Yup.array().of(Yup.mixed()).when('type', {
         is: 'coach',
-        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.certificateUpload') })),
+        then: (schema) => schema.min(1, t('Validation.required', { field: t('Auth.certificateUpload') })).required(t('Validation.required', { field: t('Auth.certificateUpload') })),
         otherwise: (schema) => schema.optional(),
     }),
     gymLicense: Yup.mixed().when('type', {
@@ -76,7 +80,11 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.gymLicense') })),
         otherwise: (schema) => schema.optional(),
     }),
-    facilityPhotos: Yup.mixed().nullable().optional(),
+    gymPhoto: Yup.mixed().when('type', {
+        is: 'gym',
+        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.gymPhoto') })),
+        otherwise: (schema) => schema.optional(),
+    }),
 });
 
 export const getOtpSchema = (t: any) => Yup.object().shape({
@@ -90,10 +98,16 @@ export const getRegisterSchema = (t: any) => Yup.object().shape({
         .matches(/^(01|\+201|00201)[0125][0-9]{8}$/, t('Validation.invalidPhone'))
         .required(t('Validation.required', { field: t('Auth.phone') })),
     password: Yup.string().min(8, t('Validation.min', { field: t('Auth.password'), min: 8 })).required(t('Validation.required', { field: t('Auth.password') })),
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password')], t('Validation.match'))
+        .required(t('Validation.required', { field: t('Validation.confirmPassword') })),
 });
 
 export const getActivateProfileSchema = (t: any) => Yup.object().shape({
     inviteCode: Yup.string().length(8, t('Validation.min', { field: t('Auth.inviteCode'), min: 8 })).required(t('Validation.required', { field: t('Auth.inviteCode') })),
     password: Yup.string().min(8, t('Validation.min', { field: t('Auth.password'), min: 8 })).required(t('Validation.required', { field: t('Auth.password') })),
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password')], t('Validation.match'))
+        .required(t('Validation.required', { field: t('Validation.confirmPassword') })),
     agreement: Yup.boolean().oneOf([true], t('Validation.required', { field: t('Auth.membershipAgreement') })).required(),
 });

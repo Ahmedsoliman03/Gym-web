@@ -1,11 +1,12 @@
 "use client";
 
 import { GymProfile } from "../mock-data";
-import { MapPin, Star, Users, Clock, MessageSquare, Settings, Check } from "lucide-react";
+import { MapPin, Users, MessageSquare, Settings } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { TransformationGallery } from "./transformation-gallery";
+import { TransformationGallery } from "@/components/shared/transformation-gallery";
+import { Plans } from "@/components/shared/membership-plans";
 import { useRef } from "react";
 
 const styles = {
@@ -71,9 +72,7 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
           <h1 className={styles.title}>{data.name}</h1>
           <div className={styles.statsList}>
             <span className={styles.statItem}><MapPin size={16} /> {data.location}</span>
-            <span className={styles.statItem}><Star size={16} className={styles.ratingStar} /> {data.rating} {t('rating')}</span>
             <span className={styles.statItem}><Users size={16} /> {data.memberCount} {t('members')}</span>
-            <span className={styles.statItem}><Clock size={16} /> {data.workingHours}</span>
           </div>
         </div>
         <div className={styles.actionsWrapper}>
@@ -120,41 +119,7 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
         </div>
       </div>
 
-      {/* Plans Section */}
-      <div ref={plansRef} className="space-y-6 pt-4">
-        <h2 className={styles.sectionTitle}>{t('membershipPlans')}</h2>
-        <div className={styles.plansGrid}>
-          {data.plans?.map((plan, idx) => (
-            <div key={idx} className={styles.planCard}>
-              <div className={styles.planHeader}>
-                <h3 className={styles.planName}>{plan.name}</h3>
-                <span className={styles.planDuration}>{plan.duration}</span>
-              </div>
-
-              <div className={styles.planFeatures}>
-                {plan.features.map((feature, fIdx) => (
-                  <div key={fIdx} className={styles.featureItem}>
-                    <Check size={14} className="text-primary" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className={styles.planPricing}>
-                {plan.salePrice && (
-                  <div className={styles.oldPrice}>{plan.price}</div>
-                )}
-                <div className={styles.currentPrice}>
-                  {plan.salePrice || plan.price}
-                </div>
-                <button className={styles.buyBtn}>
-                  {t('getStarted')}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Plans ref={plansRef} plans={data.plans} />
     </div>
   );
 };

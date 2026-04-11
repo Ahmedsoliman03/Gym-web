@@ -12,22 +12,27 @@ const styles = {
 };
 
 interface CoachPhilosophyProps {
-  title: string;
   description: string;
+  onGoToPlans?: () => void;
 }
 
-export const CoachPhilosophy = ({ title, description }: CoachPhilosophyProps) => {
+export const CoachPhilosophy = ({ description, onGoToPlans }: CoachPhilosophyProps) => {
   const t = useTranslations("Profile");
 
   return (
     <div className={styles.container}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className={styles.title}>About me</h2>
+        {onGoToPlans && (
+          <button
+            onClick={onGoToPlans}
+            className="text-primary hover:text-primary/80 font-bold text-sm transition-all flex items-center gap-1 group"
+          >
+            {t('goToPlans')}
+          </button>
+        )}
+      </div>
       <div className={styles.wrapper}>
-        <div className={styles.header}>
-            <h2 className={styles.title}>
-                {title.toLowerCase().includes('philosophy') ? t('philosophy') : title}
-            </h2>
-            <div className={styles.divider} />
-        </div>
         <p className={styles.description}>
           "{description}"
         </p>

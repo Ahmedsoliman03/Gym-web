@@ -169,9 +169,8 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 phone: '',
                 specialization: [] as string[],
                 experience: '',
-                workplace: '',
-                socialMedia: '',
-                certifications: null
+                desc: '',
+                certifications: [] as File[]
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {
@@ -270,19 +269,45 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                                 type="file"
                                 name="certifications"
                                 className="hidden"
-                                onChange={(e) => setFieldValue('certifications', e.currentTarget.files?.[0])}
+                                multiple
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const newFiles = Array.from(e.currentTarget.files || []);
+                                    setFieldValue('certifications', [...values.certifications, ...newFiles]);
+                                }}
                             />
                             <ArrowUpload24Regular className={styles.uploadIconSize} />
                             <div className="text-center">
                                 <p className={styles.uploadTitle}>{t('Auth.dragAndDrop')}</p>
                                 <p className={styles.uploadSubtitle}>{t('Auth.uploadHint')}</p>
                             </div>
-                            {values.certifications && (
-                                <p className={styles.fileName}>
-                                    {(values.certifications as File).name}
-                                </p>
-                            )}
                         </div>
+
+                        {/* Files List */}
+                        {values.certifications.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {values.certifications.map((file: File, index: number) => (
+                                    <div 
+                                        key={index}
+                                        className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg group/file"
+                                    >
+                                        <span className="text-[10px] font-bold text-foreground/60 truncate max-w-[120px]">
+                                            {file.name}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const updatedFiles = values.certifications.filter((_: File, i: number) => i !== index);
+                                                setFieldValue('certifications', updatedFiles);
+                                            }}
+                                            className="text-foreground/20 hover:text-red-400 transition-colors"
+                                        >
+                                            <Dismiss20Regular className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <ErrorMessage name="certifications" component="div" className={styles.error} />
                     </div>
 
@@ -293,12 +318,12 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                         </label>
                         <Field
                             as="textarea"
-                            name="workplace"
+                            name="desc"
                             rows={4}
                             className={styles.textarea}
                             placeholder={t('Auth.statementPlaceholder')}
                         />
-                        <ErrorMessage name="workplace" component="div" className={styles.error} />
+                        <ErrorMessage name="desc" component="div" className={styles.error} />
                     </div>
 
                     <div className={styles.submitWrapper}>

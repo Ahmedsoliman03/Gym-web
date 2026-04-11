@@ -6,7 +6,7 @@ import { ChevronDown24Regular } from '@fluentui/react-icons';
 const styles = {
     container: "relative w-full",
     trigger: (isOpen: boolean, disabled?: boolean) => `
-      w-full min-h-[52px] px-4 py-3 bg-[#0D121F] border-2 
+      w-full min-h-[44px] px-3 py-2 bg-[#0D121F] border-2 
       transition-all duration-300 cursor-pointer flex items-center 
       rounded-xl 
       ${isOpen ? 'border-primary/30 ring-4 ring-primary/10' : 'border-transparent'}
@@ -16,10 +16,10 @@ const styles = {
     value: "text-foreground text-sm font-bold truncate pr-6",
     chevronWrapper: "absolute inset-y-0 right-3 flex items-center text-foreground/30 pointer-events-none transition-colors duration-200",
     chevron: (isOpen: boolean) => `h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`,
-    dropdown: "absolute z-50 w-full mt-2 bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl",
-    optionsList: "max-h-60 overflow-y-auto py-2 custom-scrollbar",
+    dropdown: (openUpwards?: boolean) => `absolute z-50 w-full ${openUpwards ? 'bottom-full mb-2' : 'mt-2'} bg-[#161B2B] border border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl`,
+    optionsList: "max-h-48 overflow-y-auto py-1 custom-scrollbar",
     option: (isSelected: boolean) => `
-      px-4 py-3.5 flex items-center justify-between cursor-pointer 
+      px-4 py-2.5 flex items-center justify-between cursor-pointer 
       transition-all duration-200 hover:bg-primary/5 active:scale-[0.98] 
       ${isSelected ? 'bg-primary/5' : ''}
     `,
@@ -36,25 +36,30 @@ interface Option {
 interface CustomSelectProps {
     value: string;
     onChange: (value: string) => void;
+    onBlur?: () => void;
     options: Option[];
     placeholder: string;
     disabled?: boolean;
     className?: string;
+    openUpwards?: boolean;
 }
 
-export function CustomSelect({ value, onChange, options, placeholder, disabled, className }: CustomSelectProps) {
+export function CustomSelect({ value, onChange, onBlur, options, placeholder, disabled, className, openUpwards }: CustomSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
+                if (isOpen) {
+                    setIsOpen(false);
+                    onBlur?.();
+                }
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [isOpen, onBlur]);
 
     const selectedOption = options.find(o => o.value === value);
 
@@ -75,7 +80,7 @@ export function CustomSelect({ value, onChange, options, placeholder, disabled, 
             </div>
 
             {isOpen && (
-                <div className={styles.dropdown}>
+                <div className={styles.dropdown(openUpwards)}>
                     <div className={styles.optionsList}>
                         {options.map((option) => {
                             const isSelected = value === option.value;
@@ -85,6 +90,8 @@ export function CustomSelect({ value, onChange, options, placeholder, disabled, 
                                     onClick={() => {
                                         onChange(option.value);
                                         setIsOpen(false);
+                                        // Optional: trigger onBlur here too?
+                                        // The user said "click out", so maybe not yet.
                                     }}
                                     className={styles.option(isSelected)}
                                 >
