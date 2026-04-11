@@ -57,6 +57,7 @@ This document outlines the expected request payloads (Body) for the backend APIs
 
 | Key | Type | Description |
 | :--- | :--- | :--- |
+| `email` | `string` | User's registered email |
 | `inviteCode` | `string` | 8-character code sent to verified coaches/gyms |
 | `password` | `string` | New password for the account |
 | `confirmPassword`| `string` | Password confirmation (should be validated by backend too) |

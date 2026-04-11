@@ -7,6 +7,7 @@ import {
     SpinnerIos20Regular,
     CheckmarkCircle24Regular,
     Key24Regular,
+    Mail24Regular,
     Eye24Regular,
     EyeOff24Regular,
     LockClosed24Regular,
@@ -102,7 +103,7 @@ export default function ActivateProfileForm() {
             </div>
 
             <Formik
-                initialValues={{ inviteCode: '', password: '', confirmPassword: '', agreement: false }}
+                initialValues={{ email: '', inviteCode: '', password: '', confirmPassword: '', agreement: false }}
                 validationSchema={schema}
                 onSubmit={async (values) => {
                     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -112,6 +113,24 @@ export default function ActivateProfileForm() {
             >
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
+                        <div className={styles.fieldWrapper}>
+                            <label className={styles.label}>
+                                {t('Auth.email')}
+                            </label>
+                            <div className={styles.inputWrapper}>
+                                <div className={styles.inputIcon}>
+                                    <Mail24Regular className={styles.inputIconSize} />
+                                </div>
+                                <Field
+                                    name="email"
+                                    type="email"
+                                    className={styles.inputPassword}
+                                    placeholder={t('Auth.emailPlaceholder')}
+                                />
+                            </div>
+                            <ErrorMessage name="email" component="div" className={styles.error} />
+                        </div>
+
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
                                 {t('Auth.inviteCode')}

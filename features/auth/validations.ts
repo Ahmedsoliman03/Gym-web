@@ -104,6 +104,7 @@ export const getRegisterSchema = (t: any) => Yup.object().shape({
 });
 
 export const getActivateProfileSchema = (t: any) => Yup.object().shape({
+    email: Yup.string().email(t('Validation.email')).required(t('Validation.required', { field: t('Auth.email') })),
     inviteCode: Yup.string().length(8, t('Validation.min', { field: t('Auth.inviteCode'), min: 8 })).required(t('Validation.required', { field: t('Auth.inviteCode') })),
     password: Yup.string().min(8, t('Validation.min', { field: t('Auth.password'), min: 8 })).required(t('Validation.required', { field: t('Auth.password') })),
     confirmPassword: Yup.string()
