@@ -49,7 +49,7 @@
         "gymLicense": "السجل التجاري / رخصة الجيم",
         "memberCount": "عدد الأعضاء التقريبي",
         "memberCountPlaceholder": "مثلاً: +٥٠٠",
-        "gymPhoto": "صورة الجيم",
+        "gymPhoto": "ملف الجيم",
         "specialization": "التخصص",
         "selectSpecialization": "اختر التخصص",
         "bodybuilding": "كمال أجسام",
@@ -147,7 +147,7 @@
         "certifications": "الشهادات",
         "gymLicense": "ترخيص الجيم",
         "memberCount": "عدد الأعضاء",
-        "gymPhoto": "صورة الجيم"
+        "gymPhoto": "ملف الجيم"
     },
     "Coaches": {
         "title": "مدربو",
@@ -187,7 +187,20 @@
         "applyNow": "قدم الآن",
         "savePost": "حفظ",
         "sharePost": "مشاركة",
-        "featured": "مميز"
+        "featured": "مميز",
+        "closePost": "إغلاق المنشور",
+        "deletePost": "حذف المنشور",
+        "editPost": "تعديل المنشور",
+        "applyPopupTitle": "التقديم على هذه الوظيفة",
+        "userName": "الاسم الكامل",
+        "userEmail": "البريد الإلكتروني",
+        "headline": "العنوان الوظيفي (اختياري)",
+        "uploadCv": "رفع السيرة الذاتية",
+        "submitApplication": "إرسال الطلب",
+        "editPostTitle": "تعديل المنشور",
+        "postContent": "محتوى المنشور",
+        "postImage": "صورة المنشور",
+        "saveChanges": "حفظ التغييرات"
     },
     "Gyms": {
         "title": "الصالات",
@@ -279,6 +292,20 @@
         "jobBoard": "لوحة الوظائف",
         "plans": "الخطط",
         "switchLanguage": "تغيير اللغة",
-        "logout": "تسجيل الخروج"
+        "logout": "تسجيل الخروج",
+        "profile": "ملفي الشخصي",
+        "changePassword": "تغيير كلمة المرور",
+        "savedPosts": "المنشورات المحفوظة",
+        "savedPostsDescription": "قائمتك المنسقة للفرص المحفوظة والمعالم المهنية.",
+        "savedPostsStatsLabel": "الفرص المحفوظة",
+        "yourPosts": "منشوراتك",
+        "yourPostsDescription": "إدارة قوائم الوظائف النشطة الخاصة بك ومراجعة الطلبات المهنية الواردة.",
+        "yourPostsStatsLabel": "المنشورات النشطة",
+        "userMenu": "قائمة المستخدم",
+        "currentPassword": "كلمة المرور الحالية",
+        "newPassword": "كلمة المرور الجديدة",
+        "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+        "changePasswordSuccess": "تم تغيير كلمة المرور بنجاح",
+        "passwordMismatch": "كلمات المرور غير متطابقة"
     }
 }

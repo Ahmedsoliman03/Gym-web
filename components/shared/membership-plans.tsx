@@ -8,7 +8,7 @@ import { GymPlan } from "@/features/profile/mock-data";
 const styles = {
   section: "space-y-6 pt-4 scroll-mt-24",
   sectionTitle: "text-xl font-bold mb-4 text-primary uppercase",
-  plansGrid: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6",
+  plansGrid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-auto-fit gap-6",
   planCard: "bg-surface p-6 rounded-3xl border border-white/5 flex flex-col items-center text-center relative overflow-hidden group hover:border-primary/30 transition-all",
   planHeader: "mb-6",
   planName: "text-2xl font-bold mb-1",

@@ -14,23 +14,31 @@ const styles = {
   divider: "h-px w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent mt-12"
 };
 
-export function JobHeader() {
+interface JobHeaderProps {
+  title?: string;
+  tag?: string;
+  description?: string;
+  statsCount?: string;
+  statsLabel?: string;
+}
+
+export function JobHeader({ title, tag, description, statsCount, statsLabel }: JobHeaderProps) {
   const t = useTranslations('Jobs');
 
   return (
     <header className={styles.header}>
-      <span className={styles.tag}>{t('tag')}</span>
-      <h1 className={styles.title}>{t('title')}</h1>
+      <span className={styles.tag}>{tag || t('tag')}</span>
+      <h1 className={styles.title}>{title || t('title')}</h1>
 
       <div className={styles.statsWrapper}>
         <div className={styles.stats}>
-          <p className={styles.statsCount}>124</p>
-          <p className={styles.statsLabel}>{t('openOpportunities')}</p>
+          <p className={styles.statsCount}>{statsCount || "124"}</p>
+          <p className={styles.statsLabel}>{statsLabel || t('openOpportunities')}</p>
         </div>
       </div>
 
       <p className={styles.description}>
-        {t('description')}
+        {description || t('description')}
       </p>
 
       <div className={styles.divider} />

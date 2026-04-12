@@ -1,8 +1,9 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Bell, Menu, User, LogOut, Globe, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Bell, Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { ChangePasswordModal } from "./change-password-modal";
 
 const styles = {
   // ... existing styles ...
@@ -71,6 +72,10 @@ export const Navbar = () => {
   const t = useTranslations('Navbar');
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [changePassOpen, setChangePassOpen] = useState(false);
+  
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const locale = useLocale();
   const router = useRouter();
@@ -95,8 +100,17 @@ export const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -162,20 +176,62 @@ export const Navbar = () => {
 
                 <div className={styles.divider} />
 
-                <Link
-                  href="/coach-profile"
-                  className={styles.profileLink(pathname === '/coach-profile', isRtl)}
-                >
-                  <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
-                    <User size={18} />
-                  </div>
-                  <span className={styles.profileName(pathname === '/coach-profile')}>gym</span>
-                  {/* <span className={styles.profileName(pathname === '/coach-profile')}>Marcus</span> */}
-                </Link>
+                <div className="relative" ref={userMenuRef}>
+                  <button 
+                    className={styles.profileLink(pathname === '/coach-profile', isRtl)}
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  >
+                    <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
+                      <User size={18} />
+                    </div>
+                    <span className={styles.profileName(pathname === '/coach-profile')}>gym</span>
+                  </button>
 
-                <Link href="/login" className={styles.logoutButton} title={t('logout')}>
-                  <LogOut size={20} className={styles.logoutIcon} />
-                </Link>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-[120] overflow-hidden py-2 animate-in fade-in slide-in-from-top-2">
+                       <Link 
+                        href="/coach-profile" 
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <User size={16} />
+                        {t('profile')}
+                      </Link>
+                      <button 
+                        onClick={() => { setUserMenuOpen(false); setChangePassOpen(true); }}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <Lock size={16} />
+                        {t('changePassword')}
+                      </button>
+                      <Link 
+                        href="/saved-posts" 
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <Bookmark size={16} />
+                        {t('savedPosts')}
+                      </Link>
+                      <Link 
+                        href="/your-posts" 
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <Zap size={16} />
+                        {t('yourPosts')}
+                      </Link>
+                      <div className="h-[1px] bg-white/5 my-1" />
+                      <Link 
+                        href="/login" 
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-500/80 hover:text-red-500 hover:bg-red-500/5 transition-all"
+                      >
+                        <LogOut size={16} />
+                        {t('logout')}
+                      </Link>
+                    </div>
+                  )}
+                </div>
 
                 <button
                   className={styles.mobileMenuBtn(isOpen)}
@@ -188,6 +244,11 @@ export const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      <ChangePasswordModal 
+        isOpen={changePassOpen} 
+        onClose={() => setChangePassOpen(false)} 
+      />
 
       {/* Mobile Menu Overlay */}
       <div

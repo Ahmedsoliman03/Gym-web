@@ -6,7 +6,7 @@ import { CoachProfileHeader } from "./coach-profile-header";
 import { CoachPhilosophy } from "./coach-philosophy";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { CoachCredentials } from "./coach-credentials";
-import { CoachContact } from "./coach-contact";
+// import { CoachContact } from "./coach-contact";
 import { Plans } from "@/components/shared/membership-plans";
 import { CoachProfile } from "../mock-data";
 
@@ -59,7 +59,7 @@ export const CoachProfileView = ({ data }: { data: CoachProfile }) => {
         <CoachCredentials
           specializations={data.credentials.specializations}
         />
-        <CoachContact coachName={data.name} />
+        {/* <CoachContact coachName={data.name} /> */}
       </div>
 
     </div>

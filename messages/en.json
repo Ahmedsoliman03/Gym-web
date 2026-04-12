@@ -49,7 +49,7 @@
         "gymLicense": "Commercial Register / Gym License",
         "memberCount": "Approximate Member Count",
         "memberCountPlaceholder": "e.g. 500+",
-        "gymPhoto": "Gym photo",
+        "gymPhoto": "Gym Profile",
         "specialization": "Specialization",
         "selectSpecialization": "Select Specialization",
         "bodybuilding": "Bodybuilding",
@@ -147,7 +147,7 @@
         "certifications": "Certifications",
         "gymLicense": "Gym License",
         "memberCount": "Member Count",
-        "gymPhoto": "Gym Photo"
+        "gymPhoto": "Gym Profile"
     },
     "Coaches": {
         "title": "Coaches of",
@@ -187,7 +187,20 @@
         "applyNow": "Apply Now",
         "savePost": "Save",
         "sharePost": "Share",
-        "featured": "Featured"
+        "featured": "Featured",
+        "closePost": "Close Post",
+        "deletePost": "Delete Post",
+        "editPost": "Edit Post",
+        "applyPopupTitle": "Apply for this Role",
+        "userName": "Full Name",
+        "userEmail": "Email Address",
+        "headline": "Headline (Optional)",
+        "uploadCv": "Upload CV",
+        "submitApplication": "Submit Application",
+        "editPostTitle": "Edit Post",
+        "postContent": "Post Content",
+        "postImage": "Post Image",
+        "saveChanges": "Save Changes"
     },
     "Gyms": {
         "title": "Partner",
@@ -279,6 +292,20 @@
         "jobBoard": "Job Board",
         "plans": "Plans",
         "switchLanguage": "Switch Language",
-        "logout": "Logout"
+        "logout": "Logout",
+        "profile": "My Profile",
+        "changePassword": "Change Password",
+        "savedPosts": "Saved Posts",
+        "savedPostsDescription": "Your curated list of saved opportunities and career milestones.",
+        "savedPostsStatsLabel": "Saved Opportunities",
+        "yourPosts": "Your Posts",
+        "yourPostsDescription": "Manage your active job listings and review incoming professional applications.",
+        "yourPostsStatsLabel": "Active Posts",
+        "userMenu": "User Menu",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmNewPassword": "Confirm New Password",
+        "changePasswordSuccess": "Password changed successfully",
+        "passwordMismatch": "Passwords do not match"
     }
 }
