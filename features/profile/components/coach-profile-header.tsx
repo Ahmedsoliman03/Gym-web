@@ -4,9 +4,10 @@ import Image from "next/image";
 import { MessageSquare, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 
 const styles = {
-// ... existing styles ...
+  // ... existing styles ...
   container: "relative w-full rounded-3xl bg-surface p-8 overflow-hidden border border-white/5",
   contentWrapper: "flex flex-col md:flex-row items-center md:items-end gap-8",
   avatarWrapper: "relative",
@@ -90,7 +91,7 @@ export const CoachProfileHeader = ({
 
         {/* Actions */}
         <div className={styles.actionsWrapper}>
-          <button className={styles.primaryBtn}>
+          <button className={styles.primaryBtn} onClick={triggerChatOpen}>
             <MessageSquare size={18} />
             {t('chat')}
           </button>

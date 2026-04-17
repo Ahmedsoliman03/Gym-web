@@ -307,5 +307,21 @@
         "confirmNewPassword": "Confirm New Password",
         "changePasswordSuccess": "Password changed successfully",
         "passwordMismatch": "Passwords do not match"
+    },
+    "Chat": {
+        "support": "GymSpot",
+        "online": "Online",
+        "placeholder": "Type your message..."
+    },
+    "Notifications": {
+        "title": "Notifications",
+        "noNotifications": "No new notifications",
+        "viewPrevious": "View Previous",
+        "chatTitle": "New Message",
+        "chatDesc": "Sarah sent you a message: \"Hey, are we still on for today?\"",
+        "coachApplyTitle": "New Coach Application",
+        "coachApplyDesc": "Ahmed submitted an application to join your gym.",
+        "time5m": "5m ago",
+        "time1h": "1h ago"
     }
 }

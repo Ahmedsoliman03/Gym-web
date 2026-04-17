@@ -1,9 +1,10 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Bell, Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
+import { NotificationsMenu } from "@/features/notification/components/notifications-menu";
 
 const styles = {
   // ... existing styles ...
@@ -74,7 +75,7 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [changePassOpen, setChangePassOpen] = useState(false);
-  
+
   const userMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const locale = useLocale();
@@ -169,15 +170,15 @@ export const Navbar = () => {
 
             {!isAuthPage && (
               <>
-                <button className={styles.notifButton}>
-                  <span className={styles.notifBadge} />
-                  <Bell size={20} />
-                </button>
+                <NotificationsMenu
+                  buttonClassName={styles.notifButton}
+                  badgeClassName={styles.notifBadge}
+                />
 
                 <div className={styles.divider} />
 
                 <div className="relative" ref={userMenuRef}>
-                  <button 
+                  <button
                     className={styles.profileLink(pathname === '/coach-profile', isRtl)}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
@@ -189,31 +190,31 @@ export const Navbar = () => {
 
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-[120] overflow-hidden py-2 animate-in fade-in slide-in-from-top-2">
-                       <Link 
-                        href="/coach-profile" 
+                      <Link
+                        href="/coach-profile"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
                         <User size={16} />
                         {t('profile')}
                       </Link>
-                      <button 
+                      <button
                         onClick={() => { setUserMenuOpen(false); setChangePassOpen(true); }}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
                         <Lock size={16} />
                         {t('changePassword')}
                       </button>
-                      <Link 
-                        href="/saved-posts" 
+                      <Link
+                        href="/saved-posts"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
                         <Bookmark size={16} />
                         {t('savedPosts')}
                       </Link>
-                      <Link 
-                        href="/your-posts" 
+                      <Link
+                        href="/your-posts"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
@@ -221,8 +222,8 @@ export const Navbar = () => {
                         {t('yourPosts')}
                       </Link>
                       <div className="h-[1px] bg-white/5 my-1" />
-                      <Link 
-                        href="/login" 
+                      <Link
+                        href="/login"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-500/80 hover:text-red-500 hover:bg-red-500/5 transition-all"
                       >
@@ -245,9 +246,9 @@ export const Navbar = () => {
         </div>
       </nav>
 
-      <ChangePasswordModal 
-        isOpen={changePassOpen} 
-        onClose={() => setChangePassOpen(false)} 
+      <ChangePasswordModal
+        isOpen={changePassOpen}
+        onClose={() => setChangePassOpen(false)}
       />
 
       {/* Mobile Menu Overlay */}

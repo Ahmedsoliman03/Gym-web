@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 import { Navbar } from '@/components/navbar';
+import { ChatWidget } from '@/features/chat/components/chat-widget';
 
 export default async function LocaleLayout({
     children,
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
                     >
                         <Navbar />
                         {children}
+                        <ChatWidget />
                     </ThemeProvider>
                 </NextIntlClientProvider>
             </body>

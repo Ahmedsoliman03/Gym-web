@@ -307,5 +307,21 @@
         "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
         "changePasswordSuccess": "تم تغيير كلمة المرور بنجاح",
         "passwordMismatch": "كلمات المرور غير متطابقة"
+    },
+    "Chat": {
+        "support": " GymSpot",
+        "online": "متصل الآن",
+        "placeholder": "اكتب رسالتك..."
+    },
+    "Notifications": {
+        "title": "الإشعارات",
+        "noNotifications": "لا توجد إشعارات جديدة",
+        "viewPrevious": "عرض الإشعارات السابقة",
+        "chatTitle": "رسالة جديدة",
+        "chatDesc": "أرسلت لك سارة رسالة: \"مرحباً، هل نحن على موعدنا اليوم؟\"",
+        "coachApplyTitle": "طلب انضمام مدرب جديد",
+        "coachApplyDesc": "قدم أحمد طلباً للانضمام إلى الصالة الرياضية الخاصة بك.",
+        "time5m": "منذ 5 دقائق",
+        "time1h": "منذ ساعة"
     }
 }

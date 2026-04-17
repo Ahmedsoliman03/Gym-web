@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { Plans } from "@/components/shared/membership-plans";
 import { useRef } from "react";
+import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 
 const styles = {
   container: "space-y-8",
@@ -76,7 +77,7 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
           </div>
         </div>
         <div className={styles.actionsWrapper}>
-          <button className={styles.primaryBtn}>
+          <button className={styles.primaryBtn} onClick={triggerChatOpen}>
             <MessageSquare size={18} />
             {t('chat')}
           </button>
