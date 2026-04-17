@@ -6,6 +6,18 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChatNotificationItem } from "./chat-notification-item";
 import { ApplyNotificationItem } from "./apply-notification-item";
 
+const styles = {
+    container: "relative",
+    menuPanel: (isRtl: boolean) => `absolute ${isRtl ? 'left-0' : 'right-0'} top-full mt-2 w-80 sm:w-96 bg-surface border border-white/10 rounded-2xl shadow-2xl z-[120] overflow-hidden animate-in fade-in slide-in-from-top-2`,
+    header: "p-4 border-b border-white/5 flex items-center justify-between",
+    title: "font-bold text-foreground",
+    closeBtn: "text-foreground/40 hover:text-foreground",
+    listWrapper: "max-h-[400px] overflow-y-auto",
+    emptyState: "p-8 text-center text-foreground/40 text-sm",
+    footer: "p-3 border-t border-white/5 bg-background text-center",
+    viewPreviousBtn: "text-xs font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider"
+};
+
 export const NotificationsMenu = ({ 
     buttonClassName, 
     badgeClassName 
@@ -49,26 +61,26 @@ export const NotificationsMenu = ({
     ];
 
     return (
-        <div className="relative" ref={menuRef}>
+        <div className={styles.container} ref={menuRef}>
             <button className={buttonClassName} onClick={() => setIsOpen(!isOpen)}>
                 <span className={badgeClassName} />
                 <Bell size={20} />
             </button>
 
             {isOpen && (
-                <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} top-full mt-2 w-80 sm:w-96 bg-surface border border-white/10 rounded-2xl shadow-2xl z-[120] overflow-hidden animate-in fade-in slide-in-from-top-2`}>
-                    <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                        <h3 className="font-bold text-foreground">
+                <div className={styles.menuPanel(isRtl)}>
+                    <div className={styles.header}>
+                        <h3 className={styles.title}>
                             {t('title')}
                         </h3>
-                        <button onClick={() => setIsOpen(false)} className="text-foreground/40 hover:text-foreground">
+                        <button onClick={() => setIsOpen(false)} className={styles.closeBtn}>
                             <X size={16} />
                         </button>
                     </div>
                     
-                    <div className="max-h-[400px] overflow-y-auto">
+                    <div className={styles.listWrapper}>
                         {notifications.length === 0 ? (
-                            <div className="p-8 text-center text-foreground/40 text-sm">
+                            <div className={styles.emptyState}>
                                 {t('noNotifications')}
                             </div>
                         ) : (
@@ -99,8 +111,8 @@ export const NotificationsMenu = ({
                     </div>
                     
                     {notifications.length > 0 && (
-                        <div className="p-3 border-t border-white/5 bg-background text-center">
-                            <button className="text-xs font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider">
+                        <div className={styles.footer}>
+                            <button className={styles.viewPreviousBtn}>
                                 {t('viewPrevious')}
                             </button>
                         </div>
@@ -110,3 +122,4 @@ export const NotificationsMenu = ({
         </div>
     );
 };
+
