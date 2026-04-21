@@ -301,6 +301,7 @@
         "yourPosts": "Your Posts",
         "yourPostsDescription": "Manage your active job listings and review incoming professional applications.",
         "yourPostsStatsLabel": "Active Posts",
+        "about": "About Us",
         "userMenu": "User Menu",
         "currentPassword": "Current Password",
         "newPassword": "New Password",
@@ -322,6 +323,23 @@
         "coachApplyTitle": "New Coach Application",
         "coachApplyDesc": "Ahmed submitted an application to join your gym.",
         "time5m": "5m ago",
+        "time5m": "5m ago",
         "time1h": "1h ago"
+    },
+    "About": {
+        "title": "About GymSpot",
+        "overview": "GymSpot is a digital platform that connects gyms, coaches, and clients in one ecosystem designed to simplify hiring, marketing, and communication in the fitness industry.",
+        "forGymsTitle": "For Gyms",
+        "forGymsDescription": "GymSpot acts as both a recruitment and marketing platform. Gyms can publish job posts for coaching positions, allowing qualified coaches to apply directly. At the same time, gyms can promote their business by showcasing their profiles, including photos, available plans, and location.",
+        "forCoachesTitle": "For Coaches",
+        "forCoachesDescription": "GymSpot creates career opportunities and personal branding. Coaches can discover job openings and apply directly. In addition, coaches can market themselves by offering online coaching services, highlighting certifications and transformation results.",
+        "searchDiscoveryTitle": "Search & Discovery",
+        "searchDiscoveryDescription": "Our advanced search system allows users to browse gyms and coaches with filters such as location, city, or name, making it easy to find the right fit.",
+        "communicationTitle": "Communication System",
+        "communicationDescription": "Built-in private chat and real-time notifications ensure seamless interaction between gyms and coaches without leaving the platform.",
+        "aiFeaturesTitle": "AI Features",
+        "aiFeaturesDescription": "GymSpot integrates AI to enhance your experience. From general fitness knowledge to platform-aware smart recommendations (RAG), our AI assistant helps you understand job posts, coaches, gyms, and applicants better.",
+        "summaryTitle": "The Unified Ecosystem",
+        "summaryDescription": "Combining recruitment, marketing, communication, and intelligence into one powerful platform for the fitness world."
     }
 }

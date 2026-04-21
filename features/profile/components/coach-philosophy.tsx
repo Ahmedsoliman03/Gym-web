@@ -8,7 +8,7 @@ const styles = {
   header: "shrink-0",
   title: "text-xs font-bold text-foreground uppercase text-primary/60",
   divider: "h-0.5 w-8 bg-primary/20 mt-1 rounded-full",
-  description: "text-foreground/80 leading-relaxed text-sm md:text-base italic font-light border-l-0 md:border-l border-white/10 md:pl-8"
+  description: "text-foreground/80 leading-relaxed text-sm md:text-base font-light border-l-0 md:border-l border-white/10 md:pl-8"
 };
 
 interface CoachPhilosophyProps {

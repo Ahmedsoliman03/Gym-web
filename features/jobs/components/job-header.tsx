@@ -10,7 +10,7 @@ const styles = {
   stats: "flex items-center justify-center gap-4 py-2 px-6 bg-surface/50 rounded-full border border-white/5 backdrop-blur-sm",
   statsCount: "text-2xl font-black text-primary",
   statsLabel: "text-[10px] text-foreground/40 uppercase font-bold",
-  description: "text-foreground/40 max-w-xl mx-auto mt-8 leading-relaxed font-medium text-lg italic",
+  description: "text-foreground/40 max-w-xl mx-auto mt-8 leading-relaxed font-medium text-lg",
   divider: "h-px w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent mt-12"
 };
 

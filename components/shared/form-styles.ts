@@ -13,7 +13,7 @@ export const formStyles = {
   avatarCircle: "relative w-32 h-32 rounded-full border-4 border-primary p-1 cursor-pointer",
   avatarInner: "w-full h-full rounded-full bg-white/5 flex items-center justify-center overflow-hidden relative",
   avatarImage: "w-full h-full object-cover",
-  avatarPlaceholder: "text-foreground/20 italic text-xs",
+  avatarPlaceholder: "text-foreground/20 text-xs",
   avatarOverlay: "absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center",
 
   photoTextContent: "text-center",
@@ -32,7 +32,7 @@ export const formStyles = {
   tagSubSection: "space-y-4",
   tagInputGroup: "flex items-center gap-2",
   tagInputIcon: "text-primary",
-  tagPlaceholder: "text-foreground/20 italic text-xs",
+  tagPlaceholder: "text-foreground/20 text-xs",
   tagGrid: "flex flex-wrap gap-2",
   tag: "bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-lg border border-primary/20 flex items-center gap-2 uppercase group",
   tagRemove: "hover:text-foreground transition-colors",

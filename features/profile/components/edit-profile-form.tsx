@@ -18,7 +18,7 @@ export const EditProfileForm = ({ profile }: EditProfileFormProps) => {
   }
 
   return (
-    <div className="flex items-center justify-center p-20 text-foreground/40 italic">
+    <div className="flex items-center justify-center p-20 text-foreground/40">
       Invalid Profile Type
     </div>
   );

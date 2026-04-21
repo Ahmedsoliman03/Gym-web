@@ -25,7 +25,7 @@ const styles = {
   secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
   card: "bg-surface p-8 rounded-3xl border border-white/5",
   sectionTitle: "text-xl font-bold mb-4 text-primary uppercase",
-  description: "text-foreground/70 leading-relaxed italic",
+  description: "text-foreground/70 leading-relaxed",
   programsGrid: "grid grid-cols-2 md:grid-cols-4 gap-4",
   programTag: "p-4 bg-white/5 rounded-2xl border border-white/10 text-center font-bold text-sm",
   plansGrid: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6",
