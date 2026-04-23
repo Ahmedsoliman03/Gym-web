@@ -4,7 +4,7 @@ import { mockProfiles } from "@/features/profile/mock-data";
 export default function EditProfilePage() {
   // Simulate getting the current user's profile
   // For demo, we'll use Marcus (Coach) or Elite (Gym)
-  const profile = mockProfiles["marcus-thorne"]; // Switch to "elite-hq" to test Gym form
+  const profile = mockProfiles["elite-hq"]; // Switch to "elite-hq" to test Gym form
 
   if (profile.type === 'client') return <div>Access Denied</div>;
 
