@@ -4,9 +4,11 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRequestAccessSchema } from '../validations';
 import { useRequestAccessMutation } from '../services/auth.service';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { ChevronDown24Regular, ArrowUpload24Regular, SpinnerIos20Regular, ArrowRight24Regular, Dismiss20Regular } from '@fluentui/react-icons';
 import { SPECIALIZATIONS } from '@/constants/specializations';
+import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
+import { LocationDetectButton } from '@/components/ui/location-detect-button';
 
 const styles = {
   multiSelect: {
@@ -153,10 +155,262 @@ function CustomMultiSelect({ value, onChange, options, placeholder }: CustomMult
     );
 }
 
+// ─── Inner form component so hooks are called at the top level ────────────────
+interface CoachFormInnerProps {
+    isSubmitting: boolean;
+    values: {
+        name: string;
+        email: string;
+        phone: string;
+        governorate: string;
+        city: string;
+        area: string;
+        specialization: string[];
+        experience: string;
+        desc: string;
+        certifications: File[];
+    };
+    setFieldValue: (field: string, value: unknown) => void;
+}
+
+function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFormInnerProps) {
+    const t = useTranslations();
+    const tLoc = useTranslations('Location');
+    const certificationsRef = useRef<HTMLInputElement>(null);
+
+    const handleLocationSuccess = useCallback((result: LocationResult) => {
+        if (result.governorate) setFieldValue('governorate', result.governorate);
+        if (result.city)        setFieldValue('city', result.city);
+        if (result.area)        setFieldValue('area', result.area);
+    }, [setFieldValue]);
+
+    const { status: locStatus, error: locError, detect } = useLocationDetect(handleLocationSuccess);
+
+    return (
+        <Form className={styles.form}>
+            <div className={styles.gridWrapper}>
+                {/* Full Name */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.legalFullName')}
+                    </label>
+                    <Field
+                        name="name"
+                        className={styles.input}
+                        placeholder="John Doe"
+                    />
+                    <ErrorMessage name="name" component="div" className={styles.error} />
+                </div>
+
+                {/* Experience */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.yearsOfExperience')}
+                    </label>
+                    <Field
+                        name="experience"
+                        type="number"
+                        className={styles.input}
+                        placeholder={t('Auth.experiencePlaceholder')}
+                    />
+                    <ErrorMessage name="experience" component="div" className={styles.error} />
+                </div>
+            </div>
+
+            <div className={styles.fieldWrapperRelative}>
+                <label className={styles.label}>
+                    {t('Auth.primarySpecialization')}
+                </label>
+                <CustomMultiSelect
+                    name="specialization"
+                    value={values.specialization as string[]}
+                    onChange={(vals) => setFieldValue('specialization', vals)}
+                    options={SPECIALIZATIONS.map(spec => ({
+                        label: t(spec.label as any) || spec.fallback,
+                        value: spec.value
+                    }))}
+                    placeholder={t('Auth.primarySpecialization')}
+                />
+                <ErrorMessage name="specialization" component="div" className={styles.error} />
+            </div>
+
+            {/* ── Location Section ── */}
+            <div className="space-y-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="text-[11px] font-bold text-foreground/40 uppercase tracking-wider">
+                        {tLoc('address')}
+                    </p>
+                    <LocationDetectButton
+                        status={locStatus}
+                        error={locError}
+                        onClick={detect}
+                        className="w-auto flex-shrink-0"
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Governorate */}
+                    <div className={styles.fieldWrapper}>
+                        <label className={styles.label}>{tLoc('governorate')}</label>
+                        <input
+                            type="text"
+                            name="governorate"
+                            value={values.governorate ?? ''}
+                            onChange={(e) => setFieldValue('governorate', e.target.value)}
+                            className={styles.input}
+                            placeholder={tLoc('governoratePlaceholder')}
+                        />
+                    </div>
+                    {/* City */}
+                    <div className={styles.fieldWrapper}>
+                        <label className={styles.label}>{tLoc('city')}</label>
+                        <input
+                            type="text"
+                            name="city"
+                            value={values.city ?? ''}
+                            onChange={(e) => setFieldValue('city', e.target.value)}
+                            className={styles.input}
+                            placeholder={tLoc('cityPlaceholder')}
+                        />
+                    </div>
+                    {/* Area */}
+                    <div className={styles.fieldWrapper}>
+                        <label className={styles.label}>{tLoc('area')}</label>
+                        <input
+                            type="text"
+                            name="area"
+                            value={values.area ?? ''}
+                            onChange={(e) => setFieldValue('area', e.target.value)}
+                            className={styles.input}
+                            placeholder={tLoc('areaPlaceholder')}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className={styles.gridWrapper}>
+                {/* Email */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.email')}
+                    </label>
+                    <Field
+                        name="email"
+                        type="email"
+                        className={styles.input}
+                        placeholder={t('Auth.emailPlaceholder')}
+                    />
+                    <ErrorMessage name="email" component="div" className={styles.error} />
+                </div>
+
+                {/* Phone */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.phone')}
+                    </label>
+                    <Field
+                        name="phone"
+                        className={styles.input}
+                        placeholder={t('Auth.phonePlaceholder')}
+                    />
+                    <ErrorMessage name="phone" component="div" className={styles.error} />
+                </div>
+            </div>
+
+            {/* Certifications (Upload) */}
+            <div className={styles.fieldWrapper}>
+                <label className={styles.label}>
+                    {t('Auth.certificateUpload')}
+                </label>
+                <div
+                    onClick={() => certificationsRef.current?.click()}
+                    className={styles.uploadContainer}
+                >
+                    <input
+                        ref={certificationsRef}
+                        type="file"
+                        name="certifications"
+                        className="hidden"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => {
+                            const newFiles = Array.from(e.currentTarget.files || []);
+                            setFieldValue('certifications', [...values.certifications, ...newFiles]);
+                        }}
+                    />
+                    <ArrowUpload24Regular className={styles.uploadIconSize} />
+                    <div className="text-center">
+                        <p className={styles.uploadTitle}>{t('Auth.dragAndDrop')}</p>
+                        <p className={styles.uploadSubtitle}>{t('Auth.uploadHint')}</p>
+                    </div>
+                </div>
+
+                {/* Files List */}
+                {values.certifications.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {values.certifications.map((file: File, index: number) => (
+                            <div
+                                key={index}
+                                className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg group/file"
+                            >
+                                <span className="text-[10px] font-bold text-foreground/60 truncate max-w-[120px]">
+                                    {file.name}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const updatedFiles = values.certifications.filter((_: File, i: number) => i !== index);
+                                        setFieldValue('certifications', updatedFiles);
+                                    }}
+                                    className="text-foreground/20 hover:text-red-400 transition-colors"
+                                >
+                                    <Dismiss20Regular className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                <ErrorMessage name="certifications" component="div" className={styles.error} />
+            </div>
+
+            {/* Statement of Purpose */}
+            <div className={styles.fieldWrapper}>
+                <label className={styles.label}>
+                    {t('Auth.statementOfPurpose')}
+                </label>
+                <Field
+                    as="textarea"
+                    name="desc"
+                    rows={4}
+                    className={styles.textarea}
+                    placeholder={t('Auth.statementPlaceholder')}
+                />
+                <ErrorMessage name="desc" component="div" className={styles.error} />
+            </div>
+
+            <div className={styles.submitWrapper}>
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={styles.submitButton}
+                >
+                    {isSubmitting ? (
+                        <SpinnerIos20Regular className="animate-spin" />
+                    ) : (
+                        <>
+                            {t('Auth.submitApplication')}
+                            <ArrowRight24Regular className={styles.submitIcon} />
+                        </>
+                    )}
+                </button>
+            </div>
+        </Form>
+    );
+}
+
+// ─── Root exported component ─────────────────────────────────────────────────
 export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
     const t = useTranslations();
     const request = useRequestAccessMutation();
-    const certificationsRef = useRef<HTMLInputElement>(null);
 
     const validationSchema = getRequestAccessSchema(t);
 
@@ -167,6 +421,9 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 name: '',
                 email: '',
                 phone: '',
+                governorate: '',
+                city: '',
+                area: '',
                 specialization: [] as string[],
                 experience: '',
                 desc: '',
@@ -179,170 +436,11 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
             }}
         >
             {({ isSubmitting, values, setFieldValue }) => (
-                <Form className={styles.form}>
-                    <div className={styles.gridWrapper}>
-                        {/* Full Name */}
-                        <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
-                                {t('Auth.legalFullName')}
-                            </label>
-                            <Field
-                                name="name"
-                                className={styles.input}
-                                placeholder="John Doe"
-                            />
-                            <ErrorMessage name="name" component="div" className={styles.error} />
-                        </div>
-
-                        {/* Experience */}
-                        <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
-                                {t('Auth.yearsOfExperience')}
-                            </label>
-                            <Field
-                                name="experience"
-                                type="number"
-                                className={styles.input}
-                                placeholder={t('Auth.experiencePlaceholder')}
-                            />
-                            <ErrorMessage name="experience" component="div" className={styles.error} />
-                        </div>
-                    </div>
-
-                    <div className={styles.fieldWrapperRelative}>
-                        <label className={styles.label}>
-                            {t('Auth.primarySpecialization')}
-                        </label>
-                        <CustomMultiSelect
-                            name="specialization"
-                            value={values.specialization as string[]}
-                            onChange={(vals) => setFieldValue('specialization', vals)}
-                            options={SPECIALIZATIONS.map(spec => ({
-                                label: t(spec.label as any) || spec.fallback,
-                                value: spec.value
-                            }))}
-                            placeholder={t('Auth.primarySpecialization')}
-                        />
-                        <ErrorMessage name="specialization" component="div" className={styles.error} />
-                    </div>
-
-                    <div className={styles.gridWrapper}>
-                        {/* Email */}
-                        <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
-                                {t('Auth.email')}
-                            </label>
-                            <Field
-                                name="email"
-                                type="email"
-                                className={styles.input}
-                                placeholder={t('Auth.emailPlaceholder')}
-                            />
-                            <ErrorMessage name="email" component="div" className={styles.error} />
-                        </div>
-
-                        {/* Phone */}
-                        <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
-                                {t('Auth.phone')}
-                            </label>
-                            <Field
-                                name="phone"
-                                className={styles.input}
-                                placeholder={t('Auth.phonePlaceholder')}
-                            />
-                            <ErrorMessage name="phone" component="div" className={styles.error} />
-                        </div>
-                    </div>
-
-                    {/* Certifications (Upload) */}
-                    <div className={styles.fieldWrapper}>
-                        <label className={styles.label}>
-                            {t('Auth.certificateUpload')}
-                        </label>
-                        <div
-                            onClick={() => certificationsRef.current?.click()}
-                            className={styles.uploadContainer}
-                        >
-                            <input
-                                ref={certificationsRef}
-                                type="file"
-                                name="certifications"
-                                className="hidden"
-                                multiple
-                                accept="image/*"
-                                onChange={(e) => {
-                                    const newFiles = Array.from(e.currentTarget.files || []);
-                                    setFieldValue('certifications', [...values.certifications, ...newFiles]);
-                                }}
-                            />
-                            <ArrowUpload24Regular className={styles.uploadIconSize} />
-                            <div className="text-center">
-                                <p className={styles.uploadTitle}>{t('Auth.dragAndDrop')}</p>
-                                <p className={styles.uploadSubtitle}>{t('Auth.uploadHint')}</p>
-                            </div>
-                        </div>
-
-                        {/* Files List */}
-                        {values.certifications.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {values.certifications.map((file: File, index: number) => (
-                                    <div 
-                                        key={index}
-                                        className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg group/file"
-                                    >
-                                        <span className="text-[10px] font-bold text-foreground/60 truncate max-w-[120px]">
-                                            {file.name}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const updatedFiles = values.certifications.filter((_: File, i: number) => i !== index);
-                                                setFieldValue('certifications', updatedFiles);
-                                            }}
-                                            className="text-foreground/20 hover:text-red-400 transition-colors"
-                                        >
-                                            <Dismiss20Regular className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <ErrorMessage name="certifications" component="div" className={styles.error} />
-                    </div>
-
-                    {/* Statement of Purpose */}
-                    <div className={styles.fieldWrapper}>
-                        <label className={styles.label}>
-                            {t('Auth.statementOfPurpose')}
-                        </label>
-                        <Field
-                            as="textarea"
-                            name="desc"
-                            rows={4}
-                            className={styles.textarea}
-                            placeholder={t('Auth.statementPlaceholder')}
-                        />
-                        <ErrorMessage name="desc" component="div" className={styles.error} />
-                    </div>
-
-                    <div className={styles.submitWrapper}>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={styles.submitButton}
-                        >
-                            {isSubmitting ? (
-                                <SpinnerIos20Regular className="animate-spin" />
-                            ) : (
-                                <>
-                                    {t('Auth.submitApplication')}
-                                    <ArrowRight24Regular className={styles.submitIcon} />
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </Form>
+                <CoachFormInner
+                    isSubmitting={isSubmitting}
+                    values={values as CoachFormInnerProps['values']}
+                    setFieldValue={setFieldValue}
+                />
             )}
         </Formik>
     );

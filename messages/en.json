@@ -341,5 +341,18 @@
         "aiFeaturesDescription": "GymSpot integrates AI to enhance your experience. From general fitness knowledge to platform-aware smart recommendations (RAG), our AI assistant helps you understand job posts, coaches, gyms, and applicants better.",
         "summaryTitle": "The Unified Ecosystem",
         "summaryDescription": "Combining recruitment, marketing, communication, and intelligence into one powerful platform for the fitness world."
+    },
+    "Location": {
+        "detectLocation": "Detect My Location",
+        "detecting": "Detecting location...",
+        "locationDetected": "Location detected",
+        "governorate": "Governorate",
+        "city": "City",
+        "area": "District / Area",
+        "address": "Street Address",
+        "governoratePlaceholder": "e.g. Giza",
+        "cityPlaceholder": "e.g. 6th of October",
+        "areaPlaceholder": "e.g. 12th District",
+        "addressPlaceholder": "Street, Building..."
     }
 }
