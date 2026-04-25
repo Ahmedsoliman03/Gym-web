@@ -1,12 +1,10 @@
 import { useTranslations } from 'next-intl';
 import { Users, Search, MessageSquare, Cpu, Layout } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 
 const styles = {
-    container: "pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto",
-    heroSection: "text-center mb-24 animate-in fade-in slide-in-from-top-8 duration-700",
-    heroTitle: "text-5xl md:text-7xl font-black mb-8 tracking-tighter text-white",
-    heroSubtitle: "text-xl md:text-2xl text-foreground/60 max-w-3xl mx-auto leading-relaxed",
-    featuresGrid: "grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24",
+    container: "pt-24 pb-20 px-6 md:px-12 max-w-7xl mx-auto",
+    featuresGrid: "grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24 mt-12",
     featureCard: "p-8 rounded-3xl bg-surface/50 border border-white/5 backdrop-blur-xl hover:border-primary/20 transition-all group animate-in fade-in zoom-in-95 duration-500",
     featureIconWrapper: "w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform",
     featureTitle: "text-xl font-bold mb-4",
@@ -54,15 +52,11 @@ export default function AboutPage() {
 
     return (
         <div className={styles.container}>
-            {/* Hero Section */}
-            <section className={styles.heroSection}>
-                <h1 className={styles.heroTitle}>
-                    {t('title')}
-                </h1>
-                <p className={styles.heroSubtitle}>
-                    {t('overview')}
-                </p>
-            </section>
+            <PageHeader 
+              title={t('title')}
+              highlight={t('highlight')}
+              description={t('overview')}
+            />
 
             {/* Features Grid */}
             <div className={styles.featuresGrid}>

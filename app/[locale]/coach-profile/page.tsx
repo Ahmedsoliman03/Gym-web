@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 
 const styles = {
   main: "min-h-screen bg-background text-foreground pb-20",
-  container: "max-w-7xl mx-auto px-4 md:px-8 pt-32"
+  container: "max-w-7xl mx-auto px-4 md:px-8 pt-24"
 };
 
 // This page currently hardcodes "marcus-thorne" but logic is ready for dynamic routes

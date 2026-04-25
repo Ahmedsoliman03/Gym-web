@@ -12,10 +12,10 @@ import { CoachCard } from './coach-card';
 const styles = {
   container: "min-h-screen bg-background text-foreground font-sans selection:bg-primary/30",
   main: "pt-24 pb-12",
-  header: "py-8 md:py-12 border-b border-white/5 relative",
+  header: "px-6 relative",
   gradientOverlay: "absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent blur-3xl -z-10",
-  headerContent: "px-6 mx-auto",
-  gridContainer: "px-6 max-w-[1920px] mx-auto pt-12",
+  headerContent: "max-w-[1920px] mx-auto",
+  gridContainer: "px-6 md:px-12 max-w-[1920px] mx-auto",
   titleRow: "flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-white/5 pb-8 gap-4",
   titleLabel: "font-headline text-3xl font-black uppercase",
   titleUnderline: "h-1 w-20 bg-primary mt-4",

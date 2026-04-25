@@ -1,6 +1,6 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock, ClipboardList } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
@@ -221,6 +221,14 @@ export const Navbar = () => {
                       >
                         <Zap size={16} />
                         {t('yourPosts')}
+                      </Link>
+                      <Link
+                        href="/applications"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <ClipboardList size={16} />
+                        {t('applications')}
                       </Link>
                       <div className="h-[1px] bg-white/5 my-1" />
                       <Link

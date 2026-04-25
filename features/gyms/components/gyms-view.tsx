@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl';
 
 const styles = {
   container: "min-h-screen bg-background text-foreground font-sans selection:bg-primary/30",
-  main: "pt-32 pb-24",
+  main: "pt-24 pb-12",
   header: "px-6 relative",
   gradientOverlay: "absolute -top-32 right-0 w-1/3 h-[500px] bg-gradient-to-l from-primary/10 to-transparent blur-3xl -z-10",
   gridContainer: "px-6 md:px-12 max-w-[1920px] mx-auto",

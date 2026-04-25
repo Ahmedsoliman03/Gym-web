@@ -1,19 +1,26 @@
 'use client';
 
-import { 
-  Bookmark, Share2, Zap, MapPin, Building2, Banknote, 
-  MoreVertical, Edit2, Trash2, Power 
+import {
+    Bookmark, Share2, Zap, MapPin, Building2, Banknote,
+    MoreVertical, Edit2, Trash2, Power,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
+import { useLocale } from 'next-intl';
+import { SharePostModal } from './share-post-modal';
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface JobCardProps {
     job: any;
     onApply: (job: any) => void;
-    onEdit: (job: any) => void;
+    onEdit?: (job: any) => void;
     onAction: (action: string, job: any) => void;
     index: number;
+    inDetails?: boolean;
 }
+
+// ─── Styles object ─────────────────────────────────────────────────────────────
 
 const styles = {
     card: "bg-surface rounded-2xl overflow-hidden group transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5",
@@ -35,14 +42,24 @@ const styles = {
     footerActions: "px-8 pb-8 flex flex-col sm:flex-row gap-4",
     actionButton: "flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-white/5 text-foreground hover:bg-white/10 transition-all active:scale-95 font-bold text-sm uppercase",
     applyButton: "flex-[2] flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-primary text-primary-foreground font-black hover:opacity-90 transition-all active:scale-95 shadow-[0_10px_30px_rgba(34,197,94,0.15)] text-sm uppercase",
+    menuWrapper: "relative",
     dropdown: "absolute right-0 top-full mt-2 w-48 bg-[#161B22] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2",
     dropdownItem: "flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-foreground/70 hover:text-white hover:bg-white/5 transition-colors",
+    dropdownItemDanger: "flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-500 hover:text-red-400 hover:bg-white/5 transition-colors",
 };
 
-export function JobCard({ job, onApply, onEdit, onAction, index }: JobCardProps) {
+// ─── Component ─────────────────────────────────────────────────────────────────
+
+export function JobCard({ job, onApply, onEdit, onAction, index, inDetails }: JobCardProps) {
     const t = useTranslations('Jobs');
+    const locale = useLocale();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [shareOpen, setShareOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    const jobUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/${locale}/jobs/${job.id}`
+        : `/${locale}/jobs/${job.id}`;
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -56,89 +73,101 @@ export function JobCard({ job, onApply, onEdit, onAction, index }: JobCardProps)
 
     const handleAction = (action: string) => {
         setMenuOpen(false);
-        if (action === 'edit') {
-            onEdit(job);
-        } else {
-            onAction(action, job);
-        }
+
+        if (action === 'edit' && onEdit) onEdit(job);
+        else onAction(action, job);
     };
 
     return (
-        <article className={styles.card} style={{ animationDelay: `${index * 0.1}s` }}>
-            <div className={styles.cardHeader}>
-                <div className={styles.authorWrapper}>
-                    <img src={job.author.avatar} alt={job.author.name} className={styles.avatar} />
-                    <div>
-                        <h4 className={styles.authorName}>{job.author.name}</h4>
-                        <p className={styles.authorMeta}>{job.author.time} • {job.author.role}</p>
+        <>
+            <article className={styles.card} style={{ animationDelay: `${index * 0.1}s` }}>
+
+                {/* Card header */}
+                <div className={styles.cardHeader}>
+                    <div className={styles.authorWrapper}>
+                        <img src={job.author.avatar} alt={job.author.name} className={styles.avatar} />
+                        <div>
+                            <h4 className={styles.authorName}>{job.author.name}</h4>
+                            <p className={styles.authorMeta}>{job.author.time} • {job.author.role}</p>
+                        </div>
                     </div>
-                </div>
-                <div className="relative" ref={menuRef}>
-                    <button 
-                        className={styles.menuButton}
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        <MoreVertical size={20} />
-                    </button>
-                    {menuOpen && (
-                        <div className={styles.dropdown}>
-                            <button onClick={() => handleAction('close')} className={styles.dropdownItem}>
-                                <Power size={16} />
-                                {t('closePost')}
+
+                    {/* Context menu */}
+                    {!inDetails && (
+                        <div className={styles.menuWrapper} ref={menuRef}>
+                            <button className={styles.menuButton} onClick={() => setMenuOpen(!menuOpen)}>
+                                <MoreVertical size={20} />
                             </button>
-                            <button onClick={() => handleAction('delete')} className={`${styles.dropdownItem} text-red-500 hover:text-red-400`}>
-                                <Trash2 size={16} />
-                                {t('deletePost')}
-                            </button>
-                            <button onClick={() => handleAction('edit')} className={styles.dropdownItem}>
-                                <Edit2 size={16} />
-                                {t('editPost')}
-                            </button>
+                            {menuOpen && (
+                                <div className={styles.dropdown}>
+                                    <button onClick={() => handleAction('close')} className={styles.dropdownItem}>
+                                        <Power size={16} />
+                                        {t('closePost')}
+                                    </button>
+                                    <button onClick={() => handleAction('delete')} className={styles.dropdownItemDanger}>
+                                        <Trash2 size={16} />
+                                        {t('deletePost')}
+                                    </button>
+                                    <button onClick={() => handleAction('edit')} className={styles.dropdownItem}>
+                                        <Edit2 size={16} />
+                                        {t('editPost')}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
-            </div>
 
-            <div className={styles.imageWrapper}>
-                <img src={job.image} alt={job.title} className={styles.image} />
-            </div>
-
-            <div className={styles.contentBody}>
-                <h2 className={styles.jobTitle}>{job.title}</h2>
-                <div className={styles.metaGrid}>
-                    <div className={styles.metaItem}>
-                        <MapPin size={14} />
-                        <span>{job.location}</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                        <Building2 size={14} />
-                        <span>{job.company}</span>
-                    </div>
-                    <div className={`${styles.metaItem} ${styles.salary}`}>
-                        <Banknote size={14} />
-                        <span>{job.salary}</span>
-                    </div>
+                {/* Hero image */}
+                <div className={styles.imageWrapper}>
+                    <img src={job.image} alt={job.title} className={styles.image} />
                 </div>
-                <p className={styles.description}>{job.description}</p>
-            </div>
 
-            <div className={styles.footerActions}>
-                <button 
-                    className={styles.applyButton}
-                    onClick={() => onApply(job)}
-                >
-                    <Zap size={18} fill="currentColor" />
-                    <span>{t('applyNow')}</span>
-                </button>
-                <button className={styles.actionButton}>
-                    <Bookmark size={18} />
-                    <span>{t('savePost')}</span>
-                </button>
-                <button className={styles.actionButton}>
-                    <Share2 size={18} />
-                    <span>{t('sharePost')}</span>
-                </button>
-            </div>
-        </article>
+                {/* Content */}
+                <div className={styles.contentBody}>
+                    <h2 className={styles.jobTitle}>{job.title}</h2>
+                    <div className={styles.metaGrid}>
+                        <div className={styles.metaItem}>
+                            <MapPin size={14} />
+                            <span>{job.location}</span>
+                        </div>
+                        <div className={styles.metaItem}>
+                            <Building2 size={14} />
+                            <span>{job.company}</span>
+                        </div>
+                        <div className={`${styles.metaItem} ${styles.salary}`}>
+                            <Banknote size={14} />
+                            <span>{job.salary}</span>
+                        </div>
+                    </div>
+                    <p className={styles.description}>{job.description}</p>
+                </div>
+
+                {/* Footer actions */}
+                <div className={styles.footerActions}>
+                    <button className={styles.applyButton} onClick={() => onApply(job)}>
+                        <Zap size={18} fill="currentColor" />
+                        <span>{t('applyNow')}</span>
+                    </button>
+                    <button className={styles.actionButton}>
+                        <Bookmark size={18} />
+                        <span>{t('savePost')}</span>
+                    </button>
+                    <button className={styles.actionButton} onClick={() => setShareOpen(true)}>
+                        <Share2 size={18} />
+                        <span>{t('sharePost')}</span>
+                    </button>
+                </div>
+
+            </article>
+
+            {/* Share modal — extracted shared component */}
+            <SharePostModal
+                isOpen={shareOpen}
+                onClose={() => setShareOpen(false)}
+                url={jobUrl}
+                title={job.title}
+            />
+        </>
     );
 }

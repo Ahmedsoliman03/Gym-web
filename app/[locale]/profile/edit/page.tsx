@@ -9,8 +9,8 @@ export default function EditProfilePage() {
   if (profile.type === 'client') return <div>Access Denied</div>;
 
   return (
-    <main className="pt-18 min-h-screen bg-background text-foreground">
-      <div className="max-w-4xl mx-auto px-6">
+    <main className="pt-24 min-h-screen bg-background text-foreground">
+      <div className="max-w-3xl mx-auto px-6 pb-20">
         <EditProfileForm profile={profile} />
       </div>
     </main>
