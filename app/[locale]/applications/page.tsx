@@ -77,7 +77,7 @@ const styles = {
   tag: "inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mb-4",
   title: "text-4xl md:text-5xl font-headline font-black text-foreground mb-3",
   subtitle: "text-foreground/50 max-w-xl",
-  filterBar: "flex items-center gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide",
+  filterBar: "flex items-center gap-3 mb-8 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
   filterBtnActive: "px-4 py-2 rounded-xl text-sm font-bold uppercase whitespace-nowrap transition-all bg-primary text-primary-foreground shadow-[0_4px_15px_rgba(34,197,94,0.2)]",
   filterBtnIdle: "px-4 py-2 rounded-xl text-sm font-bold uppercase whitespace-nowrap transition-all bg-white/5 text-foreground/50 hover:bg-white/10",
   emptyState: "text-center py-24 text-foreground/30",
@@ -101,9 +101,10 @@ export default function ApplicationsPage() {
       <div className={styles.inner}>
 
         {/* Page header */}
-        <PageHeader 
+        <PageHeader
           title={t('title')}
           description={t('description')}
+          highlight={t('highlight')}
         />
 
         {/* Filter bar — driven by SPECIALIZATIONS constant */}

@@ -1,6 +1,6 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock, ClipboardList } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
@@ -90,6 +90,7 @@ export const Navbar = () => {
     { label: t('coaches'), href: "/coaches" },
     { label: t('gyms'), href: "/gyms" },
     { label: t('jobBoard'), href: "/jobs" },
+    { label: t('applications'), href: "/applications" },
     { label: t('about'), href: "/about" },
   ];
 
@@ -180,19 +181,19 @@ export const Navbar = () => {
 
                 <div className="relative" ref={userMenuRef}>
                   <button
-                    className={styles.profileLink(pathname === '/coach-profile', isRtl)}
+                    className={styles.profileLink(pathname === '/profile', isRtl)}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
-                    <div className={styles.profileIconWrapper(pathname === '/coach-profile')}>
+                    <div className={styles.profileIconWrapper(pathname === '/profile')}>
                       <User size={18} />
                     </div>
-                    <span className={styles.profileName(pathname === '/coach-profile')}>gym</span>
+                    <span className={styles.profileName(pathname === '/profile')}>gym</span>
                   </button>
 
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-[120] overflow-hidden py-2 animate-in fade-in slide-in-from-top-2">
                       <Link
-                        href="/coach-profile"
+                        href="/profile"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
@@ -221,14 +222,6 @@ export const Navbar = () => {
                       >
                         <Zap size={16} />
                         {t('yourPosts')}
-                      </Link>
-                      <Link
-                        href="/applications"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
-                      >
-                        <ClipboardList size={16} />
-                        {t('applications')}
                       </Link>
                       <div className="h-[1px] bg-white/5 my-1" />
                       <Link

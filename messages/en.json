@@ -385,7 +385,8 @@
     },
     "Applications": {
         "tag": "Incoming Applications",
-        "title": "Job Applications",
+        "title": "Job",
+        "highlight": "Applications",
         "description": "Review and respond to coaches who have applied to your job posts.",
         "allPosts": "All Posts",
         "noApplications": "No applications yet",
