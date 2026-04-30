@@ -1,9 +1,6 @@
 export const JOBS = [
     {
         id: 1,
-
-
-
         author: {
             name: "Marcus Thorne",
             role: "Head of Talent",
