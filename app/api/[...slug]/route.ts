@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 // Base URL for your actual backend
-const NEXT_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const NEXT_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 const API_WITH_PATH = NEXT_API_URL.endsWith("/api") ? NEXT_API_URL : `${NEXT_API_URL}/api`;
 const BACKEND_URL = API_WITH_PATH.endsWith("/") ? API_WITH_PATH : `${API_WITH_PATH}/`;
 
@@ -45,16 +46,31 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
         const headers = new Headers(request.headers);
         headers.delete("host"); // Remove host to prevent conflict
 
-        // تمرير عنوان الـ IP الحقيقي للمستخدم للباك إند (لأغراض الأمان مثل Rate Limiting)
+        // Bypass ngrok browser warning page
+        headers.set('ngrok-skip-browser-warning', '798414');
+
+        // تمرير عنوان الـ IP الحقيقي للمستخدم للباك إند
         const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
         if (ip) {
             headers.set('X-Forwarded-For', ip);
         }
 
-        let body = null;
+        let body: any = undefined;
         if (!["GET", "HEAD"].includes(request.method)) {
-            const rawBody = await request.clone().text();
-            if (rawBody) body = rawBody;
+            const tempBody = await request.arrayBuffer();
+            if (tempBody.byteLength > 0) {
+                body = tempBody;
+            } else {
+                // If there's no body, delete Content-Type to avoid backend parsing errors on empty POSTs
+                headers.delete("content-type");
+            }
+        }
+
+        // Translate the cookie token to the Authorization Bearer header for the backend
+        const cookieStore = await cookies();
+        const token = cookieStore.get('access_token')?.value || cookieStore.get('token')?.value;
+        if (token && !headers.has('Authorization')) {
+            headers.set('Authorization', `Bearer ${token}`);
         }
 
         const response = await fetch(url.toString(), {
@@ -62,7 +78,6 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
             headers: headers,
             body: body,
             cache: "no-store",
-            credentials: "include",
         });
 
         // قراءة الـ Headers القادمة من الباك إند
@@ -75,7 +90,7 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
             resHeaders.set("Content-Type", "application/json");
         }
 
-        const data = await response.text();
+        const data = response.status === 204 ? null : await response.text();
 
         // تجهيز الـ Response الخاص بـ Next.js
         const nextResponse = new NextResponse(data, {
@@ -89,6 +104,12 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
             setCookies.forEach(cookie => {
                 nextResponse.headers.append("Set-Cookie", cookie);
             });
+        }
+
+        // Force clear cookies on logout if they were not already cleared by a successful response
+        if (path.endsWith("auth/logout")) {
+            nextResponse.headers.append("Set-Cookie", "access_token=; Max-Age=0; path=/; SameSite=Lax; HttpOnly; Secure");
+            nextResponse.headers.append("Set-Cookie", "refresh_token=; Max-Age=0; path=/; SameSite=Lax; HttpOnly; Secure");
         }
 
         return nextResponse;

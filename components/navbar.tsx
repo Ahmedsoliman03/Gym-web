@@ -5,6 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
 import { NotificationsMenu } from "@/features/notification/components/notifications-menu";
+import { useAuthUser } from "@/features/auth/hooks/useAuthUser";
+import { useProfile } from "@/features/profile/services/profile.service";
 
 const styles = {
   // ... existing styles ...
@@ -71,6 +73,8 @@ const styles = {
 
 export const Navbar = () => {
   const t = useTranslations('Navbar');
+  const { logout } = useAuthUser();
+  const { data: profile } = useProfile();
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -80,6 +84,18 @@ export const Navbar = () => {
   const pathname = usePathname();
   const locale = useLocale();
   const router = useRouter();
+
+  const firstName = profile?.fullName ? profile.fullName.trim().split(/\s+/)[0] : "User";
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+    router.push('/login');
+  };
   const isRtl = locale === 'ar';
   const isAuthPage = pathname.includes('/login') ||
     pathname.includes('/register') ||
@@ -96,6 +112,7 @@ export const Navbar = () => {
 
   const toggleLanguage = () => {
     const nextLocale = locale === 'en' ? 'ar' : 'en';
+    // window.location.href = `/${nextLocale}${pathname}`;
     router.replace(pathname, { locale: nextLocale });
   };
 
@@ -187,7 +204,7 @@ export const Navbar = () => {
                     <div className={styles.profileIconWrapper(pathname === '/profile')}>
                       <User size={18} />
                     </div>
-                    <span className={styles.profileName(pathname === '/profile')}>gym</span>
+                    <span className={styles.profileName(pathname === '/profile')}>{firstName}</span>
                   </button>
 
                   {userMenuOpen && (
@@ -224,14 +241,16 @@ export const Navbar = () => {
                         {t('yourPosts')}
                       </Link>
                       <div className="h-[1px] bg-white/5 my-1" />
-                      <Link
-                        href="/login"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-500/80 hover:text-red-500 hover:bg-red-500/5 transition-all"
+                      <button
+                        onClick={async () => {
+                          setUserMenuOpen(false);
+                          await handleLogout();
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-500/80 hover:text-red-500 hover:bg-red-500/5 transition-all cursor-pointer text-left"
                       >
                         <LogOut size={16} />
                         {t('logout')}
-                      </Link>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -292,14 +311,16 @@ export const Navbar = () => {
               </Link>
             );
           })}
-          <Link
-            href="/login"
-            className={styles.mobileLogoutLink}
-            onClick={() => setIsOpen(false)}
+          <button
+            onClick={async () => {
+              setIsOpen(false);
+              await handleLogout();
+            }}
+            className={`${styles.mobileLogoutLink} cursor-pointer w-full text-left`}
           >
             <LogOut size={24} />
             {t('logout')}
-          </Link>
+          </button>
         </div>
 
         {/* <div className={styles.mobileFooter}>

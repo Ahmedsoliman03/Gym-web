@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { X, Plus, ChevronRight } from "lucide-react";
+import { X, Plus, ChevronRight, Maximize2 } from "lucide-react";
+import { ImageLightbox } from "@/components/shared/image-lightbox";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -29,6 +30,11 @@ export const GalleryEditor = ({
 }: GalleryEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
+  
+  const [lightbox, setLightbox] = useState({
+    isOpen: false,
+    index: 0
+  });
 
   const scroll = (direction: "left" | "right") => {
     if (sliderRef.current) {
@@ -52,6 +58,10 @@ export const GalleryEditor = ({
 
   const handleRemove = (index: number) => {
     onChange(images.filter((_, i) => i !== index));
+  };
+
+  const openLightbox = (index: number) => {
+    setLightbox({ isOpen: true, index });
   };
 
   return (
@@ -84,8 +94,11 @@ export const GalleryEditor = ({
               <X size={16} />
             </button>
 
-            <div className={styles.image}>
+            <div className={styles.image} onClick={() => openLightbox(idx)}>
               <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+              <div className={styles.imageOverlay}>
+                <Maximize2 className="text-white" size={24} />
+              </div>
             </div>
           </div>
         ))}
@@ -105,6 +118,13 @@ export const GalleryEditor = ({
         </label>
       </div>
 
+      <ImageLightbox 
+        isOpen={lightbox.isOpen}
+        currentIndex={lightbox.index}
+        images={images}
+        onClose={() => setLightbox(prev => ({ ...prev, isOpen: false }))}
+      />
+
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -117,3 +137,4 @@ export const GalleryEditor = ({
     </div>
   );
 };
+

@@ -38,23 +38,16 @@ const styles = {
   footerLink: "text-foreground/40 hover:text-primary transition-colors cursor-pointer"
 };
 
+import { useRouter } from '@/i18n/routing';
+
 export default function RequestAccessForm() {
     const t = useTranslations();
-    const [submitted, setSubmitted] = useState(false);
+    const router = useRouter();
     const [type, setType] = useState<'gym' | 'coach'>('gym');
 
-    if (submitted) {
-        return (
-            <div className={styles.submitted.container}>
-                <div className={styles.submitted.iconWrapper}>
-                    <CheckmarkCircle24Regular className={styles.submitted.icon} />
-                </div>
-                <h2 className={styles.submitted.title}>{t('Auth.requestSent')}</h2>
-                <p className={styles.submitted.description}>{t('Auth.requestPending')}</p>
-                <Link href="/login" className={styles.submitted.link}>{t('Auth.returnToLogin')}</Link>
-            </div>
-        );
-    }
+    const handleSuccess = () => {
+        router.push('/request-access/success');
+    };
 
     return (
         <div className={styles.container}>
@@ -94,9 +87,9 @@ export default function RequestAccessForm() {
                 </div>
 
                 {type === 'gym' ? (
-                    <GymRequestForm onSuccess={() => setSubmitted(true)} />
+                    <GymRequestForm onSuccess={handleSuccess} />
                 ) : (
-                    <CoachRequestForm onSuccess={() => setSubmitted(true)} />
+                    <CoachRequestForm onSuccess={handleSuccess} />
                 )}
             </div>
 

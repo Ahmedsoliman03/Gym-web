@@ -3,10 +3,11 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getLoginSchema } from '../validations';
-import { useLoginMutation } from '../services/auth.service';
+import { useAuthUser } from '../hooks/useAuthUser';
 import { Mail24Regular, LockClosed24Regular, ArrowRight24Regular, SpinnerIos20Regular, Eye24Regular, EyeOff24Regular } from '@fluentui/react-icons';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const styles = {
     container: "space-y-6",
@@ -29,7 +30,7 @@ const styles = {
     inputPassword: "w-full pl-10 pr-12 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
     eyeButton: "absolute inset-y-0 right-0 pr-3 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
     error: "text-red-500 text-xs mt-1 px-1",
-    submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
+    submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 enabled:hover:scale-[1.01] enabled:active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase",
     footer: "mt-8 pt-6 border-t border-white/5 space-y-6",
     actionGrid: "grid grid-cols-2 gap-3",
     actionLink: "group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-primary/20 transition-all",
@@ -45,7 +46,8 @@ const styles = {
 
 export default function LoginForm() {
     const t = useTranslations();
-    const login = useLoginMutation();
+    const router = useRouter();
+    const { login } = useAuthUser();
     const [showPassword, setShowPassword] = useState(false);
     const validationSchema = getLoginSchema(t);
 
@@ -89,9 +91,17 @@ export default function LoginForm() {
             <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={validationSchema}
-                onSubmit={(values) => login.mutate(values)}
+                onSubmit={async (values) => {
+                    try {
+                        await login(values);
+                        toast.success(t('Auth.loginSuccess') || 'Logged in successfully!');
+                        router.push('/');
+                    } catch (error: any) {
+                        toast.error(error?.response?.data?.message || t('Auth.loginFailed'));
+                    }
+                }}
             >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, isValid, dirty }) => (
                     <Form className={styles.form}>
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
@@ -139,7 +149,7 @@ export default function LoginForm() {
 
                         <button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !isValid || !dirty}
                             className={styles.submitButton}
                         >
                             {isSubmitting ? (

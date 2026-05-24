@@ -1,8 +1,15 @@
 import * as Yup from 'yup';
 
+const getPasswordSchema = (t: any) => Yup.string()
+    .min(8, t('Validation.min', { field: t('Auth.password'), min: 8 }))
+    .matches(/[A-Z]/, t('Validation.passwordCapital'))
+    .matches(/[0-9]/, t('Validation.passwordNumber'))
+    .matches(/[!@#$%^&*(),.?":{}|<>]/, t('Validation.passwordSpecial'))
+    .required(t('Validation.required', { field: t('Auth.password') }));
+
 export const getLoginSchema = (t: any) => Yup.object().shape({
     email: Yup.string().email(t('Validation.email')).required(t('Validation.required', { field: t('Auth.email') })),
-    password: Yup.string().min(8, t('Validation.min', { field: t('Auth.password'), min: 8 })).required(t('Validation.required', { field: t('Auth.password') })),
+    password: getPasswordSchema(t),
 });
 
 export const getRequestAccessSchema = (t: any) => Yup.object().shape({
@@ -92,12 +99,13 @@ export const getOtpSchema = (t: any) => Yup.object().shape({
 });
 
 export const getRegisterSchema = (t: any) => Yup.object().shape({
-    fullName: Yup.string().required(t('Validation.required', { field: t('Auth.fullName') })),
+    firstName: Yup.string().required(t('Validation.required', { field: t('Validation.firstName') })),
+    lastName: Yup.string().required(t('Validation.required', { field: t('Validation.lastName') })),
     email: Yup.string().email(t('Validation.email')).required(t('Validation.required', { field: t('Auth.email') })),
     phone: Yup.string()
         .matches(/^(01|\+201|00201)[0125][0-9]{8}$/, t('Validation.invalidPhone'))
         .required(t('Validation.required', { field: t('Auth.phone') })),
-    password: Yup.string().min(8, t('Validation.min', { field: t('Auth.password'), min: 8 })).required(t('Validation.required', { field: t('Auth.password') })),
+    password: getPasswordSchema(t),
     confirmPassword: Yup.string()
         .oneOf([Yup.ref('password')], t('Validation.match'))
         .required(t('Validation.required', { field: t('Validation.confirmPassword') })),
@@ -106,7 +114,7 @@ export const getRegisterSchema = (t: any) => Yup.object().shape({
 export const getActivateProfileSchema = (t: any) => Yup.object().shape({
     email: Yup.string().email(t('Validation.email')).required(t('Validation.required', { field: t('Auth.email') })),
     inviteCode: Yup.string().length(8, t('Validation.min', { field: t('Auth.inviteCode'), min: 8 })).required(t('Validation.required', { field: t('Auth.inviteCode') })),
-    password: Yup.string().min(8, t('Validation.min', { field: t('Auth.password'), min: 8 })).required(t('Validation.required', { field: t('Auth.password') })),
+    password: getPasswordSchema(t),
     confirmPassword: Yup.string()
         .oneOf([Yup.ref('password')], t('Validation.match'))
         .required(t('Validation.required', { field: t('Validation.confirmPassword') })),

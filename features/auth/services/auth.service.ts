@@ -1,47 +1,113 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-// Mock service for demonstration
-const mockApiDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { api } from '@/utils/axios';
+import {
+    LoginRequest,
+    RegisterRequest,
+    RequestAccessRequest,
+    VerifyOTPRequest,
+    ActivateRequest,
+    RefreshRequest,
+} from '../types';
 
 export const useLoginMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (values: any) => {
-            await mockApiDelay(1000);
-            console.log('Login attempt:', values);
-            return { user: { id: 1, email: values.email }, token: 'mock-jwt' };
+        mutationFn: async (values: LoginRequest) => {
+            const { data } = await api.post('/api/auth/login', values);
+            return data;
         },
         onSuccess: (data) => {
-            queryClient.setQueryData(['session'], data);
+            // if (data?.token) {
+            //     const expires = new Date();
+            //     expires.setDate(expires.getDate() + 7); // 7 days
+            //     document.cookie = `access_token=${data.token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax; Secure`;
+            // }
+            queryClient.setQueryData(['session'], data.user);
         }
     });
 };
 
-export const useRequestAccessMutation = () => {
-    return useMutation({
-        mutationFn: async (values: any) => {
-            await mockApiDelay(1000);
-            console.log('Request access:', values);
-            return { success: true };
-        }
-    });
-};
 export const useRegisterMutation = () => {
     return useMutation({
-        mutationFn: async (values: any) => {
-            await mockApiDelay(1000);
-            console.log('Register attempt:', values);
-            return { success: true };
+        mutationFn: async (values: RegisterRequest) => {
+            const { data } = await api.post('/api/auth/register', values);
+            return data;
         }
     });
 };
 
 export const useVerifyOTPMutation = () => {
     return useMutation({
-        mutationFn: async (values: { code: string }) => {
-            await mockApiDelay(1000);
-            console.log('Verify OTP:', values);
-            return { success: true };
+        mutationFn: async (values: VerifyOTPRequest) => {
+            const { data } = await api.post('/api/auth/verify-otp', values);
+            return data;
+        }
+    });
+};
+
+export const useActivateMutation = () => {
+    return useMutation({
+        mutationFn: async (values: ActivateRequest) => {
+            const { data } = await api.post('/api/auth/activate', values);
+            return data;
+        }
+    });
+};
+
+export const useRequestAccessMutation = () => {
+    return useMutation({
+        mutationFn: async (values: RequestAccessRequest) => {
+            const formData = new FormData();
+
+            Object.entries(values).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    if (key === 'specialization' && Array.isArray(value)) {
+                        formData.append(key, JSON.stringify(value));
+                    } else if (Array.isArray(value)) {
+                        value.forEach((v) => {
+                            if (v instanceof File) {
+                                formData.append(`${key}`, v); // Backend usually handles multi-files with same key or key[]
+                            } else {
+                                formData.append(`${key}[]`, String(v));
+                            }
+                        });
+                    } else if (value instanceof File) {
+                        formData.append(key, value);
+                    } else {
+                        formData.append(key, String(value));
+                    }
+                }
+            });
+
+            const { data } = await api.post('/api/request-access', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return data;
+        }
+    });
+};
+
+export const useRefreshMutation = () => {
+    return useMutation({
+        mutationFn: async (values: RefreshRequest) => {
+            const { data } = await api.post('/api/auth/token/refresh', values);
+            return data;
+        }
+    });
+};
+
+export const useLogoutMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async () => {
+            const { data } = await api.post('/api/auth/logout');
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.setQueryData(['session'], null);
+            queryClient.invalidateQueries({ queryKey: ['session'] });
         }
     });
 };

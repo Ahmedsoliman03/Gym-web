@@ -14,7 +14,7 @@
 }
 
 [lang="ar"] {
-  --font-family: var(--font-ibm-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-family: var(--font-almarai), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {

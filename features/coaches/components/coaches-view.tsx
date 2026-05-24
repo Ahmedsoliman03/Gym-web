@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { COACHES } from '@/constants/coaches';
+import { useCoaches } from '../services/coaches.service';
 
 // Modular Components
 import { CoachesHero } from './coaches-hero';
@@ -32,6 +33,14 @@ export function CoachesView() {
   const t = useTranslations('Coaches');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+
+  const { data: coachesData } = useCoaches();
+
+  useEffect(() => {
+    if (coachesData) {
+      console.log('Coaches Response:', coachesData);
+    }
+  }, [coachesData]);
 
   const filteredCoaches = useMemo(() => {
     return COACHES.filter((coach) => {

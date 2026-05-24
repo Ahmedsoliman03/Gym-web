@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Camera, X, Plus, ChevronRight } from "lucide-react";
+import { Camera, X, Plus, ChevronRight, Maximize2 } from "lucide-react";
+import { ImageLightbox } from "@/components/shared/image-lightbox";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -18,6 +19,8 @@ const styles = {
   inputWrapper: "flex flex-col gap-2",
   label: "text-xs font-black text-foreground/40 uppercase ml-1",
   input: "bg-white/5 py-2.5 border border-white/5 rounded-xl px-4 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-base",
+  imagePreviewActions: "absolute top-4 right-4 flex gap-2 opacity-0 group-hover/img:opacity-100 transition-all z-20",
+  previewBtn: "p-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-lg text-white hover:bg-white/20 transition-all",
 };
 
 import { CustomSelect } from "@/components/ui/custom-select";
@@ -41,6 +44,11 @@ export const TransformationEditor = ({
 }: TransformationEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
+  
+  const [lightbox, setLightbox] = useState({
+    isOpen: false,
+    index: 0
+  });
 
   const durationUnitOptions = [
     { label: t('weeks'), value: 'weeks' },
@@ -111,6 +119,12 @@ export const TransformationEditor = ({
     }
   };
 
+  const openLightbox = (index: number) => {
+    setLightbox({ isOpen: true, index });
+  };
+
+  const validImages = transformations.filter(t => t.image).map(t => t.image);
+
   return (
     <div className={styles.section}>
       <div className="flex items-center justify-between">
@@ -132,7 +146,7 @@ export const TransformationEditor = ({
       </div>
 
       <div ref={sliderRef} className={styles.transGrid}>
-        {transformations.map((item) => (
+        {transformations.map((item, idx) => (
           <div key={item.id} className={styles.transCard}>
             <button
               onClick={() => handleRemove(item.id)}
@@ -143,7 +157,17 @@ export const TransformationEditor = ({
 
             <div className={styles.transImage}>
               {item.image ? (
-                <img src={item.image} alt="Transformation" className="w-full h-full object-cover" />
+                <>
+                  <img src={item.image} alt="Transformation" className="w-full h-full object-cover" />
+                  <div className={styles.imagePreviewActions}>
+                    <button 
+                      onClick={() => openLightbox(idx)}
+                      className={styles.previewBtn}
+                    >
+                      <Maximize2 size={18} />
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center gap-2 text-foreground/20">
                   <Camera size={24} />
@@ -187,8 +211,6 @@ export const TransformationEditor = ({
                     value={item.durationUnit}
                     onChange={(val) => {
                       handleUpdate(item.id, 'durationUnit', val);
-                      // Trigger blur logic immediately after unit change if we want
-                      // but user said "click out of input"
                     }}
                     onBlur={() => handleBlur(item.id)}
                     options={durationUnitOptions}
@@ -213,6 +235,13 @@ export const TransformationEditor = ({
         </button>
       </div>
 
+      <ImageLightbox 
+        isOpen={lightbox.isOpen}
+        currentIndex={lightbox.index}
+        images={validImages}
+        onClose={() => setLightbox(prev => ({ ...prev, isOpen: false }))}
+      />
+
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -225,3 +254,4 @@ export const TransformationEditor = ({
     </div>
   );
 };
+

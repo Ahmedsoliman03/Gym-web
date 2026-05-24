@@ -3,7 +3,7 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRegisterSchema } from '../validations';
-import { useRegisterMutation } from '../services/auth.service';
+import { useAuthUser } from '../hooks/useAuthUser';
 import {
     SpinnerIos20Regular,
     Eye24Regular,
@@ -42,17 +42,19 @@ const styles = {
     error: "text-red-500 text-[10px] mt-0.5 px-1",
     passwordHint: "text-[10px] text-foreground/40 px-1 mt-1 font-medium",
     submitWrapper: "pt-2",
-    submitButton: "w-full py-3.5 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
+    submitButton: "w-full py-3.5 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] enabled:hover:scale-[1.01] enabled:active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
     submitIcon: "w-4 h-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block",
     footer: "text-center pt-2 text-sm font-medium",
     footerDim: "text-foreground/40",
     footerLink: "text-[#3b82f6] hover:text-[#3b82f6]/80 transition-colors cursor-pointer font-bold text-xs"
 };
 
+import toast from 'react-hot-toast';
+
 export default function RegisterForm() {
     const t = useTranslations();
     const router = useRouter();
-    const register = useRegisterMutation();
+    const { register } = useAuthUser();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -91,31 +93,62 @@ export default function RegisterForm() {
             </div>
 
             <Formik
-                initialValues={{ fullName: '', email: '', phone: '', password: '', confirmPassword: '' }}
+                initialValues={{ firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '' }}
                 validationSchema={registerSchema}
                 onSubmit={async (values) => {
-                    await register.mutateAsync(values);
-                    router.push('/verify-otp');
+                    try {
+                        const { firstName, lastName, ...rest } = values;
+                        const fullName = `${firstName.trim()} ${lastName.trim()}`;
+                        await register({
+                            fullName,
+                            ...rest
+                        });
+                        toast.success(t('Auth.otpSent'));
+                        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
+                    } catch (error: any) {
+                        toast.error(error?.response?.data?.message || t('Validation.error'));
+                    }
                 }}
             >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, isValid, dirty }) => (
                     <Form className={styles.form}>
-                        {/* Full Name */}
-                        <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
-                                {t('Auth.fullName')}
-                            </label>
-                            <div className={styles.inputWrapper}>
-                                <div className={styles.inputIcon}>
-                                    <Person24Regular className={styles.inputIconSize} />
+                        {/* Name Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* First Name */}
+                            <div className={styles.fieldWrapper}>
+                                <label className={styles.label}>
+                                    {t('Validation.firstName')}
+                                </label>
+                                <div className={styles.inputWrapper}>
+                                    <div className={styles.inputIcon}>
+                                        <Person24Regular className={styles.inputIconSize} />
+                                    </div>
+                                    <Field
+                                        name="firstName"
+                                        className={styles.input}
+                                        placeholder={t('Validation.firstName')}
+                                    />
                                 </div>
-                                <Field
-                                    name="fullName"
-                                    className={styles.input}
-                                    placeholder={t('Auth.fullNamePlaceholder')}
-                                />
+                                <ErrorMessage name="firstName" component="div" className={styles.error} />
                             </div>
-                            <ErrorMessage name="fullName" component="div" className={styles.error} />
+
+                            {/* Last Name */}
+                            <div className={styles.fieldWrapper}>
+                                <label className={styles.label}>
+                                    {t('Validation.lastName')}
+                                </label>
+                                <div className={styles.inputWrapper}>
+                                    <div className={styles.inputIcon}>
+                                        <Person24Regular className={styles.inputIconSize} />
+                                    </div>
+                                    <Field
+                                        name="lastName"
+                                        className={styles.input}
+                                        placeholder={t('Validation.lastName')}
+                                    />
+                                </div>
+                                <ErrorMessage name="lastName" component="div" className={styles.error} />
+                            </div>
                         </div>
 
                         {/* Email */}
@@ -212,7 +245,7 @@ export default function RegisterForm() {
                         <div className={styles.submitWrapper}>
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !isValid || !dirty}
                                 className={styles.submitButton}
                             >
                                 {isSubmitting ? (

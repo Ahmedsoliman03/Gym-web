@@ -3,15 +3,16 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { QueryProvider } from '@/components/providers/query-provider';
 import { GeistSans } from 'geist/font/sans';
-import { IBM_Plex_Sans_Arabic } from 'next/font/google';
+import { Almarai } from 'next/font/google';
 import '../globals.css';
 import { Metadata } from 'next';
 
-const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+const almarai = Almarai({
     subsets: ['arabic'],
-    weight: ['100', '200', '300', '400', '500', '600', '700'],
-    variable: '--font-ibm-plex-arabic',
+    weight: ['300', '400', '700', '800'],
+    variable: '--font-almarai',
 });
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 
 import { Navbar } from '@/components/navbar';
 import { ChatWidget } from '@/features/chat/components/chat-widget';
+import { Toaster } from 'react-hot-toast';
 
 export default async function LocaleLayout({
     children,
@@ -38,19 +40,22 @@ export default async function LocaleLayout({
     const messages = await getMessages();
 
     return (
-        <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={`${GeistSans.variable} ${ibmPlexArabic.variable}`}>
+        <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={`${GeistSans.variable} ${almarai.variable}`}>
             <body className="font-sans antialiased selection:bg-primary/30">
                 <NextIntlClientProvider messages={messages}>
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="dark"
-                        forcedTheme="dark"
-                        disableTransitionOnChange
-                    >
-                        <Navbar />
-                        {children}
-                        <ChatWidget />
-                    </ThemeProvider>
+                    <QueryProvider>
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="dark"
+                            forcedTheme="dark"
+                            disableTransitionOnChange
+                        >
+                            <Toaster position="top-center" reverseOrder={false} />
+                            <Navbar />
+                            {children}
+                            <ChatWidget />
+                        </ThemeProvider>
+                    </QueryProvider>
                 </NextIntlClientProvider>
             </body>
         </html>

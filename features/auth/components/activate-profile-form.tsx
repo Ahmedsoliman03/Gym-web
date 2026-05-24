@@ -3,6 +3,7 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getActivateProfileSchema } from '../validations';
+import { useAuthRequest } from '../hooks/useAuthRequest';
 import {
     SpinnerIos20Regular,
     CheckmarkCircle24Regular,
@@ -49,15 +50,18 @@ const styles = {
   eyeButton: "absolute inset-y-0 right-0 pr-4 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
   error: "text-red-500 text-[10px] mt-1 px-1",
   submitWrapper: "pt-4",
-  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
+  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] enabled:hover:scale-[1.01] enabled:active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
   submitIcon: "w-5 h-5 group-hover:translate-x-1 transition-transform",
   footer: "text-center pt-2 text-sm font-medium",
   footerDim: "text-foreground/40",
   footerLink: "text-white hover:text-primary transition-colors cursor-pointer font-bold"
 };
 
+import toast from 'react-hot-toast';
+
 export default function ActivateProfileForm() {
     const t = useTranslations();
+    const { activate } = useAuthRequest();
     const [step, setStep] = useState<'form' | 'success'>('form');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -103,33 +107,21 @@ export default function ActivateProfileForm() {
             </div>
 
             <Formik
-                initialValues={{ email: '', inviteCode: '', password: '', confirmPassword: '', agreement: false }}
+                initialValues={{ inviteCode: '', password: '', confirmPassword: '', agreement: false }}
                 validationSchema={schema}
                 onSubmit={async (values) => {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    console.log('Activating profile:', values);
-                    setStep('success');
+                    try {
+                        await activate(values);
+                        toast.success(t('Auth.registrationComplete'));
+                        setStep('success');
+                    } catch (error: any) {
+                        toast.error(error?.response?.data?.message || t('Validation.error'));
+                    }
                 }}
             >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, isValid, dirty }) => (
                     <Form className={styles.form}>
-                        <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
-                                {t('Auth.email')}
-                            </label>
-                            <div className={styles.inputWrapper}>
-                                <div className={styles.inputIcon}>
-                                    <Mail24Regular className={styles.inputIconSize} />
-                                </div>
-                                <Field
-                                    name="email"
-                                    type="email"
-                                    className={styles.inputPassword}
-                                    placeholder={t('Auth.emailPlaceholder')}
-                                />
-                            </div>
-                            <ErrorMessage name="email" component="div" className={styles.error} />
-                        </div>
+
 
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
@@ -202,7 +194,7 @@ export default function ActivateProfileForm() {
                         <div className={styles.submitWrapper}>
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !isValid || !dirty}
                                 className={styles.submitButton}
                             >
                                 {isSubmitting ? (
