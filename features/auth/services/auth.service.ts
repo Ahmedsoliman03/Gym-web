@@ -6,7 +6,6 @@ import {
     RequestAccessRequest,
     VerifyOTPRequest,
     ActivateRequest,
-    RefreshRequest,
 } from '../types';
 
 export const useLoginMutation = () => {
@@ -89,14 +88,6 @@ export const useRequestAccessMutation = () => {
     });
 };
 
-export const useRefreshMutation = () => {
-    return useMutation({
-        mutationFn: async (values: RefreshRequest) => {
-            const { data } = await api.post('/api/auth/token/refresh', values);
-            return data;
-        }
-    });
-};
 
 export const useLogoutMutation = () => {
     const queryClient = useQueryClient();

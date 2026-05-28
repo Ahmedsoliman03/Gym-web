@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { COMMON_COACH_IMAGE } from '@/constants/coaches';
+import { Coach } from '../types';
 
 interface CoachCardProps {
   coach: {
@@ -27,7 +28,7 @@ const styles = {
   tag: "bg-white/5 text-foreground/40 px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase border border-white/5 group-hover:border-primary/20 transition-colors"
 };
 
-export function CoachCard({ coach, index }: CoachCardProps) {
+export function CoachCard({ coach, index }: { coach: Coach, index: number }) {
   const t = useTranslations('Coaches');
 
   return (
@@ -40,14 +41,14 @@ export function CoachCard({ coach, index }: CoachCardProps) {
         <div className={styles.imageContainer}>
           <img
             src={COMMON_COACH_IMAGE}
-            alt={coach.name}
+            alt={coach.fullName}
             className={styles.image}
           />
 
           <div className={styles.imageOverlay}>
-            <span className={styles.name}>{coach.name}</span>
+            <span className={styles.name}>{coach.fullName}</span>
             <span className={styles.experience}>
-              {t('yearsExp', { years: coach.yearsExp })}
+              {t('yearsExp', { years: coach.experienceYears })}
             </span>
           </div>
         </div>
@@ -55,7 +56,7 @@ export function CoachCard({ coach, index }: CoachCardProps) {
         {/* Content Section */}
         <div className={styles.content}>
           <div className={styles.tagContainer}>
-            {coach.specializations.map((spec) => (
+            {coach.specialization.map((spec: string) => (
               <span
                 key={spec}
                 className={styles.tag}

@@ -4,14 +4,12 @@ import {
     LoginRequest,
     RegisterRequest,
     VerifyOTPRequest,
-    RefreshRequest
 } from '../types';
 import {
     useLoginMutation,
     useRegisterMutation,
     useVerifyOTPMutation,
     useLogoutMutation,
-    useRefreshMutation
 } from '../services/auth.service';
 
 export const useAuthUser = () => {
@@ -19,7 +17,6 @@ export const useAuthUser = () => {
     const registerMutation = useRegisterMutation();
     const verifyOTPMutation = useVerifyOTPMutation();
     const logoutMutation = useLogoutMutation();
-    const refreshMutation = useRefreshMutation();
 
     const login = async (values: LoginRequest) => {
         return await loginMutation.mutateAsync(values);
@@ -37,25 +34,20 @@ export const useAuthUser = () => {
         return await logoutMutation.mutateAsync();
     };
 
-    const refresh = async (values: RefreshRequest) => {
-        return await refreshMutation.mutateAsync(values);
-    };
+
 
     return {
         login,
         register,
         verifyOTP,
         logout,
-        refresh,
         isLoading: loginMutation.isPending ||
             registerMutation.isPending ||
             verifyOTPMutation.isPending ||
-            logoutMutation.isPending ||
-            refreshMutation.isPending,
+            logoutMutation.isPending,
         loginMutation,
         registerMutation,
         verifyOTPMutation,
         logoutMutation,
-        refreshMutation
     };
 };

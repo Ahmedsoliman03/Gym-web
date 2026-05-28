@@ -26,6 +26,7 @@ export interface RequestAccessRequest {
     experience?: string | number;
     desc?: string;
     certifications?: File[] | null;
+    profile_image?: File | null;
     gymName?: string;
     contactPerson?: string;
     governorate?: string;
@@ -45,10 +46,7 @@ export interface VerifyOTPRequest {
 
 
 
-export interface RefreshRequest {
-    refresh?: string;
-    [key: string]: any;
-}
+
 
 export interface AuthResponse {
     message?: string;
@@ -101,6 +99,7 @@ export interface CoachFormInnerProps {
         experience: string;
         desc: string;
         certifications: File[];
+        profile_image: File | null;
     };
     setFieldValue: (field: string, value: unknown) => void;
 }

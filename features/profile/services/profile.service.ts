@@ -18,14 +18,14 @@ export const updateProfile = async (payload: FormData): Promise<UserProfile> => 
     return data;
 };
 
-export const useProfile = () => {
+export const useProfileQuery = () => {
     return useQuery({
         queryKey: ['profile'],
         queryFn: getProfile,
     });
 };
 
-export const useUpdateProfile = () => {
+export const useUpdateProfileMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: updateProfile,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useProfile } from "@/features/profile/services/profile.service";
+import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 import { mockProfiles } from "@/features/profile/mock-data";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
@@ -14,7 +14,7 @@ const styles = {
 };
 
 export default function ProfilePage() {
-  const { data: profile, isLoading, error } = useProfile();
+  const { profile, isLoading, error } = useProfileUser();
 
   if (isLoading) {
     return (

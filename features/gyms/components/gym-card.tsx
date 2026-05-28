@@ -1,16 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import { Gym } from '../types';
 
 interface GymCardProps {
-  gym: {
-    id: number;
-    name: string;
-    location: string;
-    image: string;
-    rating: number;
-    memberCount: string;
-  };
+  gym: Gym;
   index: number;
 }
 
@@ -25,6 +19,8 @@ const styles = {
 };
 
 export function GymCard({ gym, index }: GymCardProps) {
+  const imageUrl = gym.mainPhoto || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop';
+  
   return (
     <div
       className={styles.card}
@@ -32,10 +28,11 @@ export function GymCard({ gym, index }: GymCardProps) {
     >
       <div className={styles.imageContainer}>
         <Image
-          src={gym.image}
-          alt={gym.name}
+          src={imageUrl}
+          alt={gym.gymName}
           fill
           className={styles.image}
+          unoptimized
         />
         <div className={styles.imageOverlay}>
           <span className={styles.location}>{gym.location}</span>
@@ -43,7 +40,7 @@ export function GymCard({ gym, index }: GymCardProps) {
       </div>
 
       <div className={styles.content}>
-        <span className={styles.name}>{gym.name}</span>
+        <span className={styles.name}>{gym.gymName}</span>
       </div>
     </div>
   );

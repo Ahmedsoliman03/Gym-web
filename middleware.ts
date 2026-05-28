@@ -42,6 +42,26 @@ export default function middleware(request: NextRequest) {
     const localeMatch = pathname.match(/^\/(en|ar)/);
     const locale = localeMatch ? localeMatch[1] : 'en';
 
+    // Helper to decode JWT payload safely in Next.js Edge runtime
+    function decodeJwt(jwtToken: string) {
+        try {
+            const parts = jwtToken.split('.');
+            if (parts.length !== 3) return null;
+            const base64Url = parts[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            // Decode base64 using atob and escape unicode characters
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch {
+            return null;
+        }
+    }
+
     // 5. If there is NO token and user is NOT on an auth page, redirect to the login page
     if (!token && !isAuthPath) {
         const loginUrl = new URL(`/${locale}/login`, request.url);
@@ -54,7 +74,37 @@ export default function middleware(request: NextRequest) {
         return NextResponse.redirect(homeUrl);
     }
 
-    // 7. Otherwise, let next-intl middleware handle localization
+    // 7. Enforce role-based access control if user is logged in
+    if (token && !isAuthPath) {
+        // Derive userType from the signed JWT only. The `user_type` cookie is
+        // non-HttpOnly and trivially tampered with from the browser, so it must
+        // never be trusted for access-control decisions.
+        const jwtPayload = decodeJwt(token);
+        const userType = jwtPayload?.userType || jwtPayload?.user_type || jwtPayload?.role;
+
+        // Apply access restrictions:
+        // Coach: all access except /applications
+        if (userType === 'coach') {
+            const isBlocked = pathnameWithoutLocale === '/applications' || pathnameWithoutLocale.startsWith('/applications/');
+            if (isBlocked) {
+                const homeUrl = new URL(`/${locale}`, request.url);
+                return NextResponse.redirect(homeUrl);
+            }
+        }
+        // Client: can only access /gyms, /coaches, /about (blocked from /jobs and /applications)
+        else if (userType === 'client') {
+            const blockedPaths = ['/jobs', '/applications'];
+            const isBlocked = blockedPaths.some(path => 
+                pathnameWithoutLocale === path || pathnameWithoutLocale.startsWith(`${path}/`)
+            );
+            if (isBlocked) {
+                const homeUrl = new URL(`/${locale}`, request.url);
+                return NextResponse.redirect(homeUrl);
+            }
+        }
+    }
+
+    // 8. Otherwise, let next-intl middleware handle localization
     return intlMiddleware(request);
 }
 

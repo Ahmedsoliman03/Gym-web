@@ -19,42 +19,42 @@ import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 
 const styles = {
-  success: {
-    container: "text-center space-y-4",
-    iconWrapper: "flex justify-center text-green-500",
-    icon: "w-16 h-16",
-    title: "text-2xl font-bold",
-    description: "text-foreground/60",
-    link: "block text-primary font-medium hover:underline"
-  },
-  backButton: "inline-flex items-center gap-2 text-foreground/40 hover:text-primary transition-colors mb-6 group",
-  backIcon: "w-5 h-5 transition-transform group-hover:-translate-x-1",
-  backText: "text-xs font-black uppercase tracking-wider",
-  container: "space-y-8 max-w-[450px] mx-auto",
-  header: "space-y-6 text-center",
-  badgeWrapper: "flex justify-center",
-  badge: "inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full",
-  badgeDot: "w-2 h-2 bg-primary rounded-full animate-pulse",
-  badgeText: "text-[10px] font-black text-primary uppercase",
-  titleWrapper: "space-y-1",
-  title: "text-2xl font-bold text-white",
-  subtitle: "text-foreground/60 text-[13px] leading-relaxed px-4",
-  form: "space-y-6",
-  fieldWrapper: "space-y-2",
-  label: "text-xs font-bold text-foreground/80 px-1",
-  inputWrapper: "relative group",
-  inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center text-foreground/30 group-focus-within:text-primary transition-colors",
-  inputIconSize: "w-5 h-5",
-  inputInvite: "w-full pl-12 pr-4 py-4 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-lg font-mono",
-  inputPassword: "w-full pl-12 pr-12 py-4 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-sm",
-  eyeButton: "absolute inset-y-0 right-0 pr-4 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
-  error: "text-red-500 text-[10px] mt-1 px-1",
-  submitWrapper: "pt-4",
-  submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] enabled:hover:scale-[1.01] enabled:active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
-  submitIcon: "w-5 h-5 group-hover:translate-x-1 transition-transform",
-  footer: "text-center pt-2 text-sm font-medium",
-  footerDim: "text-foreground/40",
-  footerLink: "text-white hover:text-primary transition-colors cursor-pointer font-bold"
+    success: {
+        container: "text-center space-y-4",
+        iconWrapper: "flex justify-center text-green-500",
+        icon: "w-16 h-16",
+        title: "text-2xl font-bold",
+        description: "text-foreground/60",
+        link: "block text-primary font-medium hover:underline"
+    },
+    backButton: "inline-flex items-center gap-2 text-foreground/40 hover:text-primary transition-colors mb-6 group",
+    backIcon: "w-5 h-5 transition-transform group-hover:-translate-x-1",
+    backText: "text-xs font-black uppercase tracking-wider",
+    container: "space-y-8 max-w-[450px] mx-auto",
+    header: "space-y-6 text-center",
+    badgeWrapper: "flex justify-center",
+    badge: "inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full",
+    badgeDot: "w-2 h-2 bg-primary rounded-full animate-pulse",
+    badgeText: "text-[10px] font-black text-primary uppercase",
+    titleWrapper: "space-y-1",
+    title: "text-2xl font-bold text-white",
+    subtitle: "text-foreground/60 text-[13px] leading-relaxed px-4",
+    form: "space-y-6",
+    fieldWrapper: "space-y-2",
+    label: "text-xs font-bold text-foreground/80 px-1",
+    inputWrapper: "relative group",
+    inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center text-foreground/30 group-focus-within:text-primary transition-colors",
+    inputIconSize: "w-5 h-5",
+    inputInvite: "w-full pl-12 pr-4 py-4 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-lg font-mono",
+    inputPassword: "w-full pl-12 pr-12 py-4 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-sm",
+    eyeButton: "absolute inset-y-0 right-0 pr-4 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
+    error: "text-red-500 text-[10px] mt-1 px-1",
+    submitWrapper: "pt-4",
+    submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-[0_8px_30px_rgb(34,197,94,0.3)] enabled:hover:scale-[1.01] enabled:active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-lg",
+    submitIcon: "w-5 h-5 group-hover:translate-x-1 transition-transform",
+    footer: "text-center pt-2 text-sm font-medium",
+    footerDim: "text-foreground/40",
+    footerLink: "text-white hover:text-primary transition-colors cursor-pointer font-bold"
 };
 
 import toast from 'react-hot-toast';
@@ -120,6 +120,7 @@ export default function ActivateProfileForm() {
                 }}
             >
                 {({ isSubmitting, isValid, dirty }) => (
+                    console.log(isValid),
                     <Form className={styles.form}>
 
 

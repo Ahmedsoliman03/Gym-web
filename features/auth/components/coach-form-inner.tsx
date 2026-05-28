@@ -37,6 +37,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
     const t = useTranslations();
     const tLoc = useTranslations('Location');
     const certificationsRef = useRef<HTMLInputElement>(null);
+    const profileImageRef = useRef<HTMLInputElement>(null);
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
         if (result.governorate) setFieldValue('governorate', result.governorate);
@@ -175,69 +176,131 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
                 </div>
             </div>
 
-            {/* Certifications (Upload) */}
-            <div className={styles.fieldWrapper}>
-                <label className={styles.label}>
-                    {t('Auth.certificateUpload')}
-                </label>
-                <div
-                    onClick={() => certificationsRef.current?.click()}
-                    className={styles.uploadContainer}
-                >
-                    <input
-                        ref={certificationsRef}
-                        type="file"
-                        name="certifications"
-                        className="hidden"
-                        multiple
-                        accept="image/*"
-                        onChange={(e) => {
-                            const newFiles = Array.from(e.currentTarget.files || []);
-                            setFieldValue('certifications', [...values.certifications, ...newFiles]);
-                        }}
-                    />
-                    <ArrowUpload24Regular className={styles.uploadIconSize} />
-                    <div className="text-center">
-                        <p className={styles.uploadTitle}>{t('Auth.dragAndDrop')}</p>
-                        <p className={styles.uploadSubtitle}>{t('Auth.uploadHint')}</p>
+            <div className={styles.gridWrapper}>
+                {/* Profile Image (Upload) */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Profile.profilePhoto') || 'Profile Photo'}
+                    </label>
+                    <div
+                        onClick={() => profileImageRef.current?.click()}
+                        className={styles.uploadContainer}
+                    >
+                        <input
+                            ref={profileImageRef}
+                            type="file"
+                            name="profile_image"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.currentTarget.files?.[0] || null;
+                                setFieldValue('profile_image', file);
+                            }}
+                        />
+                        <ArrowUpload24Regular className={styles.uploadIconSize} />
+                        <div className="text-center">
+                            <p className={styles.uploadTitle}>{t('Auth.dragAndDrop')}</p>
+                            <p className={styles.uploadSubtitle}>{t('Auth.uploadHint')}</p>
+                        </div>
                     </div>
+
+                    {/* Single File Preview */}
+                    {values.profile_image && (
+                        <div className="mt-3">
+                            <div className="flex items-center justify-between gap-3 bg-white/[0.03] border border-white/5 px-3 py-2.5 rounded-xl group/file">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <img
+                                        src={URL.createObjectURL(values.profile_image)}
+                                        className="w-8 h-8 object-cover rounded-lg bg-black/20 flex-shrink-0"
+                                        alt={values.profile_image.name}
+                                    />
+                                    <span className="text-xs font-bold text-foreground/80 truncate">
+                                        {values.profile_image.name}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFieldValue('profile_image', null);
+                                    }}
+                                    className="text-foreground/30 hover:text-red-400 p-1 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
+                                >
+                                    <Dismiss20Regular className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    <ErrorMessage name="profile_image" component="div" className={styles.error} />
                 </div>
 
-                {/* Files List */}
-                {values.certifications.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                        {values.certifications.map((file: File, index: number) => (
-                            <div
-                                key={index}
-                                className="flex flex-col items-center gap-2 bg-white/5 border border-white/10 p-2 rounded-lg group/file"
-                            >
-                                {file.type.startsWith('image/') && (
-                                    <img
-                                        src={URL.createObjectURL(file)}
-                                        className="w-20 h-20 object-contain rounded-md mb-1 bg-black/20"
-                                        alt={file.name}
-                                    />
-                                )}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-foreground/60 truncate max-w-[100px]">
-                                        {file.name}
-                                    </span>
+                {/* Certifications (Upload) */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.certificateUpload')}
+                    </label>
+                    <div
+                        onClick={() => certificationsRef.current?.click()}
+                        className={styles.uploadContainer}
+                    >
+                        <input
+                            ref={certificationsRef}
+                            type="file"
+                            name="certifications"
+                            className="hidden"
+                            multiple
+                            accept="image/*,application/pdf"
+                            onChange={(e) => {
+                                const newFiles = Array.from(e.currentTarget.files || []);
+                                setFieldValue('certifications', [...values.certifications, ...newFiles]);
+                            }}
+                        />
+                        <ArrowUpload24Regular className={styles.uploadIconSize} />
+                        <div className="text-center">
+                            <p className={styles.uploadTitle}>{t('Auth.dragAndDrop')}</p>
+                            <p className={styles.uploadSubtitle}>{t('Auth.uploadHint')}</p>
+                        </div>
+                    </div>
+
+                    {/* Files List */}
+                    {values.certifications.length > 0 && (
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {values.certifications.map((file: File, index: number) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between gap-3 bg-white/[0.03] border border-white/5 px-3 py-2.5 rounded-xl group/file"
+                                >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                        {file.type.startsWith('image/') ? (
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                className="w-8 h-8 object-cover rounded-lg bg-black/20 flex-shrink-0"
+                                                alt={file.name}
+                                            />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 font-bold text-[9px] uppercase flex-shrink-0">
+                                                {file.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'DOC'}
+                                            </div>
+                                        )}
+                                        <span className="text-xs font-bold text-foreground/80 truncate">
+                                            {file.name}
+                                        </span>
+                                    </div>
                                     <button
                                         type="button"
                                         onClick={() => {
                                             const updatedFiles = values.certifications.filter((_: File, i: number) => i !== index);
                                             setFieldValue('certifications', updatedFiles);
                                         }}
-                                        className="text-foreground/20 hover:text-red-400 transition-colors"
+                                        className="text-foreground/30 hover:text-red-400 p-1 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
                                     >
                                         <Dismiss20Regular className="h-4 w-4" />
                                     </button>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                <ErrorMessage name="certifications" component="div" className={styles.error} />
+                            ))}
+                        </div>
+                    )}
+                    <ErrorMessage name="certifications" component="div" className={styles.error} />
+                </div>
             </div>
 
             {/* Statement of Purpose */}

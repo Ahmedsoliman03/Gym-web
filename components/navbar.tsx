@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
 import { NotificationsMenu } from "@/features/notification/components/notifications-menu";
 import { useAuthUser } from "@/features/auth/hooks/useAuthUser";
-import { useProfile } from "@/features/profile/services/profile.service";
+import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 
 const styles = {
   // ... existing styles ...
@@ -74,7 +74,7 @@ const styles = {
 export const Navbar = () => {
   const t = useTranslations('Navbar');
   const { logout } = useAuthUser();
-  const { data: profile } = useProfile();
+  const { profile } = useProfileUser();
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -102,11 +102,13 @@ export const Navbar = () => {
     pathname.includes('/request-access') ||
     pathname.includes('/activate');
 
+  const userType = profile?.userType;
+
   const navLinks = [
     { label: t('coaches'), href: "/coaches" },
     { label: t('gyms'), href: "/gyms" },
-    { label: t('jobBoard'), href: "/jobs" },
-    { label: t('applications'), href: "/applications" },
+    ...(userType === 'coach' || userType === 'gym' ? [{ label: t('jobBoard'), href: "/jobs" }] : []),
+    ...(userType === 'gym' ? [{ label: t('applications'), href: "/applications" }] : []),
     { label: t('about'), href: "/about" },
   ];
 

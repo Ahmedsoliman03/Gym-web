@@ -24,11 +24,19 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
 
 async function handleProxy(request: Request, params: { slug: string[] }) {
     try {
-        // حماية إضافية (CSRF Protection): التأكد أن الطلب قادم من الموقع الخاص بك
+        // حماية إضافية (CSRF Protection): التأكد أن الطلب قادم من الموقع الخاص بك.
+        // نقارن الـ host المستخرج من الـ origin مقارنة دقيقة، لأن includes()
+        // يمكن تجاوزها (مثال: https://evil-example.com يحتوي example.com).
         const origin = request.headers.get('origin');
         if (origin && process.env.NODE_ENV === 'production') {
             const host = request.headers.get('host') || '';
-            if (!origin.includes(host)) {
+            let originHost = '';
+            try {
+                originHost = new URL(origin).host;
+            } catch {
+                originHost = '';
+            }
+            if (!host || originHost !== host) {
                 return new NextResponse("Forbidden - CSRF attempt detected", { status: 403 });
             }
         }
@@ -106,10 +114,27 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
             });
         }
 
+        // Extract userType and save it in a non-HttpOnly cookie so the middleware and frontend can access it easily
+        if (data && response.status >= 200 && response.status < 300) {
+            try {
+                const parsed = JSON.parse(data);
+                const userType = parsed?.userType || parsed?.user?.user_type || parsed?.user?.userType || parsed?.user_type;
+                if (userType) {
+                    nextResponse.headers.append(
+                        "Set-Cookie",
+                        `user_type=${userType}; Max-Age=604800; path=/; SameSite=Lax; Secure`
+                    );
+                }
+            } catch (e) {
+                // Ignore parsing errors for non-JSON responses
+            }
+        }
+
         // Force clear cookies on logout if they were not already cleared by a successful response
         if (path.endsWith("auth/logout")) {
             nextResponse.headers.append("Set-Cookie", "access_token=; Max-Age=0; path=/; SameSite=Lax; HttpOnly; Secure");
             nextResponse.headers.append("Set-Cookie", "refresh_token=; Max-Age=0; path=/; SameSite=Lax; HttpOnly; Secure");
+            nextResponse.headers.append("Set-Cookie", "user_type=; Max-Age=0; path=/; SameSite=Lax; Secure");
         }
 
         return nextResponse;

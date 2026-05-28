@@ -28,7 +28,8 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 specialization: [] as string[],
                 experience: '',
                 desc: '',
-                certifications: [] as File[]
+                certifications: [] as File[],
+                profile_image: null as File | null
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {

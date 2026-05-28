@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { COACHES } from '@/constants/coaches';
 import { useCoaches } from '../services/coaches.service';
+import { Coach } from '../types';
 
 // Modular Components
 import { CoachesHero } from './coaches-hero';
@@ -33,27 +33,31 @@ export function CoachesView() {
   const t = useTranslations('Coaches');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+  const [experience, setExperience] = useState('All');
 
   const { data: coachesData } = useCoaches();
 
-  useEffect(() => {
-    if (coachesData) {
-      console.log('Coaches Response:', coachesData);
-    }
+  const coaches = useMemo(() => {
+    return coachesData || [];
   }, [coachesData]);
 
   const filteredCoaches = useMemo(() => {
-    return COACHES.filter((coach) => {
+    return coaches.filter((coach) => {
       const matchesSearch =
-        coach.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        coach.tier.toLowerCase().includes(searchQuery.toLowerCase());
+        coach.fullName.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesSpecialty =
-        selectedSpecialty === 'All' || coach.specializations.includes(selectedSpecialty);
+        selectedSpecialty === 'All' || coach.specialization.includes(selectedSpecialty);
 
-      return matchesSearch && matchesSpecialty;
+      const matchesExperience =
+        experience === 'All' ||
+        (experience === 'more_8'
+          ? coach.experienceYears > 8
+          : coach.experienceYears === parseInt(experience, 10));
+
+      return matchesSearch && matchesSpecialty && matchesExperience;
     });
-  }, [searchQuery, selectedSpecialty]);
+  }, [coaches, searchQuery, selectedSpecialty, experience]);
 
   return (
     <div className={styles.container}>
@@ -67,6 +71,8 @@ export function CoachesView() {
               setSearchQuery={setSearchQuery}
               selectedSpecialty={selectedSpecialty}
               setSelectedSpecialty={setSelectedSpecialty}
+              experience={experience}
+              setExperience={setExperience}
             />
           </div>
         </section>

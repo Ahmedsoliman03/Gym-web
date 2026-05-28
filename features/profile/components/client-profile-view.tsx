@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { User, Mail, Phone, Save, RotateCcw, Zap, Plus } from "lucide-react";
+import { User, Mail, Phone, Save, RotateCcw, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useUpdateProfile } from "../services/profile.service";
+import { useProfileUser } from "../hooks/useProfileUser";
 import toast from "react-hot-toast";
 import { UserProfile } from "../types";
+import * as Yup from "yup";
+import { getPhoneSchema, getFullNameSchema } from "@/utils/validations";
 
 const styles = {
   container: "max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500",
@@ -29,18 +31,20 @@ const styles = {
   input: "w-full pl-12 pr-4 py-3.5 bg-white/[0.02] border border-white/5 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed",
   buttonRow: "flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/5",
   saveBtn: "flex-1 py-4 bg-primary text-black rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm uppercase tracking-wider",
-  resetBtn: "flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold hover:bg-white/10 active:scale-[0.99] transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+  resetBtn: "flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold hover:bg-white/10 active:scale-[0.99] transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm uppercase tracking-wider",
+  error: "text-red-500 text-xs mt-1 px-1"
 };
 
 export const ClientProfileView = ({ data }: { data: UserProfile }) => {
   const t = useTranslations();
-  const updateProfileMutation = useUpdateProfile();
+  const { updateProfile, updateProfileMutation } = useProfileUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(data.fullName || "");
   const [phone, setPhone] = useState(data.phone || "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ fullName?: string; phone?: string }>({});
 
   // Update states if data changes (e.g. from backend refetches)
   useEffect(() => {
@@ -48,6 +52,7 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
     setPhone(data.phone || "");
     setSelectedFile(null);
     setPreviewUrl(null);
+    setErrors({});
   }, [data]);
 
   const isDirty = fullName.trim() !== data.fullName || phone.trim() !== data.phone || selectedFile !== null;
@@ -58,6 +63,7 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
     setPhone(data.phone || "");
     setSelectedFile(null);
     setPreviewUrl(null);
+    setErrors({});
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,21 +78,56 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
     fileInputRef.current?.click();
   };
 
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value);
+    if (errors.fullName) {
+      setErrors(prev => ({ ...prev, fullName: undefined }));
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value);
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: undefined }));
+    }
+  };
+
+  const profileSchema = Yup.object().shape({
+    fullName: getFullNameSchema(t),
+    phone: getPhoneSchema(t),
+  });
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isDirty || isSaving) return;
 
+    setErrors({});
+
     try {
+      await profileSchema.validate({ fullName: fullName.trim(), phone: phone.trim() }, { abortEarly: false });
+
       const formData = new FormData();
       formData.append('fullName', fullName.trim());
       formData.append('phone', phone.trim());
       if (selectedFile) {
         formData.append('photo', selectedFile);
       }
-      await updateProfileMutation.mutateAsync(formData);
+      await updateProfile(formData);
       toast.success(t('Navbar.changePasswordSuccess') || 'Changes saved successfully!');
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || t('Validation.error') || 'Failed to save changes');
+      if (error instanceof Yup.ValidationError) {
+        const newErrors: { fullName?: string; phone?: string } = {};
+        error.inner.forEach((err) => {
+          if (err.path === 'fullName') newErrors.fullName = err.message;
+          if (err.path === 'phone') newErrors.phone = err.message;
+        });
+        setErrors(newErrors);
+        if (error.errors && error.errors[0]) {
+          toast.error(error.errors[0]);
+        }
+      } else {
+        toast.error(error?.response?.data?.message || t('Validation.error') || 'Failed to save changes');
+      }
     }
   };
 
@@ -159,13 +200,14 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
               <input
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={handleFullNameChange}
                 disabled={isSaving}
                 placeholder={t('Auth.fullNamePlaceholder') || 'Enter full name'}
-                className={styles.input}
+                className={`${styles.input} ${errors.fullName ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20" : ""}`}
                 required
               />
             </div>
+            {errors.fullName && <div className={styles.error}>{errors.fullName}</div>}
           </div>
 
           {/* Phone Field */}
@@ -178,13 +220,14 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
                 disabled={isSaving}
                 placeholder={t('Auth.phonePlaceholder') || 'Enter phone number'}
-                className={styles.input}
+                className={`${styles.input} ${errors.phone ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20" : ""}`}
                 required
               />
             </div>
+            {errors.phone && <div className={styles.error}>{errors.phone}</div>}
           </div>
 
           {/* Email Field (Disabled) */}

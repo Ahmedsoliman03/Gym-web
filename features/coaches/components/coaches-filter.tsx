@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { SpecializationDropdown } from './specialization-dropdown';
+import { ExperienceDropdown } from './experience-dropdown';
 import { SPECIALIZATIONS } from '@/constants/specializations';
 
 interface CoachesFilterProps {
@@ -9,6 +10,8 @@ interface CoachesFilterProps {
   setSearchQuery: (val: string) => void;
   selectedSpecialty: string;
   setSelectedSpecialty: (val: string) => void;
+  experience: string;
+  setExperience: (val: string) => void;
 }
 
 const styles = {
@@ -26,8 +29,11 @@ export function CoachesFilter({
   setSearchQuery,
   selectedSpecialty,
   setSelectedSpecialty,
+  experience,
+  setExperience,
 }: CoachesFilterProps) {
   const t = useTranslations('Coaches');
+  const t_root = useTranslations();
 
   return (
     <div className={styles.container} style={{ animationDelay: '0.2s' }}>
@@ -53,12 +59,20 @@ export function CoachesFilter({
           placeholder={t('allSpecialties')}
         />
 
+        {/* Experience Dropdown */}
+        <ExperienceDropdown
+          value={experience}
+          onChange={setExperience}
+          placeholder={t_root('Profile.experience') || 'Years of Experience'}
+        />
+
         {/* Reset Action */}
         <button
           className={styles.resetButton}
           onClick={() => {
             setSelectedSpecialty('All');
             setSearchQuery('');
+            setExperience('All');
           }}
         >
           {t('reset')}
