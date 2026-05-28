@@ -114,8 +114,11 @@ export const Navbar = () => {
 
   const toggleLanguage = () => {
     const nextLocale = locale === 'en' ? 'ar' : 'en';
-    // window.location.href = `/${nextLocale}${pathname}`;
-    router.replace(pathname, { locale: nextLocale });
+    // Preserve the current query string and hash so switching the language only
+    // swaps the locale — it must not reset URL-driven page state or content.
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    router.replace(`${pathname}${search}${hash}`, { locale: nextLocale });
   };
 
   useEffect(() => {
