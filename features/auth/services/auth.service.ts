@@ -97,8 +97,8 @@ export const useLogoutMutation = () => {
             return data;
         },
         onSuccess: () => {
-            queryClient.setQueryData(['session'], null);
-            queryClient.invalidateQueries({ queryKey: ['session'] });
+
+            queryClient.clear();
         }
     });
 };

@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCoaches } from '../services/coaches.service';
-import { Coach } from '../types';
 
 // Modular Components
 import { CoachesHero } from './coaches-hero';
 import { CoachesFilter } from './coaches-filter';
 import { CoachCard } from './coach-card';
+import { StoriesBar } from '@/features/stories/components/stories-bar';
 
 const styles = {
   container: "min-h-screen bg-background text-foreground font-sans selection:bg-primary/30",
@@ -66,6 +66,9 @@ export function CoachesView() {
           <div className={styles.gradientOverlay} />
           <div className={styles.headerContent}>
             <CoachesHero />
+            <div className="mb-8">
+              <StoriesBar userType="coach" />
+            </div>
             <CoachesFilter
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -78,6 +81,7 @@ export function CoachesView() {
         </section>
 
         <div className={styles.gridContainer}>
+
           <section>
             <div className={styles.titleRow}>
               <div>

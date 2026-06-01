@@ -43,7 +43,7 @@ export const TransformationGallery = ({
 }: TransformationGalleryProps) => {
   const t = useTranslations("Profile");
   const scrollRef = useRef<HTMLDivElement>(null);
-  
+
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     index: 0
@@ -104,6 +104,7 @@ export const TransformationGallery = ({
                 alt={item.clientName || title || "Transformation"}
                 fill
                 className={styles.itemImage}
+                unoptimized
               />
               <div className={styles.zoomIcon}>
                 <Maximize2 size={18} />
@@ -121,7 +122,7 @@ export const TransformationGallery = ({
         </div>
       </div>
 
-      <ImageLightbox 
+      <ImageLightbox
         isOpen={lightbox.isOpen}
         currentIndex={lightbox.index}
         images={allImages}

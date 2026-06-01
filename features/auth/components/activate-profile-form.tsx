@@ -8,7 +8,6 @@ import {
     SpinnerIos20Regular,
     CheckmarkCircle24Regular,
     Key24Regular,
-    Mail24Regular,
     Eye24Regular,
     EyeOff24Regular,
     LockClosed24Regular,
@@ -76,7 +75,7 @@ export default function ActivateProfileForm() {
                 </div>
                 <h2 className={styles.success.title}>{t('Auth.registrationComplete')}</h2>
                 <p className={styles.success.description}>{t('Auth.registrationSuccess')}</p>
-                <Link href="/login" className={styles.success.link}>{t('Auth.goToLogin')}</Link>
+                <Link href="/login" className={styles.success.link}>{t('Auth.goToHome')}</Link>
             </div>
         );
     }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { ArrowLeft } from 'lucide-react';

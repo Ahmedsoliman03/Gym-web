@@ -18,7 +18,7 @@ const styles = {
   sideColumn: ""
 };
 
-export const CoachProfileView = ({ data }: { data: CoachProfile }) => {
+export const CoachProfileView = ({ data, isOwner = true }: { data: CoachProfile; isOwner?: boolean }) => {
   const t = useTranslations("Profile");
   const plansRef = useRef<HTMLDivElement>(null);
 
@@ -34,6 +34,7 @@ export const CoachProfileView = ({ data }: { data: CoachProfile }) => {
         tier={data.tier}
         stats={data.stats}
         image={data.image}
+        isOwner={isOwner}
       />
 
       <div className={styles.philosophyWrapper}>

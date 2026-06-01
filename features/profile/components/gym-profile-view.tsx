@@ -9,6 +9,7 @@ import { TransformationGallery } from "@/components/shared/transformation-galler
 import { Plans } from "@/components/shared/membership-plans";
 import { useRef } from "react";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
+import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 
 const styles = {
   container: "space-y-8",
@@ -42,7 +43,7 @@ const styles = {
   textBtn: "text-primary hover:text-primary/80 font-bold text-sm transition-all flex items-center gap-1 group"
 };
 
-export const GymProfileView = ({ data }: { data: GymProfile }) => {
+export const GymProfileView = ({ data, isOwner = true }: { data: GymProfile; isOwner?: boolean }) => {
   const t = useTranslations("Profile");
   const plansRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +68,9 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
             alt={data.name}
             fill
             className={styles.logoImage}
+            unoptimized
           />
+          {isOwner && <StoryAvatarBadge />}
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>
@@ -81,10 +84,12 @@ export const GymProfileView = ({ data }: { data: GymProfile }) => {
             <MessageSquare size={18} />
             {t('chat')}
           </button>
-          <Link href="/profile/edit" className={styles.secondaryBtn}>
-            <Settings size={18} />
-            {t('editProfile')}
-          </Link>
+          {isOwner && (
+            <Link href="/profile/edit" className={styles.secondaryBtn}>
+              <Settings size={18} />
+              {t('editProfile')}
+            </Link>
+          )}
         </div>
       </div>
 

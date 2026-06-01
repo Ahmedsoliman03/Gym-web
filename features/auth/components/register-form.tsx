@@ -1,6 +1,6 @@
 'use client';
 
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRegisterSchema } from '../validations';
 import { useAuthUser } from '../hooks/useAuthUser';
@@ -14,8 +14,10 @@ import {
     LockClosed24Regular,
     ArrowRight24Regular
 } from '@fluentui/react-icons';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
+import { LocationDetectButton } from '@/components/ui/location-detect-button';
+import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
 
 const styles = {
     container: "space-y-4 max-w-[420px] mx-auto",
@@ -37,7 +39,12 @@ const styles = {
     inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center text-foreground/30 group-focus-within:text-primary transition-colors",
     inputIconSize: "w-5 h-5",
     input: "w-full pl-11 pr-4 py-2.5 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-sm",
+    inputPlain: "w-full px-4 py-2.5 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-sm",
     inputPassword: "w-full pl-11 pr-12 py-2.5 bg-[#111827] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-white text-sm",
+    locationSection: "space-y-3 rounded-xl border border-white/5 bg-white/[0.02] p-3",
+    locationHeader: "flex items-center justify-between gap-2 flex-wrap",
+    locationHeaderLabel: "text-[10px] font-black text-foreground/40 uppercase tracking-wider px-1",
+    locationGrid: "grid grid-cols-2 gap-3",
     eyeButton: "absolute inset-y-0 right-0 pr-4 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
     error: "text-red-500 text-[10px] mt-0.5 px-1",
     passwordHint: "text-[10px] text-foreground/40 px-1 mt-1 font-medium",
@@ -51,14 +58,49 @@ const styles = {
 
 import toast from 'react-hot-toast';
 
+interface RegisterFormValues {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    city: string;
+    area: string;
+}
+
 export default function RegisterForm() {
     const t = useTranslations();
+    const tLoc = useTranslations('Location');
     const router = useRouter();
     const { register } = useAuthUser();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const formikRef = useRef<FormikProps<RegisterFormValues>>(null);
 
     const registerSchema = getRegisterSchema(t);
+
+    const handleLocationSuccess = useCallback((result: LocationResult) => {
+        // Mirrors the convention in gyms-view.tsx: governorate -> city, sub-city -> area.
+        let city = '';
+        if (result.governorate) {
+            city = result.governorate;
+        } else if (result.city && (result.city.toLowerCase() === 'cairo' || result.city.toLowerCase() === 'giza')) {
+            city = result.city;
+        }
+
+        let area = '';
+        if (result.city && result.city.toLowerCase() !== 'cairo' && result.city.toLowerCase() !== 'giza') {
+            area = result.city;
+        } else if (result.area) {
+            area = result.area;
+        }
+
+        if (city) formikRef.current?.setFieldValue('city', city);
+        if (area) formikRef.current?.setFieldValue('area', area);
+    }, []);
+
+    const { status: locStatus, error: locError, detect } = useLocationDetect(handleLocationSuccess);
 
     return (
         <div className={styles.container}>
@@ -92,16 +134,19 @@ export default function RegisterForm() {
                 <div className={styles.dividerLine} />
             </div>
 
-            <Formik
-                initialValues={{ firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '' }}
+            <Formik<RegisterFormValues>
+                innerRef={formikRef}
+                initialValues={{ firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '', city: '', area: '' }}
                 validationSchema={registerSchema}
                 onSubmit={async (values) => {
                     try {
-                        const { firstName, lastName, ...rest } = values;
+                        const { firstName, lastName, city, area, ...rest } = values;
                         const fullName = `${firstName.trim()} ${lastName.trim()}`;
                         await register({
                             fullName,
-                            ...rest
+                            ...rest,
+                            city: city.trim(),
+                            area: area.trim(),
                         });
                         toast.success(t('Auth.otpSent'));
                         router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
@@ -186,6 +231,37 @@ export default function RegisterForm() {
                                 />
                             </div>
                             <ErrorMessage name="phone" component="div" className={styles.error} />
+                        </div>
+
+                        {/* Location: detect + city/area */}
+                        <div className={styles.locationSection}>
+                            <div className={styles.locationHeader}>
+                                <span className={styles.locationHeaderLabel}>{tLoc('address')}</span>
+                                <LocationDetectButton
+                                    status={locStatus}
+                                    error={locError}
+                                    onClick={detect}
+                                    className="w-auto flex-shrink-0"
+                                />
+                            </div>
+                            <div className={styles.locationGrid}>
+                                <div className={styles.fieldWrapper}>
+                                    <label className={styles.label}>{tLoc('city')}</label>
+                                    <Field
+                                        name="city"
+                                        className={styles.inputPlain}
+                                        placeholder={tLoc('cityPlaceholder')}
+                                    />
+                                </div>
+                                <div className={styles.fieldWrapper}>
+                                    <label className={styles.label}>{tLoc('area')}</label>
+                                    <Field
+                                        name="area"
+                                        className={styles.inputPlain}
+                                        placeholder={tLoc('areaPlaceholder')}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className={styles.fieldWrapper}>

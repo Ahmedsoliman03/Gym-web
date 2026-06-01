@@ -6,6 +6,7 @@ import { getLoginSchema } from '../validations';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { Mail24Regular, LockClosed24Regular, ArrowRight24Regular, SpinnerIos20Regular, Eye24Regular, EyeOff24Regular } from '@fluentui/react-icons';
 import { Link, useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -47,6 +48,7 @@ const styles = {
 export default function LoginForm() {
     const t = useTranslations();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { login } = useAuthUser();
     const [showPassword, setShowPassword] = useState(false);
     const validationSchema = getLoginSchema(t);
@@ -95,7 +97,13 @@ export default function LoginForm() {
                     try {
                         await login(values);
                         toast.success(t('Auth.loginSuccess') || 'Logged in successfully!');
-                        router.push('/');
+
+                        const rawNext = searchParams.get('next');
+                        const safeNext =
+                            rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//')
+                                ? rawNext.replace(/^\/(en|ar)(?=\/|$)/, '') || '/'
+                                : '/';
+                        router.push(safeNext as any);
                     } catch (error: any) {
                         toast.error(error?.response?.data?.message || t('Auth.loginFailed'));
                     }

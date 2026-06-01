@@ -24,7 +24,10 @@ api.interceptors.response.use(
             const isOnAuthPage = authPaths.some(
                 (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(`${p}/`)
             );
-            if (!isOnAuthPage) {
+            // Don't redirect from public pages either — logged-out users browsing
+            // /, /gyms, /coaches will hit 401 on /api/me; the UI handles it.
+            const isOnPublicPage = ['/', '/gyms', '/coaches'].includes(pathWithoutLocale);
+            if (!isOnAuthPage && !isOnPublicPage) {
                 window.location.href = `/${locale}/login`;
             }
         }

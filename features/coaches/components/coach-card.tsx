@@ -2,21 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { COMMON_COACH_IMAGE } from '@/constants/coaches';
+import { Link } from '@/i18n/routing';
 import { Coach } from '../types';
 
-interface CoachCardProps {
-  coach: {
-    id: number;
-    name: string;
-    yearsExp: number;
-    specializations: string[];
-    tier: string;
-  };
-  index: number;
-}
-
 const styles = {
-  card: "group bg-surface rounded-2xl overflow-hidden hover:translate-y-[-12px] transition-all duration-500 border border-white/5 shadow-2xl",
+  card: "group bg-surface rounded-2xl overflow-hidden hover:translate-y-[-12px] transition-all duration-500 border border-white/5 shadow-2xl block hover:border-primary/30",
   imageContainer: "relative aspect-[4/5] overflow-hidden",
   image: "w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100",
   imageOverlay: "absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background via-background/80 to-transparent",
@@ -32,7 +22,8 @@ export function CoachCard({ coach, index }: { coach: Coach, index: number }) {
   const t = useTranslations('Coaches');
 
   return (
-    <div
+    <Link
+      href={`/coaches/${coach.id}` as any}
       className={styles.card}
       style={{ animationDelay: `${0.1 * (index % 4)}s` }}
     >
@@ -68,6 +59,6 @@ export function CoachCard({ coach, index }: { coach: Coach, index: number }) {
 
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

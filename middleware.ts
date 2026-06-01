@@ -33,10 +33,13 @@ export default function middleware(request: NextRequest) {
         '/request-access',
         '/activate'
     ];
-    
-    const isAuthPath = authPaths.some(path => 
+
+    const isAuthPath = authPaths.some(path =>
         pathnameWithoutLocale === path || pathnameWithoutLocale.startsWith(`${path}/`)
     );
+
+    const publicPaths = ['/', '/gyms', '/coaches', '/about'];
+    const isPublicPath = publicPaths.includes(pathnameWithoutLocale);
 
     // Get current locale or default to 'en'
     const localeMatch = pathname.match(/^\/(en|ar)/);
@@ -62,9 +65,11 @@ export default function middleware(request: NextRequest) {
         }
     }
 
-    // 5. If there is NO token and user is NOT on an auth page, redirect to the login page
-    if (!token && !isAuthPath) {
+    // 5. If there is NO token and user is NOT on an auth or public page, send to
+    //    login with `next` so the user is bounced back here after authenticating.
+    if (!token && !isAuthPath && !isPublicPath) {
         const loginUrl = new URL(`/${locale}/login`, request.url);
+        loginUrl.searchParams.set('next', pathname);
         return NextResponse.redirect(loginUrl);
     }
 
@@ -76,9 +81,7 @@ export default function middleware(request: NextRequest) {
 
     // 7. Enforce role-based access control if user is logged in
     if (token && !isAuthPath) {
-        // Derive userType from the signed JWT only. The `user_type` cookie is
-        // non-HttpOnly and trivially tampered with from the browser, so it must
-        // never be trusted for access-control decisions.
+
         const jwtPayload = decodeJwt(token);
         const userType = jwtPayload?.userType || jwtPayload?.user_type || jwtPayload?.role;
 
@@ -94,7 +97,7 @@ export default function middleware(request: NextRequest) {
         // Client: can only access /gyms, /coaches, /about (blocked from /jobs and /applications)
         else if (userType === 'client') {
             const blockedPaths = ['/jobs', '/applications'];
-            const isBlocked = blockedPaths.some(path => 
+            const isBlocked = blockedPaths.some(path =>
                 pathnameWithoutLocale === path || pathnameWithoutLocale.startsWith(`${path}/`)
             );
             if (isBlocked) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
-import { mockProfiles } from "@/features/profile/mock-data";
+import { mockProfiles, CoachProfile, GymProfile } from "@/features/profile/mock-data";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
 import { ClientProfileView } from "@/features/profile/components/client-profile-view";
@@ -31,25 +31,55 @@ export default function ProfilePage() {
       </div>
     );
   }
+  console.log(profile.profile);
 
   const renderProfile = () => {
     switch (profile.userType) {
       case 'coach': {
-        const mockCoach = {
-          ...mockProfiles["marcus-thorne"],
+        const coachProfile = profile.profile;
+        const baseCoach = mockProfiles["marcus-thorne"] as CoachProfile;
+        const mockCoach: CoachProfile = {
+          ...baseCoach,
           id: profile.id,
-          name: profile.fullName,
-          image: profile.profile.photo || "/images/profile/marcus.png",
+          name: profile.fullName || coachProfile.name,
+          image: coachProfile.photo || coachProfile.profileImage || "/images/profile/marcus.png",
+          description: coachProfile.description || baseCoach.description,
+          stats: [
+            {
+              label: "EXP",
+              value: coachProfile.experienceYears !== undefined
+                ? `${coachProfile.experienceYears}y`
+                : baseCoach.stats[0].value
+            },
+            {
+              label: "CLIENTS",
+              value: baseCoach.stats[1].value
+            },
+          ],
+          credentials: {
+            certifications: coachProfile.certifications && coachProfile.certifications.length > 0
+              ? coachProfile.certifications.map(cert => cert.file)
+              : baseCoach.credentials.certifications,
+            specializations: coachProfile.specialization && coachProfile.specialization.length > 0
+              ? coachProfile.specialization
+              : baseCoach.credentials.specializations,
+          },
           type: "coach" as const
         };
         return <CoachProfileView data={mockCoach} />;
       }
       case 'gym': {
-        const mockGym = {
-          ...mockProfiles["elite-hq"],
+        const gymProfile = profile.profile;
+        const baseGym = mockProfiles["elite-hq"] as GymProfile;
+        const mockGym: GymProfile = {
+          ...baseGym,
           id: profile.id,
-          name: profile.fullName,
-          image: profile.profile.photo || "/images/profile/gym-logo.png",
+          name: gymProfile.gymName || profile.fullName || gymProfile.name,
+          location: gymProfile.location || baseGym.location,
+          memberCount: gymProfile.memberCount !== undefined
+            ? gymProfile.memberCount.toString()
+            : baseGym.memberCount,
+          image: gymProfile.photo || gymProfile.mainPhoto || "/images/profile/gym-logo.png",
           type: "gym" as const
         };
         return <GymProfileView data={mockGym} />;

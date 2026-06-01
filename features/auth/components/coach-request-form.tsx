@@ -22,7 +22,6 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 name: '',
                 email: '',
                 phone: '',
-                governorate: '',
                 city: '',
                 area: '',
                 specialization: [] as string[],
@@ -34,13 +33,7 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    const { governorate, city, area, ...rest } = values;
-                    const mappedValues = {
-                        ...rest,
-                        city: governorate,
-                        area: city
-                    };
-                    await requestAccess(mappedValues as RequestAccessRequest);
+                    await requestAccess(values as RequestAccessRequest);
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
                 } catch (error: any) {

@@ -66,7 +66,7 @@
         "registerHere": "قم بالتسجيل",
         "registrationComplete": "اكتمل التسجيل",
         "registrationSuccess": "تم إنشاء الحساب بنجاح. مرحباً بك في مجتمعنا.",
-        "goToLogin": "الذهاب للصفحة الرئيسية",
+        "goToHome": "الذهاب للصفحة الرئيسية",
         "verifyEmail": "تأكيد البريد الإلكتروني",
         "otpSent": "لقد أرسلنا رمزاً مكوناً من 6 أرقام إلى بريدك الإلكتروني.",
         "verifyAndComplete": "تحقق وأكمل التسجيل",
@@ -318,6 +318,7 @@
         "months": "شهور",
         "years": "سنوات",
         "facilityGallery": "معرض المنشأة",
+        "facilityView": "عرض المنشأة",
         "Plans": "باقات الاشتراك",
         "getStarted": "ابدأ الآن",
         "peakState": "أقصى أداء",
@@ -338,6 +339,7 @@
         "planName": "اسم الباقة"
     },
     "Navbar": {
+        "signIn": "تسجيل الدخول",
         "coaches": "المدربون",
         "gyms": "المنشآت الرياضية",
         "jobBoard": "الفرص المهنية",
@@ -404,9 +406,35 @@
         "area": "الحي / المنطقة",
         "address": "عنوان الشارع",
         "governoratePlaceholder": "مثلاً: الجيزة",
-        "cityPlaceholder": "مثلاً: 6 أكتوبر",
-        "areaPlaceholder": "مثلاً: الحي 12",
+        "cityPlaceholder": "مثلاً: الجيزة",
+        "areaPlaceholder": "مثلاً: 6 أكتوبر",
         "addressPlaceholder": "الشارع، المبنى..."
+    },
+    "Stories": {
+        "addStory": "أضف قصة",
+        "uploading": "جارٍ النشر...",
+        "uploadSuccess": "تم نشر القصة",
+        "uploadError": "تعذّر نشر القصة. يرجى المحاولة مرة أخرى."
+    },
+    "Home": {
+        "welcomeBack": "مرحباً بعودتك، {name}",
+        "welcome": "مرحباً بك في GymSpot",
+        "clientHeadline": "رحلتك نحو اللياقة تبدأ هنا",
+        "clientSubtitle": "اكتشف نخبة المدربين والمنشآت الرياضية التي تناسب أهدافك.",
+        "coachHeadline": "طوّر مسيرتك المهنية كمدرب",
+        "coachSubtitle": "اكتشف فرصاً جديدة وتواصل مع منشآت رياضية تبحث عن مواهب مثلك.",
+        "gymHeadline": "أدِر منشأتك بأسلوبك",
+        "gymSubtitle": "وظّف مدربين مؤهلين، استعرض الطلبات، واعرض جيمك للمجتمع.",
+        "exploreCoaches": "استكشف المدربين",
+        "exploreCoachesDesc": "تصفح المدربين المعتمدين واختر الأنسب لك.",
+        "exploreGyms": "استكشف الصالات",
+        "exploreGymsDesc": "ابحث عن المنشآت الشريكة في منطقتك.",
+        "viewJobs": "لوحة الوظائف",
+        "viewJobsDesc": "اكتشف الوظائف التدريبية المتاحة.",
+        "viewApplications": "الطلبات الواردة",
+        "viewApplicationsDesc": "راجع المتقدمين لإعلاناتك الوظيفية.",
+        "manageProfile": "ملفي الشخصي",
+        "manageProfileDesc": "حافظ على تحديث بياناتك."
     },
     "Applications": {
         "tag": "الطلبات الواردة",

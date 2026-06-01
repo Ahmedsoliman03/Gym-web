@@ -5,6 +5,7 @@ import { MessageSquare, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
+import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 
 const styles = {
   // ... existing styles ...
@@ -38,6 +39,7 @@ interface CoachProfileHeaderProps {
     value: string;
   }[];
   image: string;
+  isOwner?: boolean;
 }
 
 export const CoachProfileHeader = ({
@@ -46,6 +48,7 @@ export const CoachProfileHeader = ({
   tier,
   stats,
   image,
+  isOwner = true,
 }: CoachProfileHeaderProps) => {
   const t = useTranslations("Profile");
 
@@ -61,10 +64,11 @@ export const CoachProfileHeader = ({
                 alt={name}
                 fill
                 className={styles.avatarImage}
+                unoptimized
               />
             </div>
           </div>
-          <div className={styles.statusBadge} />
+          {isOwner ? <StoryAvatarBadge /> : <div className={styles.statusBadge} />}
         </div>
 
         {/* Info */}
@@ -95,10 +99,12 @@ export const CoachProfileHeader = ({
             <MessageSquare size={18} />
             {t('chat')}
           </button>
-          <Link href="/profile/edit" className={styles.secondaryBtn}>
-            <Settings size={18} />
-            {t('editProfile')}
-          </Link>
+          {isOwner && (
+            <Link href="/profile/edit" className={styles.secondaryBtn}>
+              <Settings size={18} />
+              {t('editProfile')}
+            </Link>
+          )}
         </div>
       </div>
     </div>

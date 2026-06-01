@@ -8,6 +8,7 @@ import { SearchX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useGyms } from '../services/gyms.service';
 import { useLocationDetect } from '@/hooks/use-location-detect';
+import { StoriesBar } from '@/features/stories/components/stories-bar';
 import toast from 'react-hot-toast';
 
 const styles = {
@@ -169,6 +170,9 @@ export function GymsView() {
 
         <section className={styles.header}>
           <GymsHero />
+          <div className="mb-8">
+            <StoriesBar userType="gym" />
+          </div>
           <GymsFilter
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -180,6 +184,7 @@ export function GymsView() {
         </section>
 
         <div className={styles.gridContainer}>
+
           <div className={styles.titleRow}>
             <div>
               <h2 className={styles.titleLabel}>

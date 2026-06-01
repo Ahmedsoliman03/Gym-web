@@ -3,11 +3,11 @@
 import { Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { useRef, useCallback } from 'react';
-import { 
-    SpinnerIos20Regular, 
-    ArrowRight24Regular, 
-    ArrowUpload24Regular, 
-    Dismiss20Regular 
+import {
+    SpinnerIos20Regular,
+    ArrowRight24Regular,
+    ArrowUpload24Regular,
+    Dismiss20Regular
 } from '@fluentui/react-icons';
 import { CustomMultiSelect } from '@/components/shared/custom-multi-select';
 import { SPECIALIZATIONS } from '@/constants/specializations';
@@ -40,9 +40,24 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
     const profileImageRef = useRef<HTMLInputElement>(null);
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
-        if (result.governorate) setFieldValue('governorate', result.governorate);
-        if (result.city) setFieldValue('city', result.city);
-        if (result.area) setFieldValue('area', result.area);
+        // city = governorate-level (e.g. "Giza"); area = sub-area (e.g. "6th of October").
+        // Nominatim sometimes returns Cairo/Giza in result.city, so fall back accordingly.
+        let city = '';
+        if (result.governorate) {
+            city = result.governorate;
+        } else if (result.city && (result.city.toLowerCase() === 'cairo' || result.city.toLowerCase() === 'giza')) {
+            city = result.city;
+        }
+
+        let area = '';
+        if (result.city && result.city.toLowerCase() !== 'cairo' && result.city.toLowerCase() !== 'giza') {
+            area = result.city;
+        } else if (result.area) {
+            area = result.area;
+        }
+
+        if (city) setFieldValue('city', city);
+        if (area) setFieldValue('area', area);
     }, [setFieldValue]);
 
     const { status: locStatus, error: locError, detect } = useLocationDetect(handleLocationSuccess);
@@ -107,20 +122,8 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
                         className="w-auto flex-shrink-0"
                     />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Governorate */}
-                    <div className={styles.fieldWrapper}>
-                        <label className={styles.label}>{tLoc('governorate')}</label>
-                        <input
-                            type="text"
-                            name="governorate"
-                            value={values.governorate ?? ''}
-                            onChange={(e) => setFieldValue('governorate', e.target.value)}
-                            className={styles.input}
-                            placeholder={tLoc('governoratePlaceholder')}
-                        />
-                    </div>
-                    {/* City */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* City (governorate-level, e.g. "Giza") */}
                     <div className={styles.fieldWrapper}>
                         <label className={styles.label}>{tLoc('city')}</label>
                         <input
@@ -131,8 +134,9 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
                             className={styles.input}
                             placeholder={tLoc('cityPlaceholder')}
                         />
+                        <ErrorMessage name="city" component="div" className={styles.error} />
                     </div>
-                    {/* Area */}
+                    {/* Area (sub-area, e.g. "6th of October") */}
                     <div className={styles.fieldWrapper}>
                         <label className={styles.label}>{tLoc('area')}</label>
                         <input
@@ -143,6 +147,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
                             className={styles.input}
                             placeholder={tLoc('areaPlaceholder')}
                         />
+                        <ErrorMessage name="area" component="div" className={styles.error} />
                     </div>
                 </div>
             </div>
@@ -248,7 +253,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
                             name="certifications"
                             className="hidden"
                             multiple
-                            accept="image/*,application/pdf"
+                            accept="image/*"
                             onChange={(e) => {
                                 const newFiles = Array.from(e.currentTarget.files || []);
                                 setFieldValue('certifications', [...values.certifications, ...newFiles]);

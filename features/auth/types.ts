@@ -9,6 +9,8 @@ export interface RegisterRequest {
     phone: string;
     password: string;
     confirmPassword: string;
+    city?: string;
+    area?: string;
 }
 
 export interface ActivateRequest {
@@ -92,7 +94,6 @@ export interface CoachFormInnerProps {
         name: string;
         email: string;
         phone: string;
-        governorate: string;
         city: string;
         area: string;
         specialization: string[];

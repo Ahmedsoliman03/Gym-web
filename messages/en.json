@@ -66,7 +66,7 @@
         "registerHere": "Register here",
         "registrationComplete": "Registration Complete",
         "registrationSuccess": "Your account has been created successfully. Welcome to the elite network.",
-        "goToLogin": "Go to Home",
+        "goToHome": "Go to Home",
         "verifyEmail": "Verify Email",
         "otpSent": "We've sent a 6-digit code to your email.",
         "verifyAndComplete": "Verify & Complete",
@@ -317,6 +317,7 @@
         "months": "Months",
         "years": "Years",
         "facilityGallery": "Facility Gallery",
+        "facilityView": "Facility View",
         "Plans": "Membership Plans",
         "getStarted": "Get Started",
         "peakState": "Peak State",
@@ -337,6 +338,7 @@
         "planName": "Plan Name"
     },
     "Navbar": {
+        "signIn": "Sign In",
         "coaches": "Coaches",
         "gyms": "Gyms",
         "jobBoard": "Job Board",
@@ -403,9 +405,35 @@
         "area": "District / Area",
         "address": "Street Address",
         "governoratePlaceholder": "e.g. Giza",
-        "cityPlaceholder": "e.g. 6th of October",
-        "areaPlaceholder": "e.g. 12th District",
+        "cityPlaceholder": "e.g. Giza",
+        "areaPlaceholder": "e.g. 6th of October",
         "addressPlaceholder": "Street, Building..."
+    },
+    "Stories": {
+        "addStory": "Add to Story",
+        "uploading": "Uploading...",
+        "uploadSuccess": "Story posted",
+        "uploadError": "Could not post your story. Please try again."
+    },
+    "Home": {
+        "welcomeBack": "Welcome back, {name}",
+        "welcome": "Welcome to GymSpot",
+        "clientHeadline": "Your fitness journey starts here",
+        "clientSubtitle": "Discover elite coaches and partner facilities tailored to your goals.",
+        "coachHeadline": "Grow your coaching career",
+        "coachSubtitle": "Find new opportunities and connect with elite facilities looking for talent like you.",
+        "gymHeadline": "Run your facility, your way",
+        "gymSubtitle": "Hire qualified coaches, review applications, and showcase your gym to the community.",
+        "exploreCoaches": "Explore Coaches",
+        "exploreCoachesDesc": "Browse certified coaches and pick the right match.",
+        "exploreGyms": "Explore Gyms",
+        "exploreGymsDesc": "Find partner facilities in your area.",
+        "viewJobs": "Job Board",
+        "viewJobsDesc": "Discover open coaching roles.",
+        "viewApplications": "Applications",
+        "viewApplicationsDesc": "Review applicants for your job posts.",
+        "manageProfile": "My Profile",
+        "manageProfileDesc": "Keep your details up to date."
     },
     "Applications": {
         "tag": "Incoming Applications",

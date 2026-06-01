@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { gsap } from "gsap";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl";
 
 interface ImageLightboxProps {
   isOpen: boolean;
@@ -19,7 +19,6 @@ export const ImageLightbox = ({
   currentIndex: initialIndex,
 }: ImageLightboxProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const t = useTranslations("Auth"); 
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -110,12 +109,12 @@ export const ImageLightbox = ({
       )}
 
       {/* Image Display */}
-      <div 
+      <div
         ref={contentRef}
         className="relative w-full h-full flex items-center justify-center p-4 md:p-8 pointer-events-none"
       >
-        <div 
-            className="relative max-w-full max-h-full flex flex-col items-center justify-center transition-transform duration-500 ease-out pointer-events-auto"
+        <div
+          className="relative max-w-full max-h-full flex flex-col items-center justify-center transition-transform duration-500 ease-out pointer-events-auto"
         >
           <img
             src={images[currentIndex]}
@@ -123,11 +122,11 @@ export const ImageLightbox = ({
             className="max-w-full max-h-[70vh] md:max-h-[85vh] object-contain rounded-xl md:rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5"
             draggable={false}
           />
-          
+
           {/* Footer Info */}
           <div className="absolute -bottom-10 md:-bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 whitespace-nowrap">
             <span className="text-white/20 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">
-                {currentIndex + 1} / {images.length}
+              {currentIndex + 1} / {images.length}
             </span>
           </div>
         </div>

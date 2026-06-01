@@ -90,11 +90,16 @@ export const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-
+      // If the current page is protected, send the user home; otherwise stay put
+      // and let the UI rerender into its logged-out state. `pathname` from
+      // @/i18n/routing is already locale-stripped.
+      const publicPaths = ['/', '/gyms', '/coaches'];
+      if (!publicPaths.includes(pathname)) {
+        router.push('/');
+      }
     } catch (err) {
       console.error('Logout failed:', err);
     }
-    router.push('/login');
   };
   const isRtl = locale === 'ar';
   const isAuthPage = pathname.includes('/login') ||
@@ -102,13 +107,15 @@ export const Navbar = () => {
     pathname.includes('/request-access') ||
     pathname.includes('/activate');
 
-  const userType = profile?.userType;
+  const isLoggedIn = Boolean(profile);
 
+  // All nav links are shown to everyone. Role gating happens in middleware,
+  // and logged-out users are sent to /login (with ?next=) on click.
   const navLinks = [
     { label: t('coaches'), href: "/coaches" },
     { label: t('gyms'), href: "/gyms" },
-    ...(userType === 'coach' || userType === 'gym' ? [{ label: t('jobBoard'), href: "/jobs" }] : []),
-    ...(userType === 'gym' ? [{ label: t('applications'), href: "/applications" }] : []),
+    { label: t('jobBoard'), href: "/jobs" },
+    { label: t('applications'), href: "/applications" },
     { label: t('about'), href: "/about" },
   ];
 
@@ -192,7 +199,16 @@ export const Navbar = () => {
               <span className={styles.langText}>{locale === 'en' ? 'AR' : 'EN'}</span>
             </button>
 
-            {!isAuthPage && (
+            {!isAuthPage && !isLoggedIn && (
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs hover:brightness-110 transition-all"
+              >
+                {t('signIn')}
+              </Link>
+            )}
+
+            {!isAuthPage && isLoggedIn && (
               <>
                 <NotificationsMenu
                   buttonClassName={styles.notifButton}
@@ -328,9 +344,8 @@ export const Navbar = () => {
           </button>
         </div>
 
-        {/* <div className={styles.mobileFooter}>
-          Gym Elite Inner Circle © 2026
-        </div> */}
+
+
       </div>
     </>
   );
