@@ -47,11 +47,9 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                 }
             }}
         >
-            {({ isSubmitting, values, setFieldValue, isValid, dirty }) => (
+            {({ isSubmitting, values, setFieldValue }) => (
                 <GymFormInner
                     isSubmitting={isSubmitting}
-                    isValid={isValid}
-                    dirty={dirty}
                     values={values as GymFormInnerProps['values']}
                     setFieldValue={setFieldValue}
                 />

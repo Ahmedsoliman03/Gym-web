@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { GymsHero } from './gyms-hero';
 import { GymsFilter } from './gyms-filter';
 import { GymCard } from './gym-card';
 import { SearchX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useGyms } from '../services/gyms.service';
-import { useLocationDetect } from '@/hooks/use-location-detect';
+import { useAutoLocationFilter } from '@/hooks/use-auto-location-filter';
 import { StoriesBar } from '@/features/stories/components/stories-bar';
-import toast from 'react-hot-toast';
 
 const styles = {
   container: "min-h-screen bg-background text-foreground font-sans selection:bg-primary/30",
@@ -30,121 +29,18 @@ const styles = {
   clearButton: "mt-6 text-primary font-headline font-black uppercase hover:brightness-110 transition-all font-bold"
 };
 
-const safeSessionStorage = {
-  getItem: (key: string): string | null => {
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        return sessionStorage.getItem(key);
-      }
-    } catch (e) {
-      console.warn('sessionStorage is not accessible:', e);
-    }
-    return null;
-  },
-  setItem: (key: string, value: string): void => {
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        sessionStorage.setItem(key, value);
-      }
-    } catch (e) {
-      console.warn('sessionStorage is not accessible:', e);
-    }
-  },
-  removeItem: (key: string): void => {
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        sessionStorage.removeItem(key);
-      }
-    } catch (e) {
-      console.warn('sessionStorage is not accessible:', e);
-    }
-  }
-};
-
 export function GymsView() {
   const t = useTranslations('Gyms');
   const tLoc = useTranslations('Location');
   const [searchQuery, setSearchQuery] = useState('');
-  const [city, setCity] = useState('');
-  const [area, setArea] = useState('');
-  const isRestoredRef = useRef(false);
+
+  const { city, setCity, area, setArea, detect, isDetecting } =
+    useAutoLocationFilter({
+      successMessage:
+        tLoc('locationDetected') || 'Location detected: Showing gyms near you!',
+    });
 
   const { data: gymsData } = useGyms();
-
-  const { detect } = useLocationDetect((result) => {
-    // Map governorate/county (e.g. Giza, Cairo) to City search input
-    let detectedCity = '';
-    if (result.governorate) {
-      detectedCity = result.governorate;
-    } else if (result.city && (result.city.toLowerCase() === 'cairo' || result.city.toLowerCase() === 'giza')) {
-      detectedCity = result.city;
-    }
-
-    // Map town/suburb (e.g. 6th of October, Maadi) to Area search input
-    let detectedArea = '';
-    if (result.city && result.city.toLowerCase() !== 'cairo' && result.city.toLowerCase() !== 'giza') {
-      detectedArea = result.city;
-    } else if (result.area) {
-      detectedArea = result.area;
-    }
-
-    if (detectedCity) {
-      setCity(detectedCity);
-      safeSessionStorage.setItem('detected_city', detectedCity);
-    }
-    if (detectedArea) {
-      setArea(detectedArea);
-      safeSessionStorage.setItem('detected_area', detectedArea);
-    }
-
-    safeSessionStorage.setItem('location_detected', 'true');
-    toast.success(tLoc('locationDetected') || 'Location detected: Showing gyms near you!');
-  });
-
-  // Sync city changes to sessionStorage to handle language/route changes
-  useEffect(() => {
-    if (!isRestoredRef.current) return;
-    if (city) {
-      safeSessionStorage.setItem('detected_city', city);
-    } else {
-      safeSessionStorage.removeItem('detected_city');
-    }
-  }, [city]);
-
-  // Sync area changes to sessionStorage to handle language/route changes
-  useEffect(() => {
-    if (!isRestoredRef.current) return;
-    if (area) {
-      safeSessionStorage.setItem('detected_area', area);
-    } else {
-      safeSessionStorage.removeItem('detected_area');
-    }
-  }, [area]);
-
-  useEffect(() => {
-    const hasDetected = safeSessionStorage.getItem('location_detected');
-    const hasStarted = safeSessionStorage.getItem('location_detect_started');
-
-    if (hasDetected) {
-      // Restore detected values if they exist
-      const storedCity = safeSessionStorage.getItem('detected_city');
-      const storedArea = safeSessionStorage.getItem('detected_area');
-      if (storedCity) setCity(storedCity);
-      if (storedArea) setArea(storedArea);
-      isRestoredRef.current = true;
-      return;
-    }
-
-    if (hasStarted) {
-      isRestoredRef.current = true;
-      return;
-    }
-
-    safeSessionStorage.setItem('location_detect_started', 'true');
-    detect();
-    isRestoredRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const gyms = useMemo(() => {
     return gymsData || [];
@@ -170,9 +66,7 @@ export function GymsView() {
 
         <section className={styles.header}>
           <GymsHero />
-          <div className="mb-8">
-            <StoriesBar userType="gym" />
-          </div>
+          <StoriesBar userType="gym" />
           <GymsFilter
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -180,6 +74,8 @@ export function GymsView() {
             setCity={setCity}
             area={area}
             setArea={setArea}
+            onDetectLocation={detect}
+            isDetectingLocation={isDetecting}
           />
         </section>
 

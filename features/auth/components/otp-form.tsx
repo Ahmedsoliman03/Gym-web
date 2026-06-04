@@ -129,7 +129,7 @@ export default function OtpForm() {
                     }
                 }}
             >
-                {({ isSubmitting, setFieldValue, isValid, dirty }) => (
+                {({ isSubmitting, setFieldValue }) => (
                     <Form className={styles.form}>
                         <div className={styles.otpWrapper}>
                             {otp.map((digit, index) => (
@@ -170,7 +170,7 @@ export default function OtpForm() {
 
                         <button
                             type="submit"
-                            disabled={isSubmitting || !isValid || !dirty || isExpired}
+                            disabled={isSubmitting || isExpired}
                             className={styles.submitButton}
                         >
                             {isSubmitting ? (

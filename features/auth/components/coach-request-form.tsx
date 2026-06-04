@@ -41,11 +41,9 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 }
             }}
         >
-            {({ isSubmitting, values, setFieldValue, isValid, dirty }) => (
+            {({ isSubmitting, values, setFieldValue }) => (
                 <CoachFormInner
                     isSubmitting={isSubmitting}
-                    isValid={isValid}
-                    dirty={dirty}
                     values={values as CoachFormInnerProps['values']}
                     setFieldValue={setFieldValue}
                 />

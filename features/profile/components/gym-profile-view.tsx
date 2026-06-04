@@ -70,7 +70,13 @@ export const GymProfileView = ({ data, isOwner = true }: { data: GymProfile; isO
             className={styles.logoImage}
             unoptimized
           />
-          {isOwner && <StoryAvatarBadge />}
+          <StoryAvatarBadge
+            profileImage={data.image}
+            profileName={data.name}
+            isOwner={isOwner}
+            authorId={data.id}
+            authorUserType="gym"
+          />
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>

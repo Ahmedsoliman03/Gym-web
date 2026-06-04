@@ -1,13 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-
-interface SpecializationDropdownProps {
-  value: string;
-  onChange: (val: string) => void;
-  options: string[];
-  placeholder: string;
-}
+import { SpecializationDropdownProps } from '../types';
 
 const styles = {
   container: "relative min-w-[240px]",

@@ -1,14 +1,7 @@
 "use client";
 
 import { MessageSquare } from "lucide-react";
-
-interface ChatNotificationItemProps {
-    title: string;
-    desc: string;
-    time: string;
-    isUnread?: boolean;
-    onClick?: () => void;
-}
+import { ChatNotificationItemProps } from "../types";
 
 const styles = {
     container: (isUnread: boolean) => `p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex gap-3 ${isUnread ? 'bg-primary/5' : ''}`,

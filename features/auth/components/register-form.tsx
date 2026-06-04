@@ -4,6 +4,7 @@ import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRegisterSchema } from '../validations';
 import { useAuthUser } from '../hooks/useAuthUser';
+import { RegisterFormValues } from '../types';
 import {
     SpinnerIos20Regular,
     Eye24Regular,
@@ -57,17 +58,6 @@ const styles = {
 };
 
 import toast from 'react-hot-toast';
-
-interface RegisterFormValues {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    password: string;
-    confirmPassword: string;
-    city: string;
-    area: string;
-}
 
 export default function RegisterForm() {
     const t = useTranslations();
@@ -155,7 +145,7 @@ export default function RegisterForm() {
                     }
                 }}
             >
-                {({ isSubmitting, isValid, dirty }) => (
+                {({ isSubmitting }) => (
                     <Form className={styles.form}>
                         {/* Name Grid */}
                         <div className="grid grid-cols-2 gap-3">
@@ -321,7 +311,7 @@ export default function RegisterForm() {
                         <div className={styles.submitWrapper}>
                             <button
                                 type="submit"
-                                disabled={isSubmitting || !isValid || !dirty}
+                                disabled={isSubmitting}
                                 className={styles.submitButton}
                             >
                                 {isSubmitting ? (

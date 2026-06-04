@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCoaches } from '../services/coaches.service';
+import { useAutoLocationFilter } from '@/hooks/use-auto-location-filter';
 
 // Modular Components
 import { CoachesHero } from './coaches-hero';
@@ -31,9 +32,16 @@ const styles = {
 
 export function CoachesView() {
   const t = useTranslations('Coaches');
+  const tLoc = useTranslations('Location');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
   const [experience, setExperience] = useState('All');
+
+  const { city, area, detect, isDetecting, reset: resetLocation } =
+    useAutoLocationFilter({
+      successMessage:
+        tLoc('locationDetected') || 'Location detected: Showing coaches near you!',
+    });
 
   const { data: coachesData } = useCoaches();
 
@@ -55,9 +63,25 @@ export function CoachesView() {
           ? coach.experienceYears > 8
           : coach.experienceYears === parseInt(experience, 10));
 
-      return matchesSearch && matchesSpecialty && matchesExperience;
+      // Coach.city / Coach.area may be absent on the API today; when present,
+      // apply the filter; when absent and the user has set a filter, keep the
+      // record (be lenient so we don't hide all coaches by accident).
+      const matchesCity =
+        !city ||
+        (coach.city ? coach.city.toLowerCase().includes(city.toLowerCase()) : true);
+      const matchesArea =
+        !area ||
+        (coach.area ? coach.area.toLowerCase().includes(area.toLowerCase()) : true);
+
+      return (
+        matchesSearch &&
+        matchesSpecialty &&
+        matchesExperience &&
+        matchesCity &&
+        matchesArea
+      );
     });
-  }, [coaches, searchQuery, selectedSpecialty, experience]);
+  }, [coaches, searchQuery, selectedSpecialty, experience, city, area]);
 
   return (
     <div className={styles.container}>
@@ -66,9 +90,7 @@ export function CoachesView() {
           <div className={styles.gradientOverlay} />
           <div className={styles.headerContent}>
             <CoachesHero />
-            <div className="mb-8">
-              <StoriesBar userType="coach" />
-            </div>
+            <StoriesBar userType="coach" />
             <CoachesFilter
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -76,6 +98,9 @@ export function CoachesView() {
               setSelectedSpecialty={setSelectedSpecialty}
               experience={experience}
               setExperience={setExperience}
+              onDetectLocation={detect}
+              isDetectingLocation={isDetecting}
+              onResetLocation={resetLocation}
             />
           </div>
         </section>
@@ -115,6 +140,8 @@ export function CoachesView() {
                   onClick={() => {
                     setSelectedSpecialty('All');
                     setSearchQuery('');
+                    setExperience('All');
+                    resetLocation();
                   }}
                   className={styles.clearButton}
                 >

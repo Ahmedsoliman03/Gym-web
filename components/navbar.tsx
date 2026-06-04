@@ -38,9 +38,10 @@ const styles = {
     ${isActive ? "bg-primary/20 border-primary/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]" : "bg-white/5 border-white/10 hover:bg-white/10 overflow-hidden"}
   `,
   profileIconWrapper: (isActive: boolean) => `
-    w-8 h-8 rounded-full flex items-center justify-center transition-all 
+    w-8 h-8 rounded-full flex items-center justify-center transition-all overflow-hidden
     ${isActive ? "bg-primary text-primary-foreground" : "bg-primary/20 border border-primary/30 text-primary"}
   `,
+  profilePhotoImg: "w-full h-full object-cover",
   profileName: (isActive: boolean) => `
     text-sm font-bold hidden sm:block 
     ${isActive ? "text-primary" : "text-foreground/80"}
@@ -86,6 +87,14 @@ export const Navbar = () => {
   const router = useRouter();
 
   const firstName = profile?.fullName ? profile.fullName.trim().split(/\s+/)[0] : "User";
+
+  const profilePhoto = (() => {
+    const inner = profile?.profile;
+    if (!inner) return null;
+    if (inner.type === 'coach') return inner.photo ?? inner.profileImage ?? null;
+    if (inner.type === 'gym') return inner.photo ?? inner.mainPhoto ?? null;
+    return inner.photo ?? null;
+  })();
 
   const handleLogout = async () => {
     try {
@@ -223,7 +232,16 @@ export const Navbar = () => {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
                     <div className={styles.profileIconWrapper(pathname === '/profile')}>
-                      <User size={18} />
+                      {profilePhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={profilePhoto}
+                          alt={firstName}
+                          className={styles.profilePhotoImg}
+                        />
+                      ) : (
+                        <User size={18} />
+                      )}
                     </div>
                     <span className={styles.profileName(pathname === '/profile')}>{firstName}</span>
                   </button>

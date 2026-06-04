@@ -33,7 +33,7 @@ const styles = {
     submitIcon: "group-hover:translate-x-1 transition-transform rtl:rotate-180"
 };
 
-export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, dirty }: CoachFormInnerProps) {
+export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFormInnerProps) {
     const t = useTranslations();
     const tLoc = useTranslations('Location');
     const certificationsRef = useRef<HTMLInputElement>(null);
@@ -326,7 +326,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue, isValid, d
             <div className={styles.submitWrapper}>
                 <button
                     type="submit"
-                    disabled={isSubmitting || !isValid || !dirty}
+                    disabled={isSubmitting}
                     className={styles.submitButton}
                 >
                     {isSubmitting ? (

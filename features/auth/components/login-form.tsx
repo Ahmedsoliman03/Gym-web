@@ -109,7 +109,7 @@ export default function LoginForm() {
                     }
                 }}
             >
-                {({ isSubmitting, isValid, dirty }) => (
+                {({ isSubmitting }) => (
                     <Form className={styles.form}>
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
@@ -157,7 +157,7 @@ export default function LoginForm() {
 
                         <button
                             type="submit"
-                            disabled={isSubmitting || !isValid || !dirty}
+                            disabled={isSubmitting}
                             className={styles.submitButton}
                         >
                             {isSubmitting ? (

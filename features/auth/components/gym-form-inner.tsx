@@ -28,7 +28,7 @@ const styles = {
     submitIcon: "group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180 inline-block"
 };
 
-export function GymFormInner({ isSubmitting, values, setFieldValue, isValid, dirty }: GymFormInnerProps) {
+export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInnerProps) {
     const t = useTranslations();
     const tLoc = useTranslations('Location');
     const gymLicenseRef = useRef<HTMLInputElement>(null);
@@ -205,7 +205,7 @@ export function GymFormInner({ isSubmitting, values, setFieldValue, isValid, dir
             </div>
 
             <div className={styles.submitWrapper}>
-                <button type="submit" disabled={isSubmitting || !isValid || !dirty} className={styles.submitButton}>
+                <button type="submit" disabled={isSubmitting} className={styles.submitButton}>
                     {isSubmitting ? (
                         <SpinnerIos20Regular className="animate-spin" />
                     ) : (

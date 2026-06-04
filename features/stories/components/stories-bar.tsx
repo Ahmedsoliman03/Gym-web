@@ -1,14 +1,13 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useStories } from '../services/stories.service';
-import type { StoryAuthor } from '../types';
-
-interface StoriesBarProps {
-    userType: StoryAuthor['userType'];
-}
+import { useProfileQuery } from '@/features/profile/services/profile.service';
+import type { AuthorGroup, StoriesBarProps, Story } from '../types';
+import { StoryViewerModal } from './story-viewer-modal';
 
 const styles = {
-    wrapper: "w-full overflow-x-auto pb-3",
+    wrapper: "w-full overflow-x-auto pb-3 mb-8",
     track: "flex gap-4",
     item: "flex flex-col items-center gap-2 shrink-0",
     ring: "relative inline-block w-20 h-20 rounded-full p-[3px] bg-gradient-to-tr from-primary via-primary/80 to-primary/30",
@@ -19,8 +18,38 @@ const styles = {
     skeleton: "w-20 h-20 rounded-full bg-white/5 animate-pulse shrink-0",
 };
 
+function groupByAuthor(stories: Story[]): AuthorGroup[] {
+    const groups = new Map<string, AuthorGroup>();
+    for (const story of stories) {
+        const author = story?.author;
+        if (!author) continue;
+        const key = author.id ?? `name:${author.fullName}:${author.userType}`;
+        const existing = groups.get(key);
+        if (existing) {
+            existing.stories.push(story);
+        } else {
+            groups.set(key, { key, author, stories: [story] });
+        }
+    }
+    return Array.from(groups.values());
+}
+
 export function StoriesBar({ userType }: StoriesBarProps) {
-    const { data, isLoading } = useStories();
+    // The bar must only fire the stories API after `/api/me` has confirmed an
+    // authenticated session. The `user_type` cookie alone is not reliable —
+    // it can be stale after an expired token or a partial logout.
+    const profileQuery = useProfileQuery();
+    const isLoggedIn = profileQuery.isSuccess && Boolean(profileQuery.data);
+
+    const { data, isLoading } = useStories(isLoggedIn);
+    const [openGroupIdx, setOpenGroupIdx] = useState<number | null>(null);
+
+    const groups = useMemo(() => {
+        const filtered = (data ?? []).filter((s) => s?.author?.userType === userType);
+        return groupByAuthor(filtered);
+    }, [data, userType]);
+
+    if (!isLoggedIn) return null;
 
     if (isLoading) {
         return (
@@ -34,35 +63,58 @@ export function StoriesBar({ userType }: StoriesBarProps) {
         );
     }
 
-    const stories = (data ?? []).filter((s) => s.author.userType === userType);
-    if (stories.length === 0) return null;
+    if (groups.length === 0) return null;
+
+    const openGroup = openGroupIdx !== null ? groups[openGroupIdx] : null;
 
     return (
-        <div className={styles.wrapper}>
-            <div className={styles.track}>
-                {stories.map((story) => {
-                    const media = story?.media?.[0]?.file;
-                    const initial = story?.author?.fullName?.trim()?.[0]?.toUpperCase() ?? '?';
-                    return (
-                        <button key={story?.id} type="button" className={styles.item}>
-                            <span className={styles.ring}>
-                                <span className={styles.inner}>
-                                    {media ? (
-                                        <img
-                                            src={media}
-                                            alt={story.author.fullName}
-                                            className={styles.image}
-                                        />
-                                    ) : (
-                                        <span className={styles.placeholder}>{initial}</span>
-                                    )}
+        <>
+            <div className={styles.wrapper}>
+                <div className={styles.track}>
+                    {groups.map((group, idx) => {
+                        const cover =
+                            group.author.profileImage ?? group.stories.at(-1)?.media?.at(-1)?.file;
+                        const initial =
+                            group.author.fullName?.trim()?.[0]?.toUpperCase() ?? '?';
+                        return (
+                            <button
+                                key={group.key}
+                                type="button"
+                                onClick={() => setOpenGroupIdx(idx)}
+                                className={styles.item}
+                            >
+                                <span className={styles.ring}>
+                                    <span className={styles.inner}>
+                                        {cover ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={cover}
+                                                alt={group.author.fullName}
+                                                className={styles.image}
+                                            />
+                                        ) : (
+                                            <span className={styles.placeholder}>
+                                                {initial}
+                                            </span>
+                                        )}
+                                    </span>
                                 </span>
-                            </span>
-                            <span className={styles.label}>{story.author.fullName}</span>
-                        </button>
-                    );
-                })}
+                                <span className={styles.label}>
+                                    {group.author.fullName}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
-        </div>
+
+            <StoryViewerModal
+                isOpen={openGroup !== null}
+                onClose={() => setOpenGroupIdx(null)}
+                stories={openGroup?.stories ?? []}
+                isOwner={false}
+                initialStoryIndex={0}
+            />
+        </>
     );
 }

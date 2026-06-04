@@ -2,12 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
-
-interface ExperienceDropdownProps {
-  value: string;
-  onChange: (val: string) => void;
-  placeholder: string;
-}
+import { ExperienceDropdownProps } from '../types';
 
 const styles = {
   container: "relative min-w-[200px]",

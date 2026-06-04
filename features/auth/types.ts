@@ -64,8 +64,6 @@ export interface GymRequestFormProps {
 
 export interface GymFormInnerProps {
     isSubmitting: boolean;
-    isValid: boolean;
-    dirty: boolean;
     values: {
         gymName: string;
         gymAddress: string;
@@ -86,10 +84,19 @@ export interface CoachRequestFormProps {
     onSuccess: () => void;
 }
 
+export interface RegisterFormValues {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
+    city: string;
+    area: string;
+}
+
 export interface CoachFormInnerProps {
     isSubmitting: boolean;
-    isValid: boolean;
-    dirty: boolean;
     values: {
         name: string;
         email: string;

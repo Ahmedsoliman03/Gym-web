@@ -4,6 +4,8 @@ export interface Coach {
     experienceYears: number;
     specialization: string[];
     photo: string | null;
+    city?: string;
+    area?: string;
 }
 
 export interface CoachCertification {
@@ -18,4 +20,33 @@ export interface CoachDetail {
     description: string;
     photo: string | null;
     certifications: CoachCertification[];
+}
+
+export interface CoachDetailViewProps {
+    id: string;
+}
+
+export interface CoachesFilterProps {
+    searchQuery: string;
+    setSearchQuery: (val: string) => void;
+    selectedSpecialty: string;
+    setSelectedSpecialty: (val: string) => void;
+    experience: string;
+    setExperience: (val: string) => void;
+    onDetectLocation: () => void;
+    isDetectingLocation?: boolean;
+    onResetLocation?: () => void;
+}
+
+export interface ExperienceDropdownProps {
+    value: string;
+    onChange: (val: string) => void;
+    placeholder: string;
+}
+
+export interface SpecializationDropdownProps {
+    value: string;
+    onChange: (val: string) => void;
+    options: string[];
+    placeholder: string;
 }

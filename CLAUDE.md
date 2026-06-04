@@ -70,3 +70,38 @@ User profiles are discriminated unions over `userType`: `'client' | 'coach' | 'g
 ### Theming
 
 `ThemeProvider` is mounted with `forcedTheme="dark"` in the locale layout, so dark mode is the only theme. CSS custom properties (`--background`, `--foreground`, `--primary`, `--surface`) are defined in `app/globals.css` and exposed to Tailwind v4 through `@theme` — extend colors there, not in `tailwind.config`. Tailwind v4 has no `tailwind.config.{js,ts}` in this repo; configuration lives in `postcss.config.mjs` + `@theme` blocks.
+
+# API 
+
+For any API-related task:
+
+ALWAYS read:
+
+- ./postman/GymSpot_Auth_API.postman_collection.json
+- ./postman/README.md
+
+These files are the source of truth.
+# Build
+When the user says:
+
+"finish task"
+
+You must:
+
+1. Run npm run build
+2. Fix all build errors
+3. Run npm run build again
+4. Repeat until build succeeds
+5. Only then consider the task complete
+
+# Commit
+When the user says:
+
+"Commit and push"
+
+You must:
+
+1. start flow of push changes 
+2. Commit changes with message about changes implemented
+3. then push
+4. if any issue appear about push ask user about it 

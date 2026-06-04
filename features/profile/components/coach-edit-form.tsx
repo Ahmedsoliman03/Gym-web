@@ -52,8 +52,8 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const [formData, setFormData] = useState({
     name: profile.name,
     image: profile.image,
-    title: profile.title,
-    tier: profile.tier,
+    title: (profile as { title?: string }).title || "",
+    tier: (profile as { tier?: string }).tier || "",
     // philosophyTitle: profile.philosophy?.title || "",
     philosophyDesc: profile?.description || "",
     specializations: profile.credentials?.specializations || [],

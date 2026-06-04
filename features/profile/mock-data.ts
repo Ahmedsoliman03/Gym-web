@@ -11,8 +11,6 @@ export interface ProfileData {
 
 export interface CoachProfile extends ProfileData {
   type: 'coach';
-  title: string;
-  tier: string;
   stats: { label: string; value: string }[];
   description: string;
   transformations: { clientName: string; duration: string; image: string }[];
@@ -51,8 +49,6 @@ export const mockProfiles: Record<string, CoachProfile | GymProfile | ClientProf
     id: "marcus-thorne",
     type: 'coach',
     name: "Marcus Thorne",
-    title: "Senior Performance Specialist",
-    tier: "Strength & Conditioning",
     image: "/images/profile/marcus.png",
     stats: [
       { label: "EXP", value: "12y" },

@@ -1,16 +1,8 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-interface GymsFilterProps {
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  city: string;
-  setCity: (val: string) => void;
-  area: string;
-  setArea: (val: string) => void;
-}
+import { GymsFilterProps } from '../types';
 
 const styles = {
   container: "relative group z-20 mb-12",
@@ -22,6 +14,9 @@ const styles = {
   selectsWrapper: "flex flex-col sm:flex-row gap-2 md:w-1/2",
   inputWrapper: "flex flex-1 items-center bg-[#0D121F] rounded-xl px-4 border border-white/5 focus-within:border-primary/30 transition-all",
   input: "bg-transparent border-none focus:ring-0 outline-none w-full text-foreground font-body text-sm py-3.5 placeholder:text-foreground/20",
+  actionGroup: "flex flex-col sm:flex-row gap-2",
+  locationButton: "flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-foreground font-headline font-black px-5 py-4 rounded-xl active:scale-95 transition-all whitespace-nowrap uppercase text-xs border border-white/10 hover:border-primary/30 disabled:opacity-60 disabled:cursor-wait",
+  locationSpinner: "w-4 h-4 rounded-full border-2 border-foreground/40 border-t-foreground animate-spin",
   resetButton: "bg-primary text-primary-foreground font-headline font-black px-8 py-4 rounded-xl active:scale-95 transition-all whitespace-nowrap shadow-xl shadow-primary/10 uppercase text-xs hover:brightness-110"
 };
 
@@ -31,7 +26,9 @@ export function GymsFilter({
   city,
   setCity,
   area,
-  setArea
+  setArea,
+  onDetectLocation,
+  isDetectingLocation = false,
 }: GymsFilterProps) {
   const t = useTranslations();
 
@@ -74,16 +71,33 @@ export function GymsFilter({
           </div>
         </div>
 
-        <button
-          className={styles.resetButton}
-          onClick={() => {
-            setSearchQuery('');
-            setCity('');
-            setArea('');
-          }}
-        >
-          {t('Coaches.reset')}
-        </button>
+        <div className={styles.actionGroup}>
+          <button
+            type="button"
+            className={styles.locationButton}
+            onClick={onDetectLocation}
+            disabled={isDetectingLocation}
+            aria-label={t('Location.detectLocation')}
+          >
+            {isDetectingLocation ? (
+              <span className={styles.locationSpinner} />
+            ) : (
+              <MapPin size={16} />
+            )}
+            {isDetectingLocation ? t('Location.detecting') : t('Location.detectLocation')}
+          </button>
+
+          <button
+            className={styles.resetButton}
+            onClick={() => {
+              setSearchQuery('');
+              setCity('');
+              setArea('');
+            }}
+          >
+            {t('Coaches.reset')}
+          </button>
+        </div>
       </div>
     </div>
   );

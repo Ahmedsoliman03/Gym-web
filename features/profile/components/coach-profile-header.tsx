@@ -10,7 +10,7 @@ import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-bad
 const styles = {
   // ... existing styles ...
   container: "relative w-full rounded-3xl bg-surface p-8 overflow-hidden border border-white/5",
-  contentWrapper: "flex flex-col md:flex-row items-center md:items-end gap-8",
+  contentWrapper: "flex flex-col md:flex-row items-center  gap-8",
   avatarWrapper: "relative",
   avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
   avatarInner: "w-full h-full rounded-full overflow-hidden relative",
@@ -32,23 +32,21 @@ const styles = {
 
 interface CoachProfileHeaderProps {
   name: string;
-  title: string;
-  tier: string;
   stats: {
     label: string;
     value: string;
   }[];
   image: string;
   isOwner?: boolean;
+  coachId?: string;
 }
 
 export const CoachProfileHeader = ({
   name,
-  title,
-  tier,
   stats,
   image,
   isOwner = true,
+  coachId,
 }: CoachProfileHeaderProps) => {
   const t = useTranslations("Profile");
 
@@ -68,18 +66,22 @@ export const CoachProfileHeader = ({
               />
             </div>
           </div>
-          {isOwner ? <StoryAvatarBadge /> : <div className={styles.statusBadge} />}
+          <StoryAvatarBadge
+            profileImage={image}
+            profileName={name}
+            isOwner={isOwner}
+            authorId={coachId}
+            authorUserType="coach"
+          />
+          {!isOwner && <div className={styles.statusBadge} />}
         </div>
 
         {/* Info */}
         <div className={styles.infoWrapper}>
           <div className={styles.titleAndTier}>
             <h1 className={styles.name}>{name}</h1>
-            <span className={styles.tier}>
-              {tier}
-            </span>
+           
           </div>
-          <p className={styles.title}>{title}</p>
 
           <div className={styles.statsGrid}>
             {stats.map((stat, index) => (
@@ -95,16 +97,17 @@ export const CoachProfileHeader = ({
 
         {/* Actions */}
         <div className={styles.actionsWrapper}>
+           {!isOwner ?
           <button className={styles.primaryBtn} onClick={triggerChatOpen}>
             <MessageSquare size={18} />
             {t('chat')}
           </button>
-          {isOwner && (
+         :
             <Link href="/profile/edit" className={styles.secondaryBtn}>
               <Settings size={18} />
               {t('editProfile')}
             </Link>
-          )}
+}
         </div>
       </div>
     </div>

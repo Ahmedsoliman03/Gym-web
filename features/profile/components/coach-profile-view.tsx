@@ -30,11 +30,10 @@ export const CoachProfileView = ({ data, isOwner = true }: { data: CoachProfile;
     <div className={styles.container}>
       <CoachProfileHeader
         name={data.name}
-        title={data.title}
-        tier={data.tier}
         stats={data.stats}
         image={data.image}
         isOwner={isOwner}
+        coachId={data.id}
       />
 
       <div className={styles.philosophyWrapper}>

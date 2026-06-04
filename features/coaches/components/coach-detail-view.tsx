@@ -4,16 +4,13 @@ import { SpinnerIos20Regular } from "@fluentui/react-icons";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { mockProfiles, CoachProfile } from "@/features/profile/mock-data";
 import { useCoach } from "../services/coaches.service";
+import { CoachDetailViewProps } from "../types";
 
 const styles = {
   main: "min-h-screen bg-background text-foreground pb-20",
   container: "max-w-7xl mx-auto px-4 md:px-8 pt-24",
   loaderWrapper: "min-h-screen flex items-center justify-center bg-background text-primary",
 };
-
-interface CoachDetailViewProps {
-  id: string;
-}
 
 export function CoachDetailView({ id }: CoachDetailViewProps) {
   const { data: coach, isLoading, error } = useCoach(id);

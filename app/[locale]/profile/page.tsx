@@ -37,6 +37,7 @@ export default function ProfilePage() {
     switch (profile.userType) {
       case 'coach': {
         const coachProfile = profile.profile;
+        
         const baseCoach = mockProfiles["marcus-thorne"] as CoachProfile;
         const mockCoach: CoachProfile = {
           ...baseCoach,
@@ -60,7 +61,8 @@ export default function ProfilePage() {
             certifications: coachProfile.certifications && coachProfile.certifications.length > 0
               ? coachProfile.certifications.map(cert => cert.file)
               : baseCoach.credentials.certifications,
-            specializations: coachProfile.specialization && coachProfile.specialization.length > 0
+            specializations: coachProfile.specialization 
+            && coachProfile.specialization.length > 0
               ? coachProfile.specialization
               : baseCoach.credentials.specializations,
           },

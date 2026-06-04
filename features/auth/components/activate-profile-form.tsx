@@ -118,8 +118,7 @@ export default function ActivateProfileForm() {
                     }
                 }}
             >
-                {({ isSubmitting, isValid, dirty }) => (
-                    console.log(isValid),
+                {({ isSubmitting }) => (
                     <Form className={styles.form}>
 
 
@@ -194,7 +193,7 @@ export default function ActivateProfileForm() {
                         <div className={styles.submitWrapper}>
                             <button
                                 type="submit"
-                                disabled={isSubmitting || !isValid || !dirty}
+                                disabled={isSubmitting}
                                 className={styles.submitButton}
                             >
                                 {isSubmitting ? (
