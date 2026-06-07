@@ -21,7 +21,7 @@ const styles = {
 };
 
 export function PostImageUpload({ value, onChange }: PostImageUploadProps) {
-  const t = useTranslations('Jobs');
+  const t = useTranslations('PostImage');
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

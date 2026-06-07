@@ -43,3 +43,5 @@ next-env.d.ts
 #claude
 .claude
 CLAUDE.md
+/postman/GymSpot_Auth_API.postman_collection.json
+/postman/README.md

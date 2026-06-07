@@ -3,7 +3,10 @@
 import { Formik, Form, Field } from 'formik';
 import { MapPin, ImageIcon, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/modal';
+import { useEditJobMutation } from '../services/jobs.service';
+import type { Job } from '../types';
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +32,7 @@ const styles = {
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
 interface EditJobModalProps {
-  job: any;
+  job: Job | null;
   onClose: () => void;
 }
 
@@ -37,17 +40,26 @@ interface EditJobModalProps {
 
 export function EditJobModal({ job, onClose }: EditJobModalProps) {
   const t = useTranslations('Jobs');
+  const editMutation = useEditJobMutation();
 
   if (!job) return null;
 
   return (
     <Modal isOpen={!!job} onClose={onClose} title={t('editPostTitle')}>
       <Formik
-        initialValues={{ description: job?.description || '' }}
+        initialValues={{ content: job?.content || '' }}
         enableReinitialize
-        onSubmit={(values) => {
-          console.log('Update post:', job.id, values);
-          onClose();
+        onSubmit={async (values) => {
+          try {
+            await editMutation.mutateAsync({
+              jobId: job.id,
+              content: values.content,
+            });
+            toast.success(t('editSuccess'));
+            onClose();
+          } catch {
+            toast.error(t('editFailed'));
+          }
         }}
       >
         {() => (
@@ -80,12 +92,12 @@ export function EditJobModal({ job, onClose }: EditJobModalProps) {
             {/* ── Editable section ── */}
             <p className={styles.sectionDivider}>{t('editEditable')}</p>
 
-            {/* Description — editable */}
+            {/* Content — editable */}
             <div>
               <label className={styles.label}>{t('postContent')}</label>
               <Field
                 as="textarea"
-                name="description"
+                name="content"
                 className={styles.textarea}
               />
             </div>
@@ -96,7 +108,10 @@ export function EditJobModal({ job, onClose }: EditJobModalProps) {
                 <Lock size={10} className={styles.lockIcon} />
               </label>
               <div className={styles.imageWrapper}>
-                <img src={job.image} alt={job.title} className={styles.imagePreview} />
+                {job.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={job.image} alt={job.title} className={styles.imagePreview} />
+                ) : null}
                 <div className={styles.imageOverlay}>
                   <ImageIcon size={16} />
                   {t('readOnly')}
@@ -106,8 +121,12 @@ export function EditJobModal({ job, onClose }: EditJobModalProps) {
 
 
 
-            <button type="submit" className={styles.submitButton}>
-              {t('saveChanges')}
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={editMutation.isPending}
+            >
+              {editMutation.isPending ? t('saving') : t('saveChanges')}
             </button>
 
           </Form>

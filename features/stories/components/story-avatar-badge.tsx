@@ -27,6 +27,12 @@ interface StoryAvatarBadgeProps {
     authorId?: string;
     /** Author userType for fallback matching when id is missing. */
     authorUserType?: StoryAuthor['userType'];
+    /**
+     * When provided in non-owner mode, use these stories directly instead of
+     * fetching the public list and filtering by author. Pass the array
+     * embedded in detail responses (e.g. `coachDetail.stories`).
+     */
+    stories?: Story[];
 }
 
 const styles = {
@@ -41,6 +47,7 @@ export function StoryAvatarBadge({
     isOwner = true,
     authorId,
     authorUserType,
+    stories,
 }: StoryAvatarBadgeProps) {
     const t = useTranslations('Stories');
     const inputRef = useRef<HTMLInputElement>(null);
@@ -52,10 +59,12 @@ export function StoryAvatarBadge({
         isOwner && !!me && STORY_CREATOR_TYPES.includes(me.userType);
 
     const { data: myStories } = useMyStories(isOwner);
-    const { data: publicStories } = useStories();
+    // Skip the public-stories fetch entirely when caller passed stories in directly.
+    const { data: publicStories } = useStories(!isOwner && stories === undefined);
 
     const theirStories = useMemo<Story[]>(() => {
         if (isOwner) return [];
+        if (stories !== undefined) return stories;
         const all = publicStories ?? [];
         return all.filter((s) => {
             const a = s?.author;
@@ -66,7 +75,7 @@ export function StoryAvatarBadge({
             }
             return false;
         });
-    }, [isOwner, publicStories, authorId, profileName, authorUserType]);
+    }, [isOwner, stories, publicStories, authorId, profileName, authorUserType]);
 
     const visibleStories = isOwner ? (myStories ?? []) : theirStories;
     const hasStories = visibleStories.length > 0;

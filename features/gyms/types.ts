@@ -5,6 +5,7 @@ export interface Gym {
     area: string;
     location: string;
     mainPhoto: string | null;
+    isCurrentUser?: boolean;
 }
 
 export interface GymDetail {
@@ -33,4 +34,5 @@ export interface GymsFilterProps {
     setArea: (val: string) => void;
     onDetectLocation: () => void;
     isDetectingLocation?: boolean;
+    isLocationActive?: boolean;
 }

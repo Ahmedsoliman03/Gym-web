@@ -1,6 +1,6 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock, Briefcase, BookmarkCheck } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
@@ -118,13 +118,23 @@ export const Navbar = () => {
 
   const isLoggedIn = Boolean(profile);
 
-  // All nav links are shown to everyone. Role gating happens in middleware,
-  // and logged-out users are sent to /login (with ?next=) on click.
+  // Nav links are mostly visible to everyone; role gating happens in
+  // middleware. The two exceptions are mirrored from the middleware's
+  // restriction table so the user never sees a link they can't open:
+  //   - /applications: gym-only (coach + client are blocked)
+  //   - /jobs: hidden for clients (still visible to gyms and coaches)
+  const userType = profile?.userType;
+  const canSeeApplications = userType === 'gym';
+  const canSeeJobs = userType !== 'client';
+
   const navLinks = [
+    { label: t('community'), href: "/community" },
     { label: t('coaches'), href: "/coaches" },
     { label: t('gyms'), href: "/gyms" },
-    { label: t('jobBoard'), href: "/jobs" },
-    { label: t('applications'), href: "/applications" },
+    ...(canSeeJobs ? [{ label: t('jobBoard'), href: "/jobs" }] : []),
+    ...(canSeeApplications
+      ? [{ label: t('applications'), href: "/applications" }]
+      : []),
     { label: t('about'), href: "/about" },
   ];
 
@@ -278,6 +288,25 @@ export const Navbar = () => {
                       >
                         <Zap size={16} />
                         {t('yourPosts')}
+                      </Link>
+                      {/* My Jobs is gym-only: only gyms can author job posts. */}
+                      {profile?.userType === 'gym' && (
+                        <Link
+                          href="/my-jobs"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                        >
+                          <Briefcase size={16} />
+                          {t('myJobs')}
+                        </Link>
+                      )}
+                      <Link
+                        href="/saved-jobs"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <BookmarkCheck size={16} />
+                        {t('savedJobs')}
                       </Link>
                       <div className="h-[1px] bg-white/5 my-1" />
                       <button

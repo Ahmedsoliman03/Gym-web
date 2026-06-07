@@ -24,7 +24,7 @@ export function GymCard({ gym, index }: GymCardProps) {
 
   return (
     <Link
-      href={`/gyms/${gym.id}` as any}
+      href={gym.isCurrentUser ? '/profile' : `/gyms/${gym.id}` as any}
       className={styles.card}
       style={{ animationDelay: `${0.1 * (index % 4)}s` }}
     >

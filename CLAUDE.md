@@ -81,6 +81,10 @@ ALWAYS read:
 - ./postman/README.md
 
 These files are the source of truth.
+
+# type
+With any new feature or update check types used in feature all is in types.ts of this feature
+
 # Build
 When the user says:
 

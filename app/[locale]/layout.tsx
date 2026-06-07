@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 import { Navbar } from '@/components/navbar';
 import { ChatWidget } from '@/features/chat/components/chat-widget';
+import { ScrollToTopButton } from '@/components/shared/scroll-to-top-button';
 import { Toaster } from 'react-hot-toast';
 
 export default async function LocaleLayout({
@@ -54,6 +55,7 @@ export default async function LocaleLayout({
                             <Navbar />
                             {children}
                             <ChatWidget />
+                            <ScrollToTopButton />
                         </ThemeProvider>
                     </QueryProvider>
                 </NextIntlClientProvider>

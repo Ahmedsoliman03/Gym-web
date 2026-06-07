@@ -9,6 +9,21 @@ export const api = axios.create({
     }
 });
 
+// Tag every outgoing request with the current next-intl locale so the backend
+// can return localized error messages, content, and validation strings. Read
+// from the URL prefix (`/en/...` or `/ar/...`) because the locale is the
+// source of truth in this app; it survives SSR (where window is undefined,
+// the header simply isn't set and the proxy passes through whatever the
+// caller already had).
+api.interceptors.request.use((config) => {
+    if (typeof window !== 'undefined') {
+        const match = window.location.pathname.match(/^\/(en|ar)(?:\/|$)/);
+        const locale = match ? match[1] : 'en';
+        config.headers.set('Accept-Language', locale);
+    }
+    return config;
+});
+
 api.interceptors.response.use(
     (response) => response,
     (error) => {

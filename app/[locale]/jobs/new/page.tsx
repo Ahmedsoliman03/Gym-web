@@ -1,15 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
-import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
-import { PostTypeChooser } from '@/features/jobs/components/post-type-chooser';
-import { CommunityPostForm } from '@/features/jobs/components/community-post-form';
+import toast from 'react-hot-toast';
 import { JobOpeningForm } from '@/features/jobs/components/job-opening-form';
-
-// ─── Styles ────────────────────────────────────────────────────────────────────
+import { useCreateJobMutation } from '@/features/jobs/services/jobs.service';
 
 const styles = {
   page: "pt-24 pb-16 px-6 md:px-12 min-h-screen",
@@ -20,96 +17,46 @@ const styles = {
   subheading: "text-foreground/50 mb-10",
 };
 
-type PostType = 'job' | 'community';
-
-// ─── Page component ────────────────────────────────────────────────────────────
-
 export default function NewJobPage() {
   const t = useTranslations('Jobs');
   const router = useRouter();
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const { profile } = useProfileUser();
-  const isGym = profile?.userType === 'gym';
+  const createMutation = useCreateJobMutation();
 
-  // Gyms must pick a post type first; everyone else posts a job directly.
-  // The chosen type lives in the URL (?type=) — not React state — so switching
-  // the language (which remounts the page) preserves the user's selection.
-  const typeParam = searchParams.get('type');
-  const postType: PostType | null =
-    typeParam === 'community' ? 'community'
-      : typeParam === 'job' ? 'job'
-        : isGym ? null : 'job';
-
-  const setPostType = (type: PostType | null) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (type) params.set('type', type);
-    else params.delete('type');
-    const qs = params.toString();
-    const path = typeof window !== 'undefined' ? window.location.pathname : `/${locale}/jobs/new`;
-    router.replace(qs ? `${path}?${qs}` : path, { scroll: false });
-  };
-
-  // ─── Post-type chooser (gyms only) ──────────────────────────────────────────
-  if (isGym && postType === null) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.inner}>
-          <PostTypeChooser
-            onChooseType={setPostType}
-            onBack={() => router.push(`/${locale}/jobs`)}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  const isCommunity = postType === 'community';
-
-  const handleCommunitySubmit = (values: { desc: string; image: File | null }) => {
-    console.log('New community post:', { type: 'community', ...values });
-    router.push(`/${locale}/jobs`);
-  };
-
-  const handleJobSubmit = (values: {
+  const handleJobSubmit = async (values: {
     title: string;
     location: string;
     specialization: string;
     desc: string;
     image: File | null;
   }) => {
-    console.log('New job:', { type: 'job', ...values });
-    router.push(`/${locale}/jobs`);
+    try {
+      await createMutation.mutateAsync({
+        title: values.title,
+        location: values.location,
+        specialization: values.specialization,
+        content: values.desc,
+        image: values.image,
+      });
+      toast.success(t('createSuccess'));
+      router.push(`/${locale}/jobs`);
+    } catch {
+      toast.error(t('createFailed'));
+    }
   };
 
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
-        <div className='flex items-start gap-2'>
-          {/* Back */}
-          <button className={styles.backLink} onClick={() => router.push(`/${locale}/jobs`)}>
-            <ArrowLeft size={16} className={styles.backIcon} />
-            {t('backToJobs')}
-          </button>
+        <button className={styles.backLink} onClick={() => router.push(`/${locale}/jobs`)}>
+          <ArrowLeft size={16} className={styles.backIcon} />
+          {t('backToJobs')}
+        </button>
 
-          {/* Let gyms switch the post type they picked */}
-          {isGym && (
-            <button type="button" className={styles.backLink} onClick={() => setPostType(null)}>
-              <ArrowLeft size={16} className={styles.backIcon} />
-              {t('changePostType')}
-            </button>
-          )}
-        </div>
+        <h1 className={styles.heading}>{t('addPost')}</h1>
+        <p className={styles.subheading}>{t('addPostDesc')}</p>
 
-        {/* Heading */}
-        <h1 className={styles.heading}>{isCommunity ? t('addCommunityPost') : t('addPost')}</h1>
-        <p className={styles.subheading}>{isCommunity ? t('addCommunityPostDesc') : t('addPostDesc')}</p>
-
-        {isCommunity ? (
-          <CommunityPostForm onSubmit={handleCommunitySubmit} />
-        ) : (
-          <JobOpeningForm onSubmit={handleJobSubmit} />
-        )}
+        <JobOpeningForm onSubmit={handleJobSubmit} />
       </div>
     </div>
   );

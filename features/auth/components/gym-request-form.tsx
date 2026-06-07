@@ -33,11 +33,21 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    const { governorate, city, area, ...rest } = values;
+                    const { governorate, city, area, gymAddress, ...rest } = values;
+                    // Build one human-readable address by collecting every
+                    // location-related text from finest to coarsest detail.
+                    // Empty inputs are dropped so we don't produce stray commas.
+                    const friendlyAddress = [gymAddress, area, city, governorate]
+                        .map((part) => (part ?? '').toString().trim())
+                        .filter(Boolean)
+                        .join(', ');
                     const mappedValues = {
                         ...rest,
+                        // Keep the city/area split the backend already expects.
                         city: governorate,
-                        area: city
+                        area: city,
+                        // Send the combined friendly address back as gymAddress.
+                        gymAddress: friendlyAddress,
                     };
                     await requestAccess(mappedValues as RequestAccessRequest);
                     toast.success(t('Auth.requestSent'));

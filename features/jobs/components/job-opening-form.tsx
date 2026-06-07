@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Zap } from 'lucide-react';
@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useLocationDetect } from '@/hooks/use-location-detect';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { SpecializationSelect } from '@/features/jobs/components/specialization-select';
-import { PostImageUpload } from './post-image-upload';
+import { PostImageUpload } from '@/components/shared/post-image-upload';
+import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 
 interface JobOpeningFormProps {
   onSubmit: (values: {
@@ -41,12 +42,32 @@ const buildJobSchema = (t: (k: string) => string) =>
 
 export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
   const t = useTranslations('Jobs');
+  const { profile } = useProfileUser();
 
-  // Controlled location state
-  const [locationValue, setLocationValue] = useState('');
+  // Default the location to the gym's saved address from /api/me. The user can
+  // still edit it inline or overwrite via the location-detect button.
+  const myAddress =
+    profile?.userType === 'gym' ? profile.profile?.location ?? '' : '';
+
+  // Controlled location state — initialized from the profile once the query
+  // resolves, kept in sync via the effect below.
+  const [locationValue, setLocationValue] = useState(myAddress);
 
   // Ref so the detect callback can always reach the latest setFieldValue
   const setFieldValueRef = useRef<((field: string, value: any) => void) | null>(null);
+
+  // Sync the controlled location once /api/me finishes loading (the initial
+  // useState ran with `myAddress = ''`). Only overwrite if the user hasn't
+  // started typing — i.e. the field is still empty.
+  useEffect(() => {
+    if (myAddress && !locationValue) {
+      setLocationValue(myAddress);
+      setFieldValueRef.current?.('location', myAddress);
+    }
+    // We only care about the gym address arriving; locationValue is excluded
+    // on purpose so we don't loop when the user clears the field.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAddress]);
 
   const { status: locStatus, error: locError, detect } = useLocationDetect(
     useCallback((result) => {
@@ -60,9 +81,10 @@ export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
 
   return (
     <Formik
+      enableReinitialize
       initialValues={{
         title: '',
-        location: '',
+        location: myAddress,
         specialization: '',
         desc: '',
         image: null as File | null,

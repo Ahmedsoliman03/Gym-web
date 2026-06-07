@@ -16,6 +16,7 @@ const styles = {
   input: "bg-transparent border-none focus:ring-0 outline-none w-full text-foreground font-body text-sm py-3.5 placeholder:text-foreground/20",
   actionGroup: "flex flex-col sm:flex-row gap-2",
   locationButton: "flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-foreground font-headline font-black px-5 py-4 rounded-xl active:scale-95 transition-all whitespace-nowrap uppercase text-xs border border-white/10 hover:border-primary/30 disabled:opacity-60 disabled:cursor-wait",
+  locationButtonActive: "flex items-center justify-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary font-headline font-black px-5 py-4 rounded-xl active:scale-95 transition-all whitespace-nowrap uppercase text-xs border border-primary/50 shadow-lg shadow-primary/10 disabled:opacity-60 disabled:cursor-wait",
   locationSpinner: "w-4 h-4 rounded-full border-2 border-foreground/40 border-t-foreground animate-spin",
   resetButton: "bg-primary text-primary-foreground font-headline font-black px-8 py-4 rounded-xl active:scale-95 transition-all whitespace-nowrap shadow-xl shadow-primary/10 uppercase text-xs hover:brightness-110"
 };
@@ -29,6 +30,7 @@ export function GymsFilter({
   setArea,
   onDetectLocation,
   isDetectingLocation = false,
+  isLocationActive = false,
 }: GymsFilterProps) {
   const t = useTranslations();
 
@@ -74,17 +76,18 @@ export function GymsFilter({
         <div className={styles.actionGroup}>
           <button
             type="button"
-            className={styles.locationButton}
+            className={isLocationActive ? styles.locationButtonActive : styles.locationButton}
             onClick={onDetectLocation}
             disabled={isDetectingLocation}
-            aria-label={t('Location.detectLocation')}
+            aria-label={t('Location.searchByLocation')}
+            aria-pressed={isLocationActive}
           >
             {isDetectingLocation ? (
               <span className={styles.locationSpinner} />
             ) : (
               <MapPin size={16} />
             )}
-            {isDetectingLocation ? t('Location.detecting') : t('Location.detectLocation')}
+            {isDetectingLocation ? t('Location.detecting') : t('Location.searchByLocation')}
           </button>
 
           <button

@@ -61,7 +61,7 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <CoachProfileView data={mappedCoach} isOwner={false} />
+        <CoachProfileView data={mappedCoach} isOwner={false} stories={coach.stories} />
       </div>
     </main>
   );

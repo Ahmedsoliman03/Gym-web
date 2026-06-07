@@ -1,3 +1,5 @@
+import type { Story } from '@/features/stories/types';
+
 export interface Coach {
     id: string;
     fullName: string;
@@ -6,6 +8,7 @@ export interface Coach {
     photo: string | null;
     city?: string;
     area?: string;
+    isCurrentUser?: boolean;
 }
 
 export interface CoachCertification {
@@ -20,6 +23,7 @@ export interface CoachDetail {
     description: string;
     photo: string | null;
     certifications: CoachCertification[];
+    stories?: Story[];
 }
 
 export interface CoachDetailViewProps {
@@ -33,8 +37,13 @@ export interface CoachesFilterProps {
     setSelectedSpecialty: (val: string) => void;
     experience: string;
     setExperience: (val: string) => void;
+    city: string;
+    setCity: (val: string) => void;
+    area: string;
+    setArea: (val: string) => void;
     onDetectLocation: () => void;
     isDetectingLocation?: boolean;
+    isLocationActive?: boolean;
     onResetLocation?: () => void;
 }
 
@@ -42,6 +51,7 @@ export interface ExperienceDropdownProps {
     value: string;
     onChange: (val: string) => void;
     placeholder: string;
+    onClear?: () => void;
 }
 
 export interface SpecializationDropdownProps {
@@ -49,4 +59,5 @@ export interface SpecializationDropdownProps {
     onChange: (val: string) => void;
     options: string[];
     placeholder: string;
+    onClear?: () => void;
 }

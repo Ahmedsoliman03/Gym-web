@@ -9,6 +9,7 @@ import { CoachCredentials } from "./coach-credentials";
 // import { CoachContact } from "./coach-contact";
 import { Plans } from "@/components/shared/membership-plans";
 import { CoachProfile } from "../mock-data";
+import type { Story } from "@/features/stories/types";
 
 const styles = {
   container: "space-y-8",
@@ -18,7 +19,15 @@ const styles = {
   sideColumn: ""
 };
 
-export const CoachProfileView = ({ data, isOwner = true }: { data: CoachProfile; isOwner?: boolean }) => {
+export const CoachProfileView = ({
+  data,
+  isOwner = true,
+  stories,
+}: {
+  data: CoachProfile;
+  isOwner?: boolean;
+  stories?: Story[];
+}) => {
   const t = useTranslations("Profile");
   const plansRef = useRef<HTMLDivElement>(null);
 
@@ -34,6 +43,7 @@ export const CoachProfileView = ({ data, isOwner = true }: { data: CoachProfile;
         image={data.image}
         isOwner={isOwner}
         coachId={data.id}
+        stories={stories}
       />
 
       <div className={styles.philosophyWrapper}>

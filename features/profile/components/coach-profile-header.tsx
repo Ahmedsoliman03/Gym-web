@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
+import type { Story } from "@/features/stories/types";
 
 const styles = {
   // ... existing styles ...
@@ -39,6 +40,7 @@ interface CoachProfileHeaderProps {
   image: string;
   isOwner?: boolean;
   coachId?: string;
+  stories?: Story[];
 }
 
 export const CoachProfileHeader = ({
@@ -47,6 +49,7 @@ export const CoachProfileHeader = ({
   image,
   isOwner = true,
   coachId,
+  stories,
 }: CoachProfileHeaderProps) => {
   const t = useTranslations("Profile");
 
@@ -72,6 +75,7 @@ export const CoachProfileHeader = ({
             isOwner={isOwner}
             authorId={coachId}
             authorUserType="coach"
+            stories={stories}
           />
           {!isOwner && <div className={styles.statusBadge} />}
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Copy, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Copy, Check, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 // ─── Platform data ────────────────────────────────────────────────────────────
@@ -73,6 +73,8 @@ const styles = {
   platformBtn: "flex flex-col items-center gap-2 p-3 rounded-xl transition-all hover:scale-105 active:scale-95",
   platformLabel: "text-[10px] font-bold text-foreground/60",
   divider: "h-[1px] bg-white/5 mx-6",
+  nativeRow: "flex items-center gap-3 px-6 pt-6",
+  nativeBtn: "flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 text-foreground rounded-lg font-bold text-xs uppercase transition-all active:scale-95",
   copyRow: "flex items-center gap-3 p-6",
   copyUrl: "flex-1 px-3 py-2.5 bg-white/5 border border-white/5 rounded-lg text-xs text-foreground/50 font-mono overflow-hidden text-ellipsis whitespace-nowrap",
   copyBtn: "flex items-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-bold text-xs uppercase transition-all hover:opacity-90 active:scale-95 whitespace-nowrap",
@@ -85,13 +87,28 @@ interface SharePostModalProps {
   onClose: () => void;
   url: string;
   title: string;
+  /**
+   * Fired exactly once per modal session, the first time the user actually
+   * shares (copies the link OR clicks a platform button). Callers use this to
+   * ping their `/share` analytics endpoint in the background.
+   */
+  onShared?: () => void;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function SharePostModal({ isOpen, onClose, url, title }: SharePostModalProps) {
-  const t = useTranslations('Jobs');
+export function SharePostModal({ isOpen, onClose, url, title, onShared }: SharePostModalProps) {
+  const t = useTranslations('Share');
   const [copied, setCopied] = useState(false);
+  const [hasNativeShare, setHasNativeShare] = useState(false);
+  const sharedFiredRef = useRef(false);
+
+  // Detect the Web Share API client-side only (it's undefined during SSR).
+  useEffect(() => {
+    setHasNativeShare(
+      typeof navigator !== 'undefined' && typeof navigator.share === 'function',
+    );
+  }, []);
 
   // Lock body scroll while open
   useEffect(() => {
@@ -100,19 +117,53 @@ export function SharePostModal({ isOpen, onClose, url, title }: SharePostModalPr
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  // Reset the one-shot "shared" guard whenever the modal reopens.
+  useEffect(() => {
+    if (isOpen) sharedFiredRef.current = false;
+  }, [isOpen]);
+
+  const fireShared = () => {
+    if (sharedFiredRef.current) return;
+    sharedFiredRef.current = true;
+    onShared?.();
+  };
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      const ta = document.createElement('textarea');
-      ta.value = url;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
+
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch {
+        // Swallow — copy may have silently failed but the user clicked,
+        // which is the action we report to the backend.
+      }
     }
     setCopied(true);
+    fireShared();
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handlePlatform = (platformUrl: string) => {
+    window.open(platformUrl, '_blank', 'noopener,noreferrer');
+    fireShared();
+  };
+
+  const handleNativeShare = async () => {
+    try {
+      await navigator.share({ title, text: title, url });
+      fireShared();
+    } catch (err) {
+      // AbortError = user dismissed the sheet without sharing — don't count it.
+      // Any other failure is silent; the user can still copy/pick a platform.
+      void err;
+    }
   };
 
   if (!isOpen) return null;
@@ -129,6 +180,16 @@ export function SharePostModal({ isOpen, onClose, url, title }: SharePostModalPr
           </button>
         </div>
 
+        {/* Native share — only when the device supports the Web Share API. */}
+        {hasNativeShare && (
+          <div className={styles.nativeRow}>
+            <button className={styles.nativeBtn} onClick={handleNativeShare}>
+              <Share2 size={14} />
+              {t('shareViaDevice')}
+            </button>
+          </div>
+        )}
+
         {/* Platform grid */}
         <div className={styles.platformGrid}>
           {SHARE_PLATFORMS.map(platform => (
@@ -136,7 +197,7 @@ export function SharePostModal({ isOpen, onClose, url, title }: SharePostModalPr
               key={platform.id}
               className={styles.platformBtn}
               style={{ background: platform.bg }}
-              onClick={() => window.open(platform.getUrl(url, title), '_blank', 'noopener,noreferrer')}
+              onClick={() => handlePlatform(platform.getUrl(url, title))}
               title={platform.label}
             >
               <span style={{ color: platform.color }}>{platform.icon}</span>

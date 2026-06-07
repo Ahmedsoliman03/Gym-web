@@ -37,7 +37,7 @@ export function CoachesView() {
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
   const [experience, setExperience] = useState('All');
 
-  const { city, area, detect, isDetecting, reset: resetLocation } =
+  const { city, setCity, area, setArea, detect, isDetecting, reset: resetLocation } =
     useAutoLocationFilter({
       successMessage:
         tLoc('locationDetected') || 'Location detected: Showing coaches near you!',
@@ -98,8 +98,13 @@ export function CoachesView() {
               setSelectedSpecialty={setSelectedSpecialty}
               experience={experience}
               setExperience={setExperience}
+              city={city}
+              setCity={setCity}
+              area={area}
+              setArea={setArea}
               onDetectLocation={detect}
               isDetectingLocation={isDetecting}
+              isLocationActive={Boolean(city || area)}
               onResetLocation={resetLocation}
             />
           </div>

@@ -76,6 +76,7 @@ export function GymsView() {
             setArea={setArea}
             onDetectLocation={detect}
             isDetectingLocation={isDetecting}
+            isLocationActive={Boolean(city || area)}
           />
         </section>
 

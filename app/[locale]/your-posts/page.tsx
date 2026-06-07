@@ -8,11 +8,10 @@ export default function YourPostsPage() {
     return (
         <div className="pt-24 pb-12 px-6 md:px-12 bg-background min-h-screen">
             <div className="max-w-4xl mx-auto">
-                <JobHeader 
-                    title={t('yourPosts')} 
+                <JobHeader
+                    title={t('yourPosts')}
                     tag={t('userMenu')}
                     description={t('yourPostsDescription')}
-                    statsCount="3"
                     statsLabel={t('yourPostsStatsLabel')}
                 />
                 <JobFeed />

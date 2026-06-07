@@ -18,6 +18,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     return handleProxy(request, await params);
 }
 
+export async function PATCH(request: Request, { params }: { params: Promise<{ slug: string[] }> }) {
+    return handleProxy(request, await params);
+}
+
 export async function DELETE(request: Request, { params }: { params: Promise<{ slug: string[] }> }) {
     return handleProxy(request, await params);
 }

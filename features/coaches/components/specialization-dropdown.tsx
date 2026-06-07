@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { SpecializationDropdownProps } from '../types';
 
 const styles = {
@@ -30,7 +31,8 @@ const styles = {
   indicator: {
     active: "h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(34,197,94,0.8)]",
     inactive: "h-2 w-2 rounded-full bg-white/5 border border-white/10"
-  }
+  },
+  clearButton: "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-foreground/40 hover:text-foreground hover:bg-white/10 transition-all z-10"
 };
 
 export function SpecializationDropdown({
@@ -38,6 +40,7 @@ export function SpecializationDropdown({
   onChange,
   options,
   placeholder,
+  onClear,
 }: SpecializationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,6 +64,19 @@ export function SpecializationDropdown({
         <span className={styles.selectedText(value === 'All')}>
           {value === 'All' ? placeholder : value}
         </span>
+        {value !== 'All' && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              (onClear ?? (() => onChange('All')))();
+            }}
+            className={styles.clearButton}
+            aria-label="Clear"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {isOpen && (
