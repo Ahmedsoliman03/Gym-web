@@ -278,15 +278,7 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                             </div>
                         )}
                     </div>
-                    {/* Location row removed — the gym address already shows in
-                        the card header next to the gym name.
-                    <div className={styles.metaGrid}>
-                        <div className={styles.metaItem}>
-                            <MapPin size={14} />
-                            <span>{job.location}</span>
-                        </div>
-                    </div>
-                    */}
+                
                     {job.salary && (
                         <div className={`${styles.metaItem} ${styles.salaryChip} mb-4`}>
                             <Banknote size={14} />

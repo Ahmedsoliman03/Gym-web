@@ -58,11 +58,24 @@ export function StoriesBar({ userType }: StoriesBarProps) {
     const isLoggedIn = profileQuery.isSuccess && Boolean(profileQuery.data);
 
     const { data, isLoading } = useStories(isLoggedIn);
-    const [openGroupIdx, setOpenGroupIdx] = useState<number | null>(null);
+    // We track the open group by its stable `key` rather than its index in the
+    // sorted array — once a story is viewed, the cache patch flips `isViewed`
+    // and the sort below moves the group, so an index would point at a
+    // different author mid-viewing.
+    const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
 
     const groups = useMemo(() => {
         const filtered = (data ?? []).filter((s) => s?.author?.userType === userType);
-        return groupByAuthor(filtered);
+        const grouped = groupByAuthor(filtered);
+        // Surface groups that still have at least one unviewed story first, so
+        // the user sees fresh content at the head of the bar. `Array.sort` in
+        // modern JS engines is stable, so groups with the same viewed-state
+        // keep the API's original order relative to each other.
+        return [...grouped].sort((a, b) => {
+            const aUnviewed = a.stories.some((s) => s?.isViewed === false) ? 1 : 0;
+            const bUnviewed = b.stories.some((s) => s?.isViewed === false) ? 1 : 0;
+            return bUnviewed - aUnviewed;
+        });
     }, [data, userType]);
 
     if (!isLoggedIn) return null;
@@ -81,7 +94,10 @@ export function StoriesBar({ userType }: StoriesBarProps) {
 
     if (groups.length === 0) return null;
 
-    const openGroup = openGroupIdx !== null ? groups[openGroupIdx] : null;
+    const openGroup =
+        openGroupKey !== null
+            ? groups.find((g) => g.key === openGroupKey) ?? null
+            : null;
     const openGroupInitialIndex = openGroup
         ? firstUnviewedPlaybackIndex(openGroup.stories)
         : 0;
@@ -90,7 +106,7 @@ export function StoriesBar({ userType }: StoriesBarProps) {
         <>
             <div className={styles.wrapper}>
                 <div className={styles.track}>
-                    {groups.map((group, idx) => {
+                    {groups.map((group) => {
                         const cover =
                             group.author.profileImage ?? group.stories.at(-1)?.media?.at(-1)?.file;
                         const initial =
@@ -105,7 +121,7 @@ export function StoriesBar({ userType }: StoriesBarProps) {
                             <button
                                 key={group.key}
                                 type="button"
-                                onClick={() => setOpenGroupIdx(idx)}
+                                onClick={() => setOpenGroupKey(group.key)}
                                 className={styles.item}
                             >
                                 <span className={hasUnviewed ? styles.ring : styles.ringViewed}>
@@ -135,7 +151,7 @@ export function StoriesBar({ userType }: StoriesBarProps) {
 
             <StoryViewerModal
                 isOpen={openGroup !== null}
-                onClose={() => setOpenGroupIdx(null)}
+                onClose={() => setOpenGroupKey(null)}
                 stories={openGroup?.stories ?? []}
                 isOwner={false}
                 initialStoryIndex={openGroupInitialIndex}

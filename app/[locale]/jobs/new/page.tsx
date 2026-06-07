@@ -25,7 +25,6 @@ export default function NewJobPage() {
 
   const handleJobSubmit = async (values: {
     title: string;
-    location: string;
     specialization: string;
     desc: string;
     image: File | null;
@@ -33,7 +32,6 @@ export default function NewJobPage() {
     try {
       await createMutation.mutateAsync({
         title: values.title,
-        location: values.location,
         specialization: values.specialization,
         content: values.desc,
         image: values.image,

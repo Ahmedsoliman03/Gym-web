@@ -69,9 +69,11 @@ export const useJob = (jobId: string | null) =>
 // ─── Create / edit / delete / close ───────────────────────────────────────────
 
 export const createJob = async (input: CreateJobInput): Promise<Job> => {
+    // Per postman README: the create-job endpoint accepts `title`, `content`,
+    // `specialization`, `image`. `location` is auto-derived from the gym
+    // profile (`area, city`) server-side, so we MUST NOT send it from here.
     const formData = new FormData();
     formData.append('title', input.title);
-    formData.append('location', input.location);
     formData.append('specialization', input.specialization);
     formData.append('content', input.content);
     if (input.image) formData.append('image', input.image);

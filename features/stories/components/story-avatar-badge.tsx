@@ -47,6 +47,11 @@ const styles = {
     // green instead of replacing it with gray.
     storyRing: "absolute inset-0 rounded-full border-4 border-primary pointer-events-none z-10",
     storyRingViewed: "absolute inset-0 rounded-full border-4 border-zinc-600 pointer-events-none z-10",
+    // No-stories overlay — masks the parent's hardcoded primary border with
+    // the surrounding card color (`bg-surface`) so the avatar reads as a
+    // plain photo with no ring at all. We can't remove the parent border
+    // from here, so we cover it with a matching-color border instead.
+    storyRingNone: "absolute inset-0 rounded-full border-4 border-surface pointer-events-none z-10",
 };
 
 export function StoryAvatarBadge({
@@ -172,13 +177,20 @@ export function StoryAvatarBadge({
                     />
                 </>
             )}
-            {!hasStories && profileImage && (
-                <button
-                    type="button"
-                    onClick={() => setImageOpen(true)}
-                    aria-label={t('showProfileImage')}
-                    className={styles.avatarHitArea}
-                />
+            {!hasStories && (
+                <>
+                    {/* Mask the parent's green border so a profile with no
+                        active stories shows no ring at all. */}
+                    <span aria-hidden className={styles.storyRingNone} />
+                    {profileImage && (
+                        <button
+                            type="button"
+                            onClick={() => setImageOpen(true)}
+                            aria-label={t('showProfileImage')}
+                            className={styles.avatarHitArea}
+                        />
+                    )}
+                </>
             )}
 
             {canCreateStory && (

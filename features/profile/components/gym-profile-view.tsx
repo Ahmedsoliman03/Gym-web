@@ -106,10 +106,15 @@ export const GymProfileView = ({
           </div>
         </div>
         <div className={styles.actionsWrapper}>
-          <button className={styles.primaryBtn} onClick={triggerChatOpen}>
-            <MessageSquare size={18} />
-            {t('chat')}
-          </button>
+          {/* Chat is only useful when viewing someone else's gym — the owner
+              has no one to chat with on their own page. Mirrors the coach
+              profile header, which already hides chat for the owner. */}
+          {!isOwner && (
+            <button className={styles.primaryBtn} onClick={triggerChatOpen}>
+              <MessageSquare size={18} />
+              {t('chat')}
+            </button>
+          )}
           {isOwner && (
             <Link href="/profile/edit" className={styles.secondaryBtn}>
               <Settings size={18} />

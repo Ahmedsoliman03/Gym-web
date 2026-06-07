@@ -35,7 +35,6 @@ export interface Job {
 
 export interface CreateJobInput {
     title: string;
-    location: string;
     specialization: string;
     content: string;
     image: File | null;

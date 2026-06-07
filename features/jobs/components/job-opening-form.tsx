@@ -1,18 +1,13 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useLocationDetect } from '@/hooks/use-location-detect';
-import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { SpecializationSelect } from '@/features/jobs/components/specialization-select';
 import { PostImageUpload } from '@/components/shared/post-image-upload';
-import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 
 interface JobOpeningFormProps {
   onSubmit: (values: {
     title: string;
-    location: string;
     specialization: string;
     desc: string;
     image: File | null;
@@ -26,15 +21,12 @@ const styles = {
   input: "w-full px-4 py-3.5 bg-[#0D121F] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium placeholder:text-foreground/20",
   textarea: "w-full px-4 py-3.5 bg-[#0D121F] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium resize-none h-36 placeholder:text-foreground/20",
   error: "text-red-500 text-[10px] mt-1 px-1 font-medium",
-  locationRow: "flex gap-3",
-  locationInput: "flex-1 px-4 py-3.5 bg-[#0D121F] border border-white/5 rounded-xl outline-none text-foreground text-sm font-medium placeholder:text-foreground/20",
   submitBtn: "w-full py-4 bg-primary text-primary-foreground rounded-xl font-black hover:opacity-90 active:scale-[0.99] transition-all text-sm uppercase flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(34,197,94,0.2)] border-0 cursor-pointer outline-none",
 };
 
 const buildJobSchema = (t: (k: string) => string) =>
   Yup.object({
     title: Yup.string().required(t('fieldRequired')),
-    location: Yup.string().required(t('fieldRequired')),
     specialization: Yup.string().required(t('fieldRequired')),
     desc: Yup.string().required(t('fieldRequired')),
     image: Yup.mixed().nullable(),
@@ -42,133 +34,70 @@ const buildJobSchema = (t: (k: string) => string) =>
 
 export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
   const t = useTranslations('Jobs');
-  const { profile } = useProfileUser();
 
-  // Default the location to the gym's saved address from /api/me. The user can
-  // still edit it inline or overwrite via the location-detect button.
-  const myAddress =
-    profile?.userType === 'gym' ? profile.profile?.location ?? '' : '';
-
-  // Controlled location state — initialized from the profile once the query
-  // resolves, kept in sync via the effect below.
-  const [locationValue, setLocationValue] = useState(myAddress);
-
-  // Ref so the detect callback can always reach the latest setFieldValue
-  const setFieldValueRef = useRef<((field: string, value: any) => void) | null>(null);
-
-  // Sync the controlled location once /api/me finishes loading (the initial
-  // useState ran with `myAddress = ''`). Only overwrite if the user hasn't
-  // started typing — i.e. the field is still empty.
-  useEffect(() => {
-    if (myAddress && !locationValue) {
-      setLocationValue(myAddress);
-      setFieldValueRef.current?.('location', myAddress);
-    }
-    // We only care about the gym address arriving; locationValue is excluded
-    // on purpose so we don't loop when the user clears the field.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myAddress]);
-
-  const { status: locStatus, error: locError, detect } = useLocationDetect(
-    useCallback((result) => {
-      const parts = [result.area, result.city, result.governorate].filter(Boolean);
-      const loc = parts.join(', ');
-      setLocationValue(loc);
-      // Sync into Formik so validation clears immediately
-      setFieldValueRef.current?.('location', loc);
-    }, [])
-  );
+  // `location` is intentionally not collected here — the backend derives the
+  // job location from the gym profile's `area, city` (per postman README),
+  // so submitting it from the client would be ignored at best and could
+  // mislead the gym owner about which address gets attached to the post.
 
   return (
     <Formik
-      enableReinitialize
       initialValues={{
         title: '',
-        location: myAddress,
         specialization: '',
         desc: '',
         image: null as File | null,
       }}
       validationSchema={buildJobSchema(t)}
       onSubmit={(values) => {
-        // Ensure values.location has the latest locationValue
-        onSubmit({ ...values, location: locationValue });
+        onSubmit(values);
       }}
     >
-      {({ setFieldValue, values, isSubmitting }) => {
-        // Keep the ref up-to-date every render
-        setFieldValueRef.current = setFieldValue;
+      {({ setFieldValue, values, isSubmitting }) => (
+        <Form className={styles.form}>
+          {/* Title */}
+          <div className={styles.fieldWrapper}>
+            <label className={styles.label}>{t('postTitle')}</label>
+            <Field name="title" className={styles.input} placeholder={t('postTitlePlaceholder')} />
+            <ErrorMessage name="title" component="p" className={styles.error} />
+          </div>
 
-        return (
-          <Form className={styles.form}>
-            {/* Title */}
-            <div className={styles.fieldWrapper}>
-              <label className={styles.label}>{t('postTitle')}</label>
-              <Field name="title" className={styles.input} placeholder={t('postTitlePlaceholder')} />
-              <ErrorMessage name="title" component="p" className={styles.error} />
-            </div>
-
-            {/* Location */}
-            <div className={styles.fieldWrapper}>
-              <label className={styles.label}>{t('postLocation')}</label>
-              <div className={styles.locationRow}>
-                <Field
-                  name="location"
-                  className={styles.locationInput}
-                  placeholder={t('postLocationPlaceholder')}
-                  value={locationValue}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setLocationValue(e.target.value);
-                    setFieldValue('location', e.target.value);
-                  }}
-                />
-                <LocationDetectButton
-                  status={locStatus}
-                  error={locError}
-                  onClick={detect}
-                  className="w-auto"
-                />
-              </div>
-              <ErrorMessage name="location" component="p" className={styles.error} />
-            </div>
-
-            {/* Specialization */}
-            <div className={styles.fieldWrapper}>
-              <label className={styles.label}>{t('postSpecialization')}</label>
-              <SpecializationSelect
-                value={values.specialization}
-                onChange={(val) => setFieldValue('specialization', val)}
-                placeholder={t('postSpecializationPlaceholder')}
-              />
-              <ErrorMessage name="specialization" component="p" className={styles.error} />
-            </div>
-
-            {/* Description */}
-            <div className={styles.fieldWrapper}>
-              <label className={styles.label}>{t('postContent')}</label>
-              <Field
-                as="textarea"
-                name="desc"
-                className={styles.textarea}
-                placeholder={t('postDescPlaceholder')}
-              />
-              <ErrorMessage name="desc" component="p" className={styles.error} />
-            </div>
-
-            {/* Photo upload — optional */}
-            <PostImageUpload
-              value={values.image}
-              onChange={(file) => setFieldValue('image', file)}
+          {/* Specialization */}
+          <div className={styles.fieldWrapper}>
+            <label className={styles.label}>{t('postSpecialization')}</label>
+            <SpecializationSelect
+              value={values.specialization}
+              onChange={(val) => setFieldValue('specialization', val)}
+              placeholder={t('postSpecializationPlaceholder')}
             />
+            <ErrorMessage name="specialization" component="p" className={styles.error} />
+          </div>
 
-            {/* Submit */}
-            <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-              <Zap size={18} fill="currentColor" />
-              {t('publishPost')}
-            </button>
-          </Form>
-        );
-      }}
+          {/* Description */}
+          <div className={styles.fieldWrapper}>
+            <label className={styles.label}>{t('postContent')}</label>
+            <Field
+              as="textarea"
+              name="desc"
+              className={styles.textarea}
+              placeholder={t('postDescPlaceholder')}
+            />
+            <ErrorMessage name="desc" component="p" className={styles.error} />
+          </div>
+
+          {/* Photo upload — optional */}
+          <PostImageUpload
+            value={values.image}
+            onChange={(file) => setFieldValue('image', file)}
+          />
+
+          {/* Submit */}
+          <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+            <Zap size={18} fill="currentColor" />
+            {t('publishPost')}
+          </button>
+        </Form>
+      )}
     </Formik>
   );
 }
