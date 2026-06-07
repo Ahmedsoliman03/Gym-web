@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Send,
   Trash2,
@@ -13,8 +13,9 @@ import {
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/routing';
+import { Modal } from '@/components/ui/modal';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
-import type { PostAuthor } from '../types';
+import type { CommentVoter, PostAuthor } from '../types';
 import {
   useComments,
   useCreateCommentMutation,
@@ -54,7 +55,15 @@ const styles = {
   voteBtn: 'flex items-center gap-1 hover:text-primary transition-colors',
   voteBtnActive: 'flex items-center gap-1 text-primary transition-colors',
   replyBtn: 'flex items-center gap-1 hover:text-foreground transition-colors',
-  scoreNum: 'tabular-nums text-foreground/50',
+  scoreNum: 'tabular-nums text-foreground/50 hover:text-foreground hover:underline transition-colors',
+  votersList: 'space-y-1',
+  voterRow:
+    'flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors',
+  voterAvatar:
+    'w-10 h-10 rounded-full overflow-hidden bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0',
+  voterAvatarImg: 'w-full h-full object-cover',
+  voterName: 'text-sm font-bold text-foreground',
+  voterEmpty: 'text-sm text-foreground/40 text-center py-6',
   emptyText: 'text-xs text-foreground/40 text-center py-3',
   loadingText: 'text-xs text-foreground/40 text-center py-3',
   menuWrap: 'relative',
@@ -85,12 +94,78 @@ function getAuthorHref(
   author: PostAuthor | undefined,
   currentUserId?: string,
 ): string | null {
-  if (!author?.id) return null;
+  if (!author?.profileId) return null;
   // If the viewer authored the comment, link to their own profile page.
-  if (currentUserId && author.id === currentUserId) return '/profile';
-  if (author.userType === 'coach') return `/coaches/${author.id}`;
-  if (author.userType === 'gym') return `/gyms/${author.id}`;
+  if (currentUserId && author.profileId === currentUserId) return '/profile';
+  if (author.userType === 'coach') return `/coaches/${author.profileId}`;
+  if (author.userType === 'gym') return `/gyms/${author.profileId}`;
   return null;
+}
+
+/**
+ * Bottom-sheet style modal listing the people who upvoted a comment. Each row
+ * is a link to the voter's public profile (resolved the same way comment
+ * author names are linked), so clicking a row navigates straight there.
+ */
+function UpvotersSheet({
+  isOpen,
+  onClose,
+  voters,
+  currentUserId,
+  onVoterClick,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  voters: CommentVoter[];
+  currentUserId?: string;
+  /** Closes the sheet when a row is clicked — the Link inside still navigates. */
+  onVoterClick: () => void;
+}) {
+  const t = useTranslations('Community');
+  // Title carries the like count alongside the label so the user can see
+  // "Liked by · 3 likes" without an extra subtitle row inside the body.
+  const title =
+    voters.length > 0
+      ? `${t('upvotersTitle')} · ${t('upvotersCount', { count: voters.length })}`
+      : t('upvotersTitle');
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={title}>
+      {voters.length === 0 ? (
+        <p className={styles.voterEmpty}>{t('noUpvoters')}</p>
+      ) : (
+        <ul className={styles.votersList}>
+          {voters.map((v, idx) => {
+            const href = getAuthorHref(v.user, currentUserId);
+            const photo = v.user.photo;
+            const row = (
+              <>
+                <div className={styles.voterAvatar}>
+                  {photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo} alt={v.user.fullName} className={styles.voterAvatarImg} />
+                  ) : (
+                    <User size={18} />
+                  )}
+                </div>
+                <span className={styles.voterName}>{v.user.fullName}</span>
+              </>
+            );
+            return (
+              <li key={`${v.user.id}-${idx}`}>
+                {href ? (
+                  <Link href={href} className={styles.voterRow} onClick={onVoterClick}>
+                    {row}
+                  </Link>
+                ) : (
+                  <div className={styles.voterRow}>{row}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Modal>
+  );
 }
 
 function CommentRow({
@@ -118,6 +193,20 @@ function CommentRow({
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyDraft, setReplyDraft] = useState('');
   const [reportOpen, setReportOpen] = useState(false);
+  const [votersOpen, setVotersOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close the kebab menu when the user clicks anywhere outside of it.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const isMine =
     !!currentUserId && !!comment.author?.id && comment.author.id === currentUserId;
@@ -191,7 +280,7 @@ function CommentRow({
               ) : (
                 <span className={styles.authorName}>{comment.author.fullName}</span>
               )}
-              <div className={styles.menuWrap}>
+              <div className={styles.menuWrap} ref={menuRef}>
                 <button
                   type="button"
                   onClick={() => setMenuOpen((v) => !v)}
@@ -246,8 +335,20 @@ function CommentRow({
               aria-label={t('like')}
             >
               <Heart size={12} fill={upVoted ? 'currentColor' : 'none'} />
-              {score > 0 ? <span className={styles.scoreNum}>{score}</span> : null}
             </button>
+            {/* Score is rendered as a separate clickable so tapping the
+                number opens the upvoters sheet without also toggling the
+                viewer's own vote. */}
+            {score > 0 && (
+              <button
+                type="button"
+                onClick={() => setVotersOpen(true)}
+                className={styles.scoreNum}
+                aria-label={t('viewUpvoters')}
+              >
+                {score}
+              </button>
+            )}
             {!isReply && (
               <button
                 type="button"
@@ -322,6 +423,14 @@ function CommentRow({
           }
         }}
       />
+
+      <UpvotersSheet
+        isOpen={votersOpen}
+        onClose={() => setVotersOpen(false)}
+        voters={comment.upVoters ?? []}
+        currentUserId={currentUserId}
+        onVoterClick={() => setVotersOpen(false)}
+      />
     </div>
   );
 }
@@ -342,10 +451,9 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
     if (!trimmed || createMutation.isPending) return;
     try {
       await createMutation.mutateAsync({ postId, body: trimmed });
-      toast.success(t('commentSuccess'));
       setDraft('');
     } catch {
-      // Error stays on the mutation; user can retry.
+      toast.error(t('commentFailed'));
     }
   };
 

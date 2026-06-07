@@ -1,6 +1,6 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Menu, User, LogOut, Globe, X, Bookmark, Zap, Lock, Briefcase, BookmarkCheck } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Lock, Briefcase, FileText } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
@@ -122,10 +122,10 @@ export const Navbar = () => {
   // middleware. The two exceptions are mirrored from the middleware's
   // restriction table so the user never sees a link they can't open:
   //   - /applications: gym-only (coach + client are blocked)
-  //   - /jobs: hidden for clients (still visible to gyms and coaches)
+  //   - /jobs: allowlist — gyms and coaches only (everyone else hidden)
   const userType = profile?.userType;
   const canSeeApplications = userType === 'gym';
-  const canSeeJobs = userType !== 'client';
+  const canSeeJobs = userType === 'gym' || userType === 'coach';
 
   const navLinks = [
     { label: t('community'), href: "/community" },
@@ -273,6 +273,14 @@ export const Navbar = () => {
                         <Lock size={16} />
                         {t('changePassword')}
                       </button>
+                       <Link
+                        href="/my-posts"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <FileText size={16} />
+                        {t('myPosts')}
+                      </Link>
                       <Link
                         href="/saved-posts"
                         onClick={() => setUserMenuOpen(false)}
@@ -281,14 +289,8 @@ export const Navbar = () => {
                         <Bookmark size={16} />
                         {t('savedPosts')}
                       </Link>
-                      <Link
-                        href="/your-posts"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
-                      >
-                        <Zap size={16} />
-                        {t('yourPosts')}
-                      </Link>
+                     
+                     
                       {/* My Jobs is gym-only: only gyms can author job posts. */}
                       {profile?.userType === 'gym' && (
                         <Link
@@ -305,7 +307,7 @@ export const Navbar = () => {
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
-                        <BookmarkCheck size={16} />
+                       <Bookmark size={16} />
                         {t('savedJobs')}
                       </Link>
                       <div className="h-[1px] bg-white/5 my-1" />

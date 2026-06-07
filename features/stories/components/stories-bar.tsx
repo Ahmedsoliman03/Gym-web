@@ -10,13 +10,29 @@ const styles = {
     wrapper: "w-full overflow-x-auto pb-3 mb-8",
     track: "flex gap-4",
     item: "flex flex-col items-center gap-2 shrink-0",
+    // Green gradient ring — shown when the user has at least one unviewed
+    // story in this group.
     ring: "relative inline-block w-20 h-20 rounded-full p-[3px] bg-gradient-to-tr from-primary via-primary/80 to-primary/30",
+    // Muted gray ring — shown when every story in this group has been viewed.
+    ringViewed: "relative inline-block w-20 h-20 rounded-full p-[3px] bg-white/15",
     inner: "block relative w-full h-full rounded-full overflow-hidden bg-white/5",
     image: "block w-full h-full object-cover",
     placeholder: "flex w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 items-center justify-center text-primary font-black",
     label: "text-[10px] font-bold text-foreground/60 uppercase truncate max-w-[80px]",
     skeleton: "w-20 h-20 rounded-full bg-white/5 animate-pulse shrink-0",
 };
+
+/**
+ * Find the first unviewed story in playback order. The viewer modal reverses
+ * the stories array internally (newest LAST) so we mirror that reversal here
+ * before searching; the returned index then lines up with the modal's
+ * `initialStoryIndex` and we land on the actual first unviewed slide.
+ */
+function firstUnviewedPlaybackIndex(stories: Story[]): number {
+    const playback = [...stories].reverse();
+    const idx = playback.findIndex((s) => s?.isViewed === false);
+    return idx >= 0 ? idx : 0;
+}
 
 function groupByAuthor(stories: Story[]): AuthorGroup[] {
     const groups = new Map<string, AuthorGroup>();
@@ -66,6 +82,9 @@ export function StoriesBar({ userType }: StoriesBarProps) {
     if (groups.length === 0) return null;
 
     const openGroup = openGroupIdx !== null ? groups[openGroupIdx] : null;
+    const openGroupInitialIndex = openGroup
+        ? firstUnviewedPlaybackIndex(openGroup.stories)
+        : 0;
 
     return (
         <>
@@ -76,6 +95,12 @@ export function StoriesBar({ userType }: StoriesBarProps) {
                             group.author.profileImage ?? group.stories.at(-1)?.media?.at(-1)?.file;
                         const initial =
                             group.author.fullName?.trim()?.[0]?.toUpperCase() ?? '?';
+                        // `isViewed === false` is intentional: if the field is
+                        // missing (older response shapes), don't treat it as
+                        // unviewed — fall back to gray so the UI is stable.
+                        const hasUnviewed = group.stories.some(
+                            (s) => s?.isViewed === false,
+                        );
                         return (
                             <button
                                 key={group.key}
@@ -83,7 +108,7 @@ export function StoriesBar({ userType }: StoriesBarProps) {
                                 onClick={() => setOpenGroupIdx(idx)}
                                 className={styles.item}
                             >
-                                <span className={styles.ring}>
+                                <span className={hasUnviewed ? styles.ring : styles.ringViewed}>
                                     <span className={styles.inner}>
                                         {cover ? (
                                             // eslint-disable-next-line @next/next/no-img-element
@@ -113,7 +138,7 @@ export function StoriesBar({ userType }: StoriesBarProps) {
                 onClose={() => setOpenGroupIdx(null)}
                 stories={openGroup?.stories ?? []}
                 isOwner={false}
-                initialStoryIndex={0}
+                initialStoryIndex={openGroupInitialIndex}
             />
         </>
     );

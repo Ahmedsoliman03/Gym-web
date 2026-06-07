@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 const styles = {
   base:
-    'fixed bottom-6 left-6 z-[105] w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 border border-primary/40 transition-all duration-300 active:scale-95 hover:brightness-110',
+    'fixed bottom-6 left-6 z-[105] w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg shadow-primary/30 border border-primary/40 transition-all duration-300 active:scale-95 hover:brightness-110',
   hidden: 'opacity-0 pointer-events-none translate-y-2',
   visible: 'opacity-100 pointer-events-auto translate-y-0',
 };

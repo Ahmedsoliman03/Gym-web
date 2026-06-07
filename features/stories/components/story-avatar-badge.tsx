@@ -39,6 +39,14 @@ const styles = {
     badge: "absolute bottom-1 right-1 z-30 w-9 h-9 rounded-full bg-primary text-primary-foreground border-4 border-surface flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 transition-transform disabled:opacity-60 disabled:cursor-wait",
     spinner: "absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin pointer-events-none",
     avatarHitArea: "absolute inset-0 z-20 rounded-full cursor-pointer",
+    // Story-state ring overlay painted on top of the parent avatar boundary.
+    // Mirrors the stories-bar colors: primary when any story is unviewed,
+    // muted gray when every story is viewed. The viewed ring MUST be a fully
+    // opaque color — the parent (`avatarBorder`) paints a solid primary green
+    // border underneath, and a semi-transparent overlay would just tint that
+    // green instead of replacing it with gray.
+    storyRing: "absolute inset-0 rounded-full border-4 border-primary pointer-events-none z-10",
+    storyRingViewed: "absolute inset-0 rounded-full border-4 border-zinc-600 pointer-events-none z-10",
 };
 
 export function StoryAvatarBadge({
@@ -79,6 +87,18 @@ export function StoryAvatarBadge({
 
     const visibleStories = isOwner ? (myStories ?? []) : theirStories;
     const hasStories = visibleStories.length > 0;
+    // `isViewed === false` is intentional — when the field is missing (older
+    // payloads) we fall back to gray so the UI doesn't claim "unviewed" for
+    // stories we can't actually classify.
+    const hasUnviewedStory = visibleStories.some((s) => s?.isViewed === false);
+    // First-unviewed index, expressed in the viewer modal's playback order
+    // (the modal reverses the array internally; mirror that here so the index
+    // we pass in lines up with the slide we want to land on).
+    const initialStoryIndex = useMemo(() => {
+        const playback = [...visibleStories].reverse();
+        const idx = playback.findIndex((s) => s?.isViewed === false);
+        return idx >= 0 ? idx : 0;
+    }, [visibleStories]);
 
     const [pendingFile, setPendingFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -137,12 +157,20 @@ export function StoryAvatarBadge({
             />
 
             {hasStories && (
-                <button
-                    type="button"
-                    onClick={() => setChoiceOpen(true)}
-                    aria-label={t('viewOptions')}
-                    className={styles.avatarHitArea}
-                />
+                <>
+                    <span
+                        aria-hidden
+                        className={
+                            hasUnviewedStory ? styles.storyRing : styles.storyRingViewed
+                        }
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setChoiceOpen(true)}
+                        aria-label={t('viewOptions')}
+                        className={styles.avatarHitArea}
+                    />
+                </>
             )}
             {!hasStories && profileImage && (
                 <button
@@ -193,6 +221,7 @@ export function StoryAvatarBadge({
                 onClose={() => setViewerOpen(false)}
                 stories={isOwner ? undefined : theirStories}
                 isOwner={isOwner}
+                initialStoryIndex={initialStoryIndex}
             />
 
             {profileImage && (

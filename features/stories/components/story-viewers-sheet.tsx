@@ -2,8 +2,10 @@
 
 import { useEffect } from 'react';
 import { Eye, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { useStoryViewers } from '../services/stories.service';
+import type { StoryViewerUser } from '../types';
 
 interface StoryViewersSheetProps {
     isOpen: boolean;
@@ -24,7 +26,7 @@ const styles = {
     closeBtn: "p-2 text-foreground/40 hover:text-foreground transition-colors",
     body: "max-h-[60vh] overflow-y-auto",
     state: "px-6 py-10 text-center text-sm text-foreground/60",
-    row: "flex items-center gap-3 px-5 py-3 border-b border-white/5 last:border-b-0",
+    row: "flex items-center gap-3 px-5 py-3 border-b border-white/5 last:border-b-0 hover:bg-white/[0.03] transition-colors",
     avatar: "w-10 h-10 rounded-full bg-white/10 overflow-hidden flex items-center justify-center text-primary text-sm font-bold shrink-0",
     avatarImg: "w-full h-full object-cover",
     info: "flex-1 min-w-0",
@@ -32,15 +34,43 @@ const styles = {
     sub: "text-[11px] text-foreground/50 uppercase",
 };
 
-function formatViewedAt(value?: string) {
+/**
+ * Format a viewer's timestamp as a friendly "month-name day, year, h:mm AM/PM"
+ * string instead of the locale's raw all-numeric default — e.g. `Jun 7, 2026,
+ * 6:34 PM` in English or `٧ يونيو ٢٠٢٦، ٦:٣٤ م` in Arabic. The locale is read
+ * from `next-intl` so the month name follows whichever language the user is
+ * currently browsing in.
+ */
+function formatViewedAt(value: string | undefined, locale: string) {
     if (!value) return '';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleString();
+    const bcp47 = locale === 'ar' ? 'ar-EG' : 'en-US';
+    return date.toLocaleString(bcp47, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+}
+
+/**
+ * Build the public profile href for a viewer. Coaches and gyms each have a
+ * detail page keyed by `profileId`; clients have none, so return `null` and
+ * the row will render as plain (non-clickable) text. Mirrors the routing
+ * rule already used by the comment upvoters sheet.
+ */
+function getViewerHref(user: StoryViewerUser | undefined): string | null {
+    if (!user?.profileId) return null;
+    if (user.userType === 'coach') return `/coaches/${user.profileId}`;
+    if (user.userType === 'gym') return `/gyms/${user.profileId}`;
+    return null;
 }
 
 export function StoryViewersSheet({ isOpen, storyId, onClose }: StoryViewersSheetProps) {
     const t = useTranslations('Stories');
+    const locale = useLocale();
     const { data, isLoading, isError } = useStoryViewers(storyId, isOpen);
 
     useEffect(() => {
@@ -95,15 +125,17 @@ export function StoryViewersSheet({ isOpen, storyId, onClose }: StoryViewersShee
                         <p className={styles.state}>{t('noViewers')}</p>
                     ) : (
                         viewers.map((v, i) => {
-                            const initial = (v.fullName?.trim()?.[0] ?? '?').toUpperCase();
-                            return (
-                                <div key={v.id ?? `${v.fullName}-${i}`} className={styles.row}>
+                            const user = v.user;
+                            const initial = (user?.fullName?.trim()?.[0] ?? '?').toUpperCase();
+                            const href = getViewerHref(user);
+                            const rowInner = (
+                                <>
                                     <div className={styles.avatar}>
-                                        {v.profileImage ? (
+                                        {user?.photo ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
-                                                src={v.profileImage}
-                                                alt={v.fullName ?? ''}
+                                                src={user.photo}
+                                                alt={user.fullName ?? ''}
                                                 className={styles.avatarImg}
                                             />
                                         ) : (
@@ -112,13 +144,23 @@ export function StoryViewersSheet({ isOpen, storyId, onClose }: StoryViewersShee
                                     </div>
                                     <div className={styles.info}>
                                         <p className={styles.name}>
-                                            {v.fullName ?? '—'}
+                                            {user?.fullName ?? '—'}
                                         </p>
                                         <p className={styles.sub}>
-                                            {v.userType ?? ''}
-                                            {v.viewedAt ? ` · ${formatViewedAt(v.viewedAt)}` : ''}
+                                            {user?.userType ?? ''}
+                                            {v.viewedAt ? ` · ${formatViewedAt(v.viewedAt, locale)}` : ''}
                                         </p>
                                     </div>
+                                </>
+                            );
+                            const rowKey = user?.id ?? `${user?.fullName ?? 'viewer'}-${i}`;
+                            return href ? (
+                                <Link key={rowKey} href={href} className={styles.row} onClick={onClose}>
+                                    {rowInner}
+                                </Link>
+                            ) : (
+                                <div key={rowKey} className={styles.row}>
+                                    {rowInner}
                                 </div>
                             );
                         })

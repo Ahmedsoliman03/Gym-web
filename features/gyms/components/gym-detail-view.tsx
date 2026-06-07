@@ -47,7 +47,7 @@ export function GymDetailView({ id }: GymDetailViewProps) {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <GymProfileView data={mappedGym} isOwner={false} />
+        <GymProfileView data={mappedGym} isOwner={false} stories={gym.stories} />
       </div>
     </main>
   );

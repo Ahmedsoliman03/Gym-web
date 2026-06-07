@@ -10,12 +10,18 @@ import { Plans } from "@/components/shared/membership-plans";
 import { useRef } from "react";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
+import type { Story } from "@/features/stories/types";
 
 const styles = {
   container: "space-y-8",
   header: "bg-surface p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row gap-8 items-center",
-  logoWrapper: "w-32 h-32 rounded-2xl bg-primary/10 border border-primary/20 overflow-hidden relative shrink-0",
-  logoImage: "object-cover p-4",
+  // Avatar block — mirrors the coach profile header so the gym avatar shares
+  // the same round photo + primary ring + story-state overlay UI.
+  avatarWrapper: "relative",
+  avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
+  avatarInner: "w-full h-full rounded-full overflow-hidden relative",
+  avatarImage: "object-cover",
+  statusBadge: "absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface",
   infoWrapper: "flex-1 text-center md:text-left",
   title: "text-4xl font-bold mb-2",
   statsList: "flex flex-wrap justify-center md:justify-start gap-4 text-foreground/60 text-sm",
@@ -43,7 +49,15 @@ const styles = {
   textBtn: "text-primary hover:text-primary/80 font-bold text-sm transition-all flex items-center gap-1 group"
 };
 
-export const GymProfileView = ({ data, isOwner = true }: { data: GymProfile; isOwner?: boolean }) => {
+export const GymProfileView = ({
+  data,
+  isOwner = true,
+  stories,
+}: {
+  data: GymProfile;
+  isOwner?: boolean;
+  stories?: Story[];
+}) => {
   const t = useTranslations("Profile");
   const plansRef = useRef<HTMLDivElement>(null);
 
@@ -62,21 +76,27 @@ export const GymProfileView = ({ data, isOwner = true }: { data: GymProfile; isO
     <div className={styles.container}>
       {/* Gym Header */}
       <div className={styles.header}>
-        <div className={styles.logoWrapper}>
-          <Image
-            src={data.image}
-            alt={data.name}
-            fill
-            className={styles.logoImage}
-            unoptimized
-          />
+        <div className={styles.avatarWrapper}>
+          <div className={styles.avatarBorder}>
+            <div className={styles.avatarInner}>
+              <Image
+                src={data.image}
+                alt={data.name}
+                fill
+                className={styles.avatarImage}
+                unoptimized
+              />
+            </div>
+          </div>
           <StoryAvatarBadge
             profileImage={data.image}
             profileName={data.name}
             isOwner={isOwner}
             authorId={data.id}
             authorUserType="gym"
+            stories={stories}
           />
+          {!isOwner && <div className={styles.statusBadge} />}
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>

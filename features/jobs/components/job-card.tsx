@@ -59,7 +59,9 @@ const styles = {
     actionButtonActive: "flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-primary/15 text-primary hover:bg-primary/25 border border-primary/30 transition-all active:scale-95 font-bold text-sm uppercase",
     applyButton: "flex-[2] flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-primary text-primary-foreground font-black hover:opacity-90 transition-all active:scale-95 shadow-[0_10px_30px_rgba(34,197,94,0.15)] text-sm uppercase disabled:opacity-50 disabled:cursor-not-allowed",
     appliedPill: "flex-[2] flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-primary/15 text-primary font-black border border-primary/30 text-sm uppercase cursor-default",
-    closedNotice: "mx-8 mb-8 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-black text-sm uppercase tracking-wider",
+    closedNotice: "mx-8 m-8 flex flex-col items-center justify-center gap-1 py-4 px-6 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-black text-sm uppercase tracking-wider",
+    closedNoticeRow: "flex items-center justify-center gap-2",
+    closedOnDate: "text-[11px] font-bold tracking-wider text-red-400/70 normal-case",
     countPill:
         'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none',
     statsRow:
@@ -355,8 +357,20 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                     // Closed jobs replace the entire action bar with a notice —
                     // no apply / save / share once a job is closed.
                     <div className={styles.closedNotice}>
-                        <Power size={16} />
-                        <span>{t('closedNotice')}</span>
+                        <div className={styles.closedNoticeRow}>
+                            <Power size={16} />
+                            <span>{t('closedNotice')}</span>
+                        </div>
+                        {job.closedAt && (
+                            <span className={styles.closedOnDate}>
+                                {t('closedOn', {
+                                    date: new Date(job.closedAt).toLocaleDateString(
+                                        locale === 'ar' ? 'ar-EG' : 'en-US',
+                                        { year: 'numeric', month: 'short', day: 'numeric' },
+                                    ),
+                                })}
+                            </span>
+                        )}
                     </div>
                 ) : isMine ? (
                     // Owner view: only Share — counts are in the stats row above.

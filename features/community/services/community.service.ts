@@ -97,6 +97,26 @@ export const useSavedPosts = (enabled = true) =>
         enabled,
     });
 
+// ─── My posts ────────────────────────────────────────────────────────────────
+//
+// `GET /api/community/posts/mine` (per postman README) — returns community
+// posts authored by the current user. Same envelope handling as the saved
+// list since the backend uses the same paging shapes across these lists.
+
+export const getMyPosts = async (): Promise<CommunityPost[]> => {
+    const { data } = await api.get<RawSavedPostsResponse>('/api/community/posts/mine');
+    if (Array.isArray(data)) return data.filter(Boolean);
+    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
+    return items.filter(Boolean);
+};
+
+export const useMyPosts = (enabled = true) =>
+    useQuery<CommunityPost[]>({
+        queryKey: ['community', 'posts', 'mine'],
+        queryFn: getMyPosts,
+        enabled,
+    });
+
 // ─── Post details ─────────────────────────────────────────────────────────────
 
 export const getPost = async (postId: string): Promise<CommunityPost> => {
@@ -448,13 +468,59 @@ export const createComment = async ({
     return data;
 };
 
+/**
+ * Bump `commentsCount` on the matching post in every cached feed page and on
+ * the post-detail cache by `delta` (positive for create, negative for delete).
+ * Kept in sync with the comments list so the post card's counter updates the
+ * moment a comment is added or removed, without a feed refetch round-trip.
+ */
+const adjustPostCommentsCount = (
+    queryClient: ReturnType<typeof useQueryClient>,
+    postId: string,
+    delta: number,
+) => {
+    queryClient.setQueriesData<FeedQueryData>(
+        { queryKey: ['community', 'feed'] },
+        (curr) => {
+            if (!curr) return curr;
+            return {
+                ...curr,
+                pages: curr.pages.map((page) => ({
+                    ...page,
+                    items: page.items.map((p) =>
+                        p.id === postId
+                            ? { ...p, commentsCount: Math.max(0, (p.commentsCount ?? 0) + delta) }
+                            : p,
+                    ),
+                })),
+            };
+        },
+    );
+    const prevPost = queryClient.getQueryData<CommunityPost>([
+        'community',
+        'post',
+        postId,
+    ]);
+    if (prevPost) {
+        queryClient.setQueryData<CommunityPost>(['community', 'post', postId], {
+            ...prevPost,
+            commentsCount: Math.max(0, (prevPost.commentsCount ?? 0) + delta),
+        });
+    }
+};
+
 export const useCreateCommentMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: createComment,
-        onSuccess: (_data, vars) => {
-            queryClient.invalidateQueries({ queryKey: ['community', 'comments', vars.postId] });
-            queryClient.invalidateQueries({ queryKey: ['community', 'feed'] });
+        onSuccess: (created, vars) => {
+            // Append the new comment into the cached list directly so the count
+            // and the rendered list stay consistent without a refetch flash.
+            queryClient.setQueryData<CommunityComment[] | undefined>(
+                ['community', 'comments', vars.postId],
+                (curr) => (curr ? [...curr, created] : curr),
+            );
+            adjustPostCommentsCount(queryClient, vars.postId, 1);
         },
     });
 };
@@ -510,12 +576,49 @@ const removeCommentFromTree = (
                 : c,
         );
 
+/**
+ * Locate which post owns the comment `commentId` and whether it sits at the
+ * top level (vs. as a reply). We rely on the cached comment lists keyed by
+ * postId: `['community', 'comments', postId]`. Only top-level deletions
+ * decrement `commentsCount` — replies are not tracked by that counter
+ * (mirrors the create/reply path, where reply creation also doesn't bump it).
+ */
+const locateCommentInCache = (
+    queryClient: ReturnType<typeof useQueryClient>,
+    commentId: string,
+): { postId: string; isTopLevel: boolean } | null => {
+    const queries = queryClient.getQueriesData<CommunityComment[] | undefined>({
+        queryKey: ['community', 'comments'],
+    });
+    for (const [key, data] of queries) {
+        if (!data) continue;
+        const postId = (key as unknown[])[2] as string | undefined;
+        if (!postId) continue;
+        if (data.some((c) => c.id === commentId)) {
+            return { postId, isTopLevel: true };
+        }
+        if (data.some((c) => (c.replies ?? []).some((r) => r.id === commentId))) {
+            return { postId, isTopLevel: false };
+        }
+    }
+    return null;
+};
+
 export const useDeleteCommentMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: deleteComment,
         onMutate: async (commentId) => {
             await queryClient.cancelQueries({ queryKey: ['community', 'comments'] });
+
+            const located = locateCommentInCache(queryClient, commentId);
+            if (located?.isTopLevel) {
+                await queryClient.cancelQueries({ queryKey: ['community', 'feed'] });
+                await queryClient.cancelQueries({
+                    queryKey: ['community', 'post', located.postId],
+                });
+            }
+
             const prev: { key: unknown[]; data: CommunityComment[] | undefined }[] = [];
             queryClient
                 .getQueriesData<CommunityComment[] | undefined>({
@@ -524,16 +627,48 @@ export const useDeleteCommentMutation = () => {
                 .forEach(([key, data]) => {
                     prev.push({ key: key as unknown[], data });
                 });
+
+            // Snapshot feed + post-detail caches only when we're about to mutate
+            // them, so we can roll back on error.
+            const prevFeed: { key: unknown[]; data: FeedQueryData }[] = [];
+            let prevPost: CommunityPost | undefined;
+            if (located?.isTopLevel) {
+                queryClient
+                    .getQueriesData<FeedQueryData>({ queryKey: ['community', 'feed'] })
+                    .forEach(([key, data]) => {
+                        prevFeed.push({ key: key as unknown[], data });
+                    });
+                prevPost = queryClient.getQueryData<CommunityPost>([
+                    'community',
+                    'post',
+                    located.postId,
+                ]);
+            }
+
             queryClient.setQueriesData<CommunityComment[] | undefined>(
                 { queryKey: ['community', 'comments'] },
                 (curr) => (curr ? removeCommentFromTree(curr, commentId) : curr),
             );
-            return { prev };
+
+            if (located?.isTopLevel) {
+                adjustPostCommentsCount(queryClient, located.postId, -1);
+            }
+
+            return { prev, prevFeed, prevPost, located };
         },
         onError: (_err, _vars, context) => {
             context?.prev.forEach(({ key, data }) => {
                 queryClient.setQueryData(key, data);
             });
+            context?.prevFeed.forEach(({ key, data }) => {
+                queryClient.setQueryData(key, data);
+            });
+            if (context?.located?.isTopLevel && context.prevPost !== undefined) {
+                queryClient.setQueryData(
+                    ['community', 'post', context.located.postId],
+                    context.prevPost,
+                );
+            }
         },
     });
 };

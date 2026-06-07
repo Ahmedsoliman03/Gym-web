@@ -86,6 +86,16 @@ export default function middleware(request: NextRequest) {
         const userType = jwtPayload?.userType || jwtPayload?.user_type || jwtPayload?.role;
 
         // Apply access restrictions:
+        // /jobs is an allowlist: only gyms and coaches may enter. Any other
+        // role (client, unknown/future userTypes, missing claim) is bounced.
+        const isJobsPath =
+            pathnameWithoutLocale === '/jobs' ||
+            pathnameWithoutLocale.startsWith('/jobs/');
+        if (isJobsPath && userType !== 'gym' && userType !== 'coach') {
+            const homeUrl = new URL(`/${locale}`, request.url);
+            return NextResponse.redirect(homeUrl);
+        }
+
         // Coach: all access except /applications
         if (userType === 'coach') {
             const isBlocked = pathnameWithoutLocale === '/applications' || pathnameWithoutLocale.startsWith('/applications/');
@@ -94,12 +104,12 @@ export default function middleware(request: NextRequest) {
                 return NextResponse.redirect(homeUrl);
             }
         }
-        // Client: can only access /gyms, /coaches, /about (blocked from /jobs and /applications)
+        // Client: can only access /gyms, /coaches, /about (blocked from /applications;
+        // /jobs is already handled by the allowlist above)
         else if (userType === 'client') {
-            const blockedPaths = ['/jobs', '/applications'];
-            const isBlocked = blockedPaths.some(path =>
-                pathnameWithoutLocale === path || pathnameWithoutLocale.startsWith(`${path}/`)
-            );
+            const isBlocked =
+                pathnameWithoutLocale === '/applications' ||
+                pathnameWithoutLocale.startsWith('/applications/');
             if (isBlocked) {
                 const homeUrl = new URL(`/${locale}`, request.url);
                 return NextResponse.redirect(homeUrl);

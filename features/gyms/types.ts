@@ -1,3 +1,5 @@
+import type { Story } from '@/features/stories/types';
+
 export interface Gym {
     id: string;
     gymName: string;
@@ -14,6 +16,8 @@ export interface GymDetail {
     location: string;
     memberCount: number;
     mainPhoto: string | null;
+    /** Per postman README: gym detail responses include the gym's active stories. */
+    stories?: Story[];
 }
 
 export interface GymCardProps {

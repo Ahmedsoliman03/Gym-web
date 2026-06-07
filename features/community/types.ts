@@ -1,5 +1,6 @@
 export interface PostAuthor {
     id: string;
+    profileId: string;
     fullName: string;
     userType: 'coach' | 'gym' | 'client';
     photo?: string | null;
@@ -40,6 +41,12 @@ export interface FeedPage {
     nextCursor: string | null;
 }
 
+export interface CommentVoter {
+    user: PostAuthor;
+    value: VoteValue;
+    votedAt?: string;
+}
+
 export interface CommunityComment {
     id: string;
     author: PostAuthor;
@@ -47,6 +54,9 @@ export interface CommunityComment {
     upVotes?: number;
     downVotes?: number;
     score?: number;
+    /** Present on newer backend responses; rendered in the upvoters sheet. */
+    upVoters?: CommentVoter[];
+    downVoters?: CommentVoter[];
     myVote: VoteValue;
     createdAt?: string;
     replies?: CommunityComment[];

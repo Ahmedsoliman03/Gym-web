@@ -1,25 +1,49 @@
 export interface StoryAuthor {
     id?: string;
+    profileId?: string;
     fullName: string;
     userType: 'coach' | 'gym' | 'client';
+    /** Older list responses use `profileImage`; the new detail response uses `photo`. */
     profileImage?: string | null;
+    photo?: string | null;
+    city?: string | null;
+    area?: string | null;
 }
 
+export type StoryMediaType = 'image' | 'video';
+
 export interface StoryMedia {
+    id?: string;
     file: string;
+    mediaType?: StoryMediaType;
+    position?: number;
 }
 
 export interface Story {
     id: string;
     author: StoryAuthor;
     media: StoryMedia[];
+    durationHours?: number;
+    expiresAt?: string;
+    viewersCount?: number;
+    isViewed?: boolean;
+    lastViewedAt?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface StoryViewerUser {
+    id?: string;
+    profileId?: string;
+    fullName?: string;
+    userType?: StoryAuthor['userType'];
+    photo?: string | null;
+    city?: string | null;
+    area?: string | null;
 }
 
 export interface StoryViewer {
-    id?: string;
-    fullName?: string;
-    userType?: StoryAuthor['userType'];
-    profileImage?: string | null;
+    user: StoryViewerUser;
     viewedAt?: string;
 }
 
