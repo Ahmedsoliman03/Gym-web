@@ -7,7 +7,7 @@ import { JobHeader } from './job-header';
 import { AddJobButton } from './add-job-button';
 
 const styles = {
-  page: 'pt-24 pb-12 px-6 md:px-12',
+  page: 'pt-20 sm:pt-24 pb-12 px-3 sm:px-6 md:px-12',
   inner: 'max-w-4xl mx-auto',
 };
 

@@ -1,24 +1,45 @@
 "use client";
 
-import { SpinnerIos20Regular } from "@fluentui/react-icons";
+import { useEffect } from "react";
+import { useRouter } from "@/i18n/routing";
+import { GLoader } from "@/components/ui/g-loader";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { mockProfiles, CoachProfile } from "@/features/profile/mock-data";
+import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 import { useCoach } from "../services/coaches.service";
 import { CoachDetailViewProps } from "../types";
 
 const styles = {
   main: "min-h-screen bg-background text-foreground pb-20",
-  container: "max-w-7xl mx-auto px-4 md:px-8 pt-24",
+  container: "max-w-7xl mx-auto px-3 sm:px-4 md:px-8 pt-20 sm:pt-24",
   loaderWrapper: "min-h-screen flex items-center justify-center bg-background text-primary",
 };
 
 export function CoachDetailView({ id }: CoachDetailViewProps) {
+  const router = useRouter();
+  const { profile } = useProfileUser();
   const { data: coach, isLoading, error } = useCoach(id);
 
-  if (isLoading) {
+  // If the detail page id matches the logged-in user, send them to /profile.
+  // The backend echoes either the user account id or the inner profile id in
+  // `coach.id` depending on endpoint, so match either one (mirrors the same
+  // dual-id check used in job-card.tsx for gym ownership).
+  const myUserId = profile?.id;
+  const myCoachProfileId =
+    profile?.userType === 'coach' ? profile.profile?.id : undefined;
+  const isMe =
+    profile?.userType === 'coach' &&
+    !!id &&
+    (id === myUserId || id === myCoachProfileId);
+
+  useEffect(() => {
+    if (isMe) router.replace('/profile');
+  }, [isMe, router]);
+
+  if (isMe || isLoading) {
     return (
       <div className={styles.loaderWrapper}>
-        <SpinnerIos20Regular className="animate-spin text-primary" style={{ width: 40, height: 40 }} />
+        <GLoader size={72} />
       </div>
     );
   }

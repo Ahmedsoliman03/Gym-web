@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';
+import { GLoaderSection } from '@/components/ui/g-loader';
 import { usePost } from '../services/community.service';
 import { CommunityPostCard } from './community-post-card';
 
@@ -11,7 +12,7 @@ interface CommunityPostDetailViewProps {
 }
 
 const styles = {
-  page: 'pt-24 pb-12 px-6 md:px-12 min-h-screen',
+  page: 'pt-20 sm:pt-24 pb-12 px-3 sm:px-6 md:px-12 min-h-screen',
   inner: 'max-w-2xl mx-auto',
   backLink:
     'inline-flex items-center gap-2 text-sm font-bold text-foreground/40 hover:text-primary transition-colors mb-6 group cursor-pointer border-0 bg-transparent p-0 outline-none',
@@ -41,9 +42,7 @@ export function CommunityPostDetailView({ postId }: CommunityPostDetailViewProps
         </button>
 
         {isLoading ? (
-          <div className={styles.loading}>
-            <Loader2 className="animate-spin" size={24} />
-          </div>
+          <GLoaderSection minHeight={240} />
         ) : isNotFound || (!post && isError) ? (
           <div className={styles.notFound}>{t('postNotFound')}</div>
         ) : isError ? (

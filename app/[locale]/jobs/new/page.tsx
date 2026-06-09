@@ -9,12 +9,12 @@ import { JobOpeningForm } from '@/features/jobs/components/job-opening-form';
 import { useCreateJobMutation } from '@/features/jobs/services/jobs.service';
 
 const styles = {
-  page: "pt-24 pb-16 px-6 md:px-12 min-h-screen",
+  page: "pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen",
   inner: "max-w-3xl mx-auto",
-  backLink: "inline-flex items-center gap-2 text-sm font-bold text-foreground/40 hover:text-primary transition-colors mb-8 group cursor-pointer border-0 bg-transparent p-0 outline-none",
+  backLink: "inline-flex items-center gap-2 text-sm font-bold text-foreground/40 hover:text-primary transition-colors mb-6 sm:mb-8 group cursor-pointer border-0 bg-transparent p-0 outline-none",
   backIcon: "group-hover:-translate-x-0.5 transition-transform",
-  heading: "text-4xl md:text-5xl font-headline font-black text-foreground mb-2",
-  subheading: "text-foreground/50 mb-10",
+  heading: "text-3xl sm:text-4xl md:text-5xl font-headline font-black text-foreground mb-2",
+  subheading: "text-sm sm:text-base text-foreground/50 mb-6 sm:mb-10",
 };
 
 export default function NewJobPage() {

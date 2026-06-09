@@ -71,19 +71,19 @@ const ACTIVE_SPECIALIZATIONS = SPECIALIZATIONS.filter(spec =>
 // ─── Page styles ───────────────────────────────────────────────────────────────
 
 const styles = {
-  page: "pt-24 pb-16 px-6 md:px-12 min-h-screen",
+  page: "pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen",
   inner: "max-w-5xl mx-auto",
   pageHeader: "mb-12",
   tag: "inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mb-4",
-  title: "text-4xl md:text-5xl font-headline font-black text-foreground mb-3",
+  title: "text-3xl sm:text-4xl md:text-5xl font-headline font-black text-foreground mb-3",
   subtitle: "text-foreground/50 max-w-xl",
-  filterBar: "flex items-center gap-3 mb-8 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-  filterBtnActive: "px-4 py-2 rounded-xl text-sm font-bold uppercase whitespace-nowrap transition-all bg-primary text-primary-foreground shadow-[0_4px_15px_rgba(34,197,94,0.2)]",
-  filterBtnIdle: "px-4 py-2 rounded-xl text-sm font-bold uppercase whitespace-nowrap transition-all bg-white/5 text-foreground/50 hover:bg-white/10",
-  emptyState: "text-center py-24 text-foreground/30",
+  filterBar: "-mx-3 sm:mx-0 flex items-center gap-3 mb-6 sm:mb-8 overflow-x-auto pb-2 px-3 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+  filterBtnActive: "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase whitespace-nowrap transition-all bg-primary text-primary-foreground shadow-[0_4px_15px_rgba(34,197,94,0.2)]",
+  filterBtnIdle: "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase whitespace-nowrap transition-all bg-white/5 text-foreground/50 hover:bg-white/10",
+  emptyState: "text-center py-16 sm:py-24 text-foreground/30",
   emptyIcon: "mx-auto mb-4 opacity-20",
-  emptyText: "text-lg font-bold",
-  grid: "grid grid-cols-1 md:grid-cols-2 gap-6",
+  emptyText: "text-base sm:text-lg font-bold",
+  grid: "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6",
 };
 
 // ─── Page ──────────────────────────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
 
+import { GLoaderSection } from '@/components/ui/g-loader';
 import { JobCard } from './job-card';
 import { ApplyJobModal } from './apply-job-modal';
 import { EditJobModal } from './edit-job-modal';
@@ -40,11 +40,7 @@ export function JobsList({
   const [applyingJob, setApplyingJob] = useState<Job | null>(null);
 
   if (isLoading) {
-    return (
-      <div className={styles.state}>
-        <Loader2 size={24} className="animate-spin" />
-      </div>
-    );
+    return <GLoaderSection minHeight={240} />;
   }
 
   if (isError) {

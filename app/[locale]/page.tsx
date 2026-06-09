@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
-import { SpinnerIos20Regular } from "@fluentui/react-icons";
+import { GLoader } from "@/components/ui/g-loader";
 import { Users, Building2, Briefcase, Inbox, User, ArrowRight } from "lucide-react";
 import type { UserProfile } from "@/features/profile/types";
 import type { ComponentType } from "react";
@@ -77,7 +77,7 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className={styles.loaderWrapper}>
-        <SpinnerIos20Regular className="animate-spin text-primary" style={{ width: 40, height: 40 }} />
+        <GLoader size={72} />
       </div>
     );
   }

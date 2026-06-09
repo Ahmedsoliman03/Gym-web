@@ -41,10 +41,10 @@ interface CommunityPostCardProps {
 const styles = {
   card:
     'bg-surface rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/10',
-  header: 'flex items-center justify-between px-6 pt-5 pb-3',
-  authorWrap: 'flex items-center gap-3',
+  header: 'flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-3',
+  authorWrap: 'flex items-center gap-3 min-w-0',
   avatar:
-    'w-11 h-11 rounded-full overflow-hidden bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0',
+    'w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0',
   avatarImg: 'w-full h-full object-cover',
   authorName: 'font-bold text-foreground text-sm',
   authorMeta: 'text-[11px] text-foreground/40 uppercase font-bold tracking-wider',
@@ -57,25 +57,25 @@ const styles = {
     'flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-foreground/70 hover:text-white hover:bg-white/5 transition-colors text-left',
   dropdownDanger:
     'flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-red-500 hover:text-red-400 hover:bg-white/5 transition-colors text-left',
-  content: 'px-6 py-2 text-foreground/85 text-sm leading-relaxed whitespace-pre-wrap break-words',
+  content: 'px-4 sm:px-6 py-2 text-foreground/85 text-sm leading-relaxed whitespace-pre-wrap break-words',
   contentClamped:
-    'px-6 py-2 text-foreground/85 text-sm leading-relaxed whitespace-pre-wrap break-words line-clamp-3',
+    'px-4 sm:px-6 py-2 text-foreground/85 text-sm leading-relaxed whitespace-pre-wrap break-words line-clamp-3',
   seeMoreBtn:
-    'mx-6 text-primary text-xs font-black uppercase tracking-wider hover:underline',
+    'mx-4 sm:mx-6 text-primary text-xs font-black uppercase tracking-wider hover:underline',
   mediaWrap: 'mt-2',
   singleImage: 'w-full max-h-[600px] object-cover bg-black',
   mediaGrid: 'grid grid-cols-2 gap-1',
   mediaGridItem: 'aspect-square overflow-hidden bg-black',
   mediaGridImg: 'w-full h-full object-cover',
   metaBar:
-    'flex items-center gap-3 px-6 py-2 text-[11px] text-foreground/40 font-bold uppercase tracking-wider',
+    'flex items-center gap-3 px-4 sm:px-6 py-2 text-[11px] text-foreground/40 font-bold uppercase tracking-wider',
   metaSaves:
     'inline-flex items-center gap-1 text-primary/80',
   actions: 'grid grid-cols-3 border-t border-white/5',
   actionBtn:
-    'flex items-center justify-center gap-2 py-3 text-foreground/60 font-bold text-xs uppercase tracking-wider hover:bg-white/5 transition-colors',
+    'flex items-center justify-center gap-1.5 sm:gap-2 py-3 text-foreground/60 font-bold text-[11px] sm:text-xs uppercase tracking-wider hover:bg-white/5 transition-colors',
   actionBtnLiked:
-    'flex items-center justify-center gap-2 py-3 text-primary font-bold text-xs uppercase tracking-wider bg-primary/5 hover:bg-primary/10 transition-colors',
+    'flex items-center justify-center gap-1.5 sm:gap-2 py-3 text-primary font-bold text-[11px] sm:text-xs uppercase tracking-wider bg-primary/5 hover:bg-primary/10 transition-colors',
   countPill:
     'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none',
 };

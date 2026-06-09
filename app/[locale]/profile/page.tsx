@@ -5,11 +5,11 @@ import { mockProfiles, CoachProfile, GymProfile } from "@/features/profile/mock-
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
 import { ClientProfileView } from "@/features/profile/components/client-profile-view";
-import { SpinnerIos20Regular } from "@fluentui/react-icons";
+import { GLoader } from "@/components/ui/g-loader";
 
 const styles = {
   main: "min-h-screen bg-background text-foreground pb-20",
-  container: "max-w-7xl mx-auto px-4 md:px-8 pt-24",
+  container: "max-w-7xl mx-auto px-3 sm:px-4 md:px-8 pt-20 sm:pt-24",
   loaderWrapper: "min-h-screen flex items-center justify-center bg-background text-primary"
 };
 
@@ -19,7 +19,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className={styles.loaderWrapper}>
-        <SpinnerIos20Regular className="animate-spin text-primary" style={{ width: 40, height: 40 }} />
+        <GLoader size={72} />
       </div>
     );
   }

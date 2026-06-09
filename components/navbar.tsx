@@ -1,6 +1,6 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Menu, User, LogOut, Globe, X, Bookmark, Lock, Briefcase, FileText } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Lock, Briefcase, FileText, ChevronDown, MoreHorizontal } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChangePasswordModal } from "./change-password-modal";
@@ -11,8 +11,8 @@ import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 const styles = {
   // ... existing styles ...
   nav: (scrolled: boolean) => `
-    fixed top-0 left-0 right-0 z-[100] transition-all duration-300 px-6 md:px-12 py-4
-    ${scrolled ? "backdrop-blur-xl shadow-2xl shadow-black/50" : "bg-transparent"}
+    fixed top-0 left-0 right-0 z-[100] transition-all duration-300 px-4 sm:px-6 md:px-12 py-3 sm:py-4
+    ${scrolled ? "backdrop-blur-xl shadow-2xl shadow-black/50 bg-background/80" : "bg-transparent"}
   `,
   container: "max-w-7xl mx-auto flex items-center justify-between",
   logo: "flex items-center gap-2 group",
@@ -57,15 +57,15 @@ const styles = {
     ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
   `,
   mobileMenu: (isOpen: boolean) => `
-    md:hidden fixed inset-0 z-[100] bg-background/95 backdrop-blur-2xl p-8 flex flex-col transition-all duration-500
-    ${isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
+    md:hidden fixed inset-0 z-[100] bg-background/95 backdrop-blur-2xl px-6 pt-6 pb-8 flex flex-col transition-all duration-500
+    ${isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"}
   `,
-  mobileMenuHeader: "mb-12 flex items-center justify-between",
+  mobileMenuHeader: "mb-8 flex items-center justify-between",
   mobileCloseBtn: "p-2.5 text-foreground/40 hover:text-primary hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
-  mobileNav: "flex flex-col gap-6",
+  mobileNav: "flex flex-col gap-5",
   mobileNavLink: (active: boolean) => `
-    text-xl font-black transition-all uppercase flex items-center gap-4 group/mobile 
-    ${active ? 'text-primary' : 'text-foreground/40 hover:text-foreground'}
+    text-lg font-black transition-all uppercase flex items-center gap-4 group/mobile
+    ${active ? 'text-primary' : 'text-foreground/50 hover:text-foreground'}
   `,
   mobileLinkDot: "w-3 h-3 rounded-full bg-primary transform scale-0 group-hover/mobile:scale-100 transition-transform",
   mobileLogoutLink: "mt-8 pt-8 border-t border-white/5 text-xl font-black transition-all uppercase flex items-center gap-4 group/mobile text-red-500/60 hover:text-red-500",
@@ -80,6 +80,7 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [changePassOpen, setChangePassOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -169,6 +170,9 @@ export const Navbar = () => {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
+      // Collapse the "More" group whenever the drawer closes so the next open
+      // starts in the tidy default state.
+      setMobileMoreOpen(false);
     }
     return () => {
       document.body.style.overflow = 'unset';
@@ -221,7 +225,7 @@ export const Navbar = () => {
             {!isAuthPage && !isLoggedIn && (
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs hover:brightness-110 transition-all"
+                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[11px] sm:text-xs hover:brightness-110 transition-all"
               >
                 {t('signIn')}
               </Link>
@@ -236,7 +240,7 @@ export const Navbar = () => {
 
                 <div className={styles.divider} />
 
-                <div className="relative" ref={userMenuRef}>
+                <div className="relative hidden md:block" ref={userMenuRef}>
                   <button
                     className={styles.profileLink(pathname === '/profile', isRtl)}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -289,8 +293,8 @@ export const Navbar = () => {
                         <Bookmark size={16} />
                         {t('savedPosts')}
                       </Link>
-                     
-                     
+
+
                       {/* My Jobs is gym-only: only gyms can author job posts. */}
                       {profile?.userType === 'gym' && (
                         <Link
@@ -324,14 +328,18 @@ export const Navbar = () => {
                     </div>
                   )}
                 </div>
-
-                <button
-                  className={styles.mobileMenuBtn(isOpen)}
-                  onClick={() => setIsOpen(!isOpen)}
-                >
-                  {isOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
               </>
+            )}
+
+            {/* Hamburger — visible on mobile for everyone (logged in or not) */}
+            {!isAuthPage && (
+              <button
+                className={styles.mobileMenuBtn(isOpen)}
+                onClick={() => setIsOpen(!isOpen)}
+                aria-label="Open menu"
+              >
+                {isOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
             )}
           </div>
         </div>
@@ -366,35 +374,155 @@ export const Navbar = () => {
           </button>
         </div>
 
-        <div className={styles.mobileNav}>
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href as any}
-                className={styles.mobileNavLink(isActive)}
-                onClick={() => setIsOpen(false)}
+        <div className="flex-1 overflow-y-auto -mx-2 px-2">
+          {/* Logged-in profile chip — gives mobile users the same "who am I"
+              affordance that desktop gets from the avatar pill. */}
+          {isLoggedIn && (
+            <Link
+              href="/profile"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 mb-8 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all"
+            >
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/20 border border-primary/30 flex items-center justify-center text-primary shrink-0">
+                {profilePhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profilePhoto} alt={firstName} className="w-full h-full object-cover" />
+                ) : (
+                  <User size={22} />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="font-black uppercase text-sm truncate">{firstName}</div>
+                <div className="text-xs text-foreground/40 truncate">{t('profile')}</div>
+              </div>
+            </Link>
+          )}
+
+          <div className={styles.mobileNav}>
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href as any}
+                  className={styles.mobileNavLink(isActive)}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <div className={styles.mobileLinkDot} />
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Account section — only for signed-in users. The 4 secondary
+              account links collapse into a single "More" tile that the user
+              taps (or hovers) to expand. Logout stays separate so it's still
+              one tap away. */}
+          {isLoggedIn && (
+            <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-2">
+              <div
+                className="group/more rounded-xl border border-white/5 bg-white/[0.03] overflow-hidden"
+                onMouseEnter={() => setMobileMoreOpen(true)}
+                onMouseLeave={() => setMobileMoreOpen(false)}
               >
-                <div className={styles.mobileLinkDot} />
-                {link.label}
+                <button
+                  type="button"
+                  onClick={() => setMobileMoreOpen((v) => !v)}
+                  aria-expanded={mobileMoreOpen}
+                  className="flex items-center justify-between w-full px-3 py-3 text-base font-black uppercase text-foreground/70 hover:text-primary transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <MoreHorizontal size={18} />
+                    {t('more')}
+                  </span>
+                  <ChevronDown
+                    size={18}
+                    className={`transition-transform duration-300 ${mobileMoreOpen ? 'rotate-180 text-primary' : ''}`}
+                  />
+                </button>
+                <div
+                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                    mobileMoreOpen
+                      ? 'grid-rows-[1fr] opacity-100'
+                      : 'grid-rows-[0fr] opacity-0'
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="px-1 pb-2 flex flex-col">
+                      <button
+                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); setChangePassOpen(true); }}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all text-left"
+                      >
+                        <Lock size={16} />
+                        {t('changePassword')}
+                      </button>
+                      <Link
+                        href="/my-posts"
+                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                      >
+                        <FileText size={16} />
+                        {t('myPosts')}
+                      </Link>
+                      <Link
+                        href="/saved-posts"
+                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                      >
+                        <Bookmark size={16} />
+                        {t('savedPosts')}
+                      </Link>
+                      {profile?.userType === 'gym' && (
+                        <Link
+                          href="/my-jobs"
+                          onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                        >
+                          <Briefcase size={16} />
+                          {t('myJobs')}
+                        </Link>
+                      )}
+                      <Link
+                        href="/saved-jobs"
+                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                      >
+                        <Bookmark size={16} />
+                        {t('savedJobs')}
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={async () => {
+                  setIsOpen(false);
+                  setMobileMoreOpen(false);
+                  await handleLogout();
+                }}
+                className="flex items-center gap-3 w-full px-3 py-3 text-base font-black uppercase text-red-500/80 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all text-left cursor-pointer"
+              >
+                <LogOut size={18} />
+                {t('logout')}
+              </button>
+            </div>
+          )}
+
+          {/* Logged-out CTA */}
+          {!isLoggedIn && (
+            <div className="mt-8 pt-8 border-t border-white/5">
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-primary text-primary-foreground font-black uppercase text-sm hover:brightness-110 transition-all"
+              >
+                {t('signIn')}
               </Link>
-            );
-          })}
-          <button
-            onClick={async () => {
-              setIsOpen(false);
-              await handleLogout();
-            }}
-            className={`${styles.mobileLogoutLink} cursor-pointer w-full text-left`}
-          >
-            <LogOut size={24} />
-            {t('logout')}
-          </button>
+            </div>
+          )}
         </div>
-
-
-
       </div>
     </>
   );

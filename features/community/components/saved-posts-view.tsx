@@ -1,15 +1,15 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Loader2 } from 'lucide-react';
+import { GLoaderSection } from '@/components/ui/g-loader';
 import { PageHeader } from '@/components/ui/page-header';
 import { useSavedPosts } from '../services/community.service';
 import { CommunityPostCard } from './community-post-card';
 
 const styles = {
-  page: 'pt-24 pb-12 px-6 md:px-12',
+  page: 'pt-20 sm:pt-24 pb-12 px-3 sm:px-6 md:px-12',
   inner: 'max-w-2xl mx-auto',
-  feedList: 'flex flex-col gap-6',
+  feedList: 'flex flex-col gap-4 sm:gap-6',
   loading: 'flex items-center justify-center py-12 text-foreground/40',
   empty:
     'text-center py-16 text-foreground/40 font-bold uppercase tracking-wider text-sm',
@@ -34,9 +34,7 @@ export function SavedPostsView() {
 
       <div className={styles.inner}>
         {isLoading ? (
-          <div className={styles.loading}>
-            <Loader2 className="animate-spin" size={24} />
-          </div>
+          <GLoaderSection minHeight={200} />
         ) : isError ? (
           <div className={styles.errorBox}>{t('feedFailed')}</div>
         ) : posts.length === 0 ? (

@@ -3,17 +3,17 @@ import { Users, Search, MessageSquare, Cpu, Layout } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 
 const styles = {
-    container: "pt-24 pb-20 px-6 md:px-12 max-w-7xl mx-auto",
-    featuresGrid: "grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24 mt-12",
-    featureCard: "p-8 rounded-3xl bg-surface/50 border border-white/5 backdrop-blur-xl hover:border-primary/20 transition-all group animate-in fade-in zoom-in-95 duration-500",
-    featureIconWrapper: "w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform",
-    featureTitle: "text-xl font-bold mb-4",
+    container: "pt-20 sm:pt-24 pb-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto",
+    featuresGrid: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-16 sm:mb-24 mt-8 sm:mt-12",
+    featureCard: "p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface/50 border border-white/5 backdrop-blur-xl hover:border-primary/20 transition-all group animate-in fade-in zoom-in-95 duration-500",
+    featureIconWrapper: "w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform",
+    featureTitle: "text-lg sm:text-xl font-bold mb-3 sm:mb-4",
     featureDescription: "text-foreground/50 leading-relaxed text-sm",
-    summarySection: "p-12 md:p-20 rounded-[3rem] border border-primary/20 bg-primary/5 relative overflow-hidden",
+    summarySection: "p-6 sm:p-12 md:p-20 rounded-3xl sm:rounded-[3rem] border border-primary/20 bg-primary/5 relative overflow-hidden",
     summaryContent: "relative z-10 max-w-2xl",
-    summaryTitle: "text-4xl font-black mb-6 tracking-tight",
-    summaryDescription: "text-xl text-foreground/60 leading-relaxed mb-8",
-    tagWrapper: "flex flex-wrap gap-4",
+    summaryTitle: "text-2xl sm:text-3xl md:text-4xl font-black mb-4 sm:mb-6 tracking-tight",
+    summaryDescription: "text-base sm:text-lg md:text-xl text-foreground/60 leading-relaxed mb-6 sm:mb-8",
+    tagWrapper: "flex flex-wrap gap-2 sm:gap-4",
     tag: "px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-primary shadow-[0_0_15px_rgba(34,197,94,0.1)]",
     blobPrimary: "absolute top-0 right-0 w-96 h-96 bg-primary/20 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50",
     blobSecondary: "absolute bottom-0 left-0 w-64 h-64 bg-primary/10 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2 opacity-30"

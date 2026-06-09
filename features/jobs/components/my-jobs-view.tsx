@@ -6,8 +6,8 @@ import { useMyJobs } from '../services/jobs.service';
 import { JobsList } from './jobs-list';
 
 const styles = {
-  page: 'pt-24 pb-12 px-6 md:px-12',
-  inner: 'max-w-4xl mx-auto mt-12',
+  page: 'pt-20 sm:pt-24 pb-12 px-3 sm:px-6 md:px-12',
+  inner: 'max-w-4xl mx-auto mt-8 sm:mt-12',
 };
 
 export function MyJobsView() {

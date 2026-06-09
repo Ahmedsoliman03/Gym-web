@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/routing';
+import { GLoaderSection } from '@/components/ui/g-loader';
 import { useJob } from '../services/jobs.service';
 import { ApplyJobModal } from './apply-job-modal';
 import { JobCard } from './job-card';
@@ -15,7 +16,7 @@ interface JobDetailViewProps {
 }
 
 const styles = {
-  page: 'pt-24 pb-16 px-6 md:px-12 min-h-screen',
+  page: 'pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen',
   inner: 'max-w-4xl mx-auto',
   backLink:
     'inline-flex items-center gap-2 text-sm font-bold text-foreground/40 hover:text-primary transition-colors mb-8 group',
@@ -39,9 +40,7 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
         </Link>
 
         {isLoading ? (
-          <div className={styles.state}>
-            <Loader2 size={24} className="animate-spin" />
-          </div>
+          <GLoaderSection minHeight={320} />
         ) : isError || !job ? (
           <div className={styles.error}>{t('feedFailed')}</div>
         ) : (

@@ -1,24 +1,44 @@
 "use client";
 
-import { SpinnerIos20Regular } from "@fluentui/react-icons";
+import { useEffect } from "react";
+import { useRouter } from "@/i18n/routing";
+import { GLoader } from "@/components/ui/g-loader";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
 import { mockProfiles, GymProfile } from "@/features/profile/mock-data";
+import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 import { useGym } from "../services/gyms.service";
 import { GymDetailViewProps } from "../types";
 
 const styles = {
   main: "min-h-screen bg-background text-foreground pb-20",
-  container: "max-w-7xl mx-auto px-4 md:px-8 pt-24",
+  container: "max-w-7xl mx-auto px-3 sm:px-4 md:px-8 pt-20 sm:pt-24",
   loaderWrapper: "min-h-screen flex items-center justify-center bg-background text-primary",
 };
 
 export function GymDetailView({ id }: GymDetailViewProps) {
+  const router = useRouter();
+  const { profile } = useProfileUser();
   const { data: gym, isLoading, error } = useGym(id);
 
-  if (isLoading) {
+  // Self-route guard: if the logged-in gym is opening its own detail page,
+  // send them to /profile. Backends echo either the user account id or the
+  // inner gym profile id in `gym.id`, so match either.
+  const myUserId = profile?.id;
+  const myGymProfileId =
+    profile?.userType === 'gym' ? profile.profile?.id : undefined;
+  const isMe =
+    profile?.userType === 'gym' &&
+    !!id &&
+    (id === myUserId || id === myGymProfileId);
+
+  useEffect(() => {
+    if (isMe) router.replace('/profile');
+  }, [isMe, router]);
+
+  if (isMe || isLoading) {
     return (
       <div className={styles.loaderWrapper}>
-        <SpinnerIos20Regular className="animate-spin text-primary" style={{ width: 40, height: 40 }} />
+        <GLoader size={72} />
       </div>
     );
   }

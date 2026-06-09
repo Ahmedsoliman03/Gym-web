@@ -1,8 +1,8 @@
 const styles = {
-  container: "text-center mb-12 md:mb-16",
-  title: "font-headline text-5xl md:text-7xl lg:text-8xl font-black leading-none mb-6 text-glow uppercase",
+  container: "text-center mb-8 sm:mb-12 md:mb-16 px-2",
+  title: "font-headline text-[2.5rem] sm:text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] mb-4 sm:mb-6 text-glow uppercase break-words",
   highlight: "text-primary",
-  description: "font-body text-foreground/60 text-base md:text-lg max-w-3xl mx-auto leading-relaxed",
+  description: "font-body text-foreground/60 text-sm sm:text-base md:text-lg max-w-3xl mx-auto leading-relaxed",
   statsWrapper: "flex flex-col items-center gap-2 mt-8",
   stats: "flex items-center justify-center gap-4 py-2 px-6 bg-surface/50 rounded-full border border-white/5 backdrop-blur-sm",
   statsCount: "text-2xl font-black text-primary",
