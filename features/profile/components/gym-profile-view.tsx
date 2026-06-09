@@ -1,16 +1,19 @@
 "use client";
 
-import { GymProfile } from "../mock-data";
+import type { GymProfileViewModel } from "../types";
 import { MapPin, Users, MessageSquare, Settings } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { Plans } from "@/components/shared/membership-plans";
+import { EmptySection } from "@/components/shared/empty-section";
 import { useRef } from "react";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
+import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { Story } from "@/features/stories/types";
+import { ProfilePosts } from "./profile-posts";
 
 const styles = {
   container: "space-y-8",
@@ -53,12 +56,22 @@ export const GymProfileView = ({
   data,
   isOwner = true,
   stories,
+  profileId,
+  postsViewAllHref,
 }: {
-  data: GymProfile;
+  data: GymProfileViewModel;
   isOwner?: boolean;
   stories?: Story[];
+  /** The role-specific GymProfile.id used to fetch authored community posts.
+   *  Distinct from `data.id`, which holds the User.id for chat/messaging. */
+  profileId?: string;
+  /** Where the inline "See all posts" link points. Defaults inside
+   *  `ProfilePosts` to `/my-posts` (right for the owner's own /profile page);
+   *  detail pages should pass e.g. `/gyms/{id}/posts`. */
+  postsViewAllHref?: string;
 }) => {
   const t = useTranslations("Profile");
+  const t_root = useTranslations();
   const plansRef = useRef<HTMLDivElement>(null);
 
   const scrollToPlans = () => {
@@ -71,6 +84,14 @@ export const GymProfileView = ({
     duration: t('peakState'),
     image: img
   }));
+
+  // Translate each program by looking it up in SPECIALIZATIONS. Anything the
+  // table doesn't know about falls through as the raw API value so we don't
+  // accidentally hide custom programs the gym set up.
+  const translatedPrograms = (data.programs ?? []).map((program) => {
+    const match = SPECIALIZATIONS.find((s) => s.value === program);
+    return match ? t_root(match.label as any) : program;
+  });
 
   return (
     <div className={styles.container}>
@@ -133,7 +154,15 @@ export const GymProfileView = ({
               {t('goToPlans')}
             </button>
           </div>
-          <p className={styles.description}>{data.description}</p>
+          {data.description?.trim() ? (
+            <p className={styles.description}>{data.description}</p>
+          ) : (
+            <EmptySection
+              isOwner={isOwner}
+              visitorMessage={t('noAboutYet')}
+              variant="compact"
+            />
+          )}
         </div>
 
         {/* Slider of Gym Images */}
@@ -141,22 +170,44 @@ export const GymProfileView = ({
           transformations={galleryImages}
           title={t('facilityGallery')}
           hideOverlay={true}
+          isOwner={isOwner}
+          emptyVisitorMessage={t('noGalleryYet')}
         />
 
-        {/* Programs */}
+        {/* Recent posts — surfaced after the about + gallery cards so the
+            visitor sees content before scrolling further into programs. */}
+        {profileId && (
+          <ProfilePosts
+            profileType="gym"
+            profileId={profileId}
+            ownerName={data.name}
+            isOwner={isOwner}
+            viewAllHref={postsViewAllHref}
+          />
+        )}
+
+        {/* Programs — translated from API specializations */}
         <div className={styles.card}>
           <h2 className={styles.sectionTitle}>{t('activePrograms')}</h2>
-          <div className={styles.programsGrid}>
-            {data.programs.map(program => (
-              <div key={program} className={styles.programTag}>
-                {program}
-              </div>
-            ))}
-          </div>
+          {translatedPrograms.length === 0 ? (
+            <EmptySection
+              isOwner={isOwner}
+              visitorMessage={t('noProgramsYet')}
+              variant="compact"
+            />
+          ) : (
+            <div className={styles.programsGrid}>
+              {translatedPrograms.map((program, idx) => (
+                <div key={`${program}-${idx}`} className={styles.programTag}>
+                  {program}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <Plans ref={plansRef} plans={data.plans} />
+      <Plans ref={plansRef} plans={data.plans} isOwner={isOwner} />
     </div>
   );
 };

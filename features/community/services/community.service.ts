@@ -117,6 +117,45 @@ export const useMyPosts = (enabled = true) =>
         enabled,
     });
 
+// ─── Coach / Gym posts ───────────────────────────────────────────────────────
+//
+// `GET /api/community/coaches/{id}/posts` and `GET /api/community/gyms/{id}/posts`
+// per postman README. The id passed in is the coach/gym **profileId**
+// (CoachProfile.id / GymProfile.id) — not the User.id. Same envelope handling
+// as the saved/mine lists.
+
+export const getCoachPosts = async (coachProfileId: string): Promise<CommunityPost[]> => {
+    const { data } = await api.get<RawSavedPostsResponse>(
+        `/api/community/coaches/${coachProfileId}/posts`,
+    );
+    if (Array.isArray(data)) return data.filter(Boolean);
+    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
+    return items.filter(Boolean);
+};
+
+export const useCoachPosts = (coachProfileId: string | null, enabled = true) =>
+    useQuery<CommunityPost[]>({
+        queryKey: ['community', 'posts', 'coach', coachProfileId],
+        queryFn: () => getCoachPosts(coachProfileId as string),
+        enabled: enabled && !!coachProfileId,
+    });
+
+export const getGymPosts = async (gymProfileId: string): Promise<CommunityPost[]> => {
+    const { data } = await api.get<RawSavedPostsResponse>(
+        `/api/community/gyms/${gymProfileId}/posts`,
+    );
+    if (Array.isArray(data)) return data.filter(Boolean);
+    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
+    return items.filter(Boolean);
+};
+
+export const useGymPosts = (gymProfileId: string | null, enabled = true) =>
+    useQuery<CommunityPost[]>({
+        queryKey: ['community', 'posts', 'gym', gymProfileId],
+        queryFn: () => getGymPosts(gymProfileId as string),
+        enabled: enabled && !!gymProfileId,
+    });
+
 // ─── Post details ─────────────────────────────────────────────────────────────
 
 export const getPost = async (postId: string): Promise<CommunityPost> => {
@@ -266,6 +305,88 @@ const applyVoteTransition = (post: CommunityPost, nextVote: VoteValue): Communit
 };
 
 type FeedQueryData = { pages: FeedPage[]; pageParams: unknown[] } | undefined;
+type PostListQueryData = CommunityPost[] | undefined;
+
+/**
+ * Apply `transform` to one post (matched by id) inside every cached post-list
+ * — the paginated feed, every flat list (`mine`, `saved`, `coach`, `gym`, …),
+ * and the post-detail cache. Used by vote / save / share / comment mutations
+ * so the UI updates everywhere the post is rendered, without waiting for a
+ * refetch and regardless of which list it was loaded from.
+ *
+ * Snapshots are returned so the caller can roll them back on error.
+ */
+const updateAllPostCaches = (
+    queryClient: ReturnType<typeof useQueryClient>,
+    postId: string,
+    transform: (post: CommunityPost) => CommunityPost,
+): {
+    prevFeed: { key: unknown[]; data: FeedQueryData }[];
+    prevLists: { key: unknown[]; data: PostListQueryData }[];
+    prevPost: CommunityPost | undefined;
+} => {
+    const prevFeed: { key: unknown[]; data: FeedQueryData }[] = [];
+    queryClient
+        .getQueriesData<FeedQueryData>({ queryKey: ['community', 'feed'] })
+        .forEach(([key, data]) => {
+            prevFeed.push({ key: key as unknown[], data });
+        });
+    queryClient.setQueriesData<FeedQueryData>(
+        { queryKey: ['community', 'feed'] },
+        (curr) => {
+            if (!curr) return curr;
+            return {
+                ...curr,
+                pages: curr.pages.map((page) => ({
+                    ...page,
+                    items: page.items.map((p) => (p.id === postId ? transform(p) : p)),
+                })),
+            };
+        },
+    );
+
+    const prevLists: { key: unknown[]; data: PostListQueryData }[] = [];
+    queryClient
+        .getQueriesData<PostListQueryData>({ queryKey: ['community', 'posts'] })
+        .forEach(([key, data]) => {
+            prevLists.push({ key: key as unknown[], data });
+        });
+    queryClient.setQueriesData<PostListQueryData>(
+        { queryKey: ['community', 'posts'] },
+        (curr) => (curr ? curr.map((p) => (p.id === postId ? transform(p) : p)) : curr),
+    );
+
+    const prevPost = queryClient.getQueryData<CommunityPost>([
+        'community',
+        'post',
+        postId,
+    ]);
+    if (prevPost) {
+        queryClient.setQueryData<CommunityPost>(
+            ['community', 'post', postId],
+            transform(prevPost),
+        );
+    }
+
+    return { prevFeed, prevLists, prevPost };
+};
+
+/** Restore the snapshot returned by `updateAllPostCaches`. */
+const restorePostCaches = (
+    queryClient: ReturnType<typeof useQueryClient>,
+    postId: string,
+    snapshot: {
+        prevFeed: { key: unknown[]; data: FeedQueryData }[];
+        prevLists: { key: unknown[]; data: PostListQueryData }[];
+        prevPost: CommunityPost | undefined;
+    },
+) => {
+    snapshot.prevFeed.forEach(({ key, data }) => queryClient.setQueryData(key, data));
+    snapshot.prevLists.forEach(({ key, data }) => queryClient.setQueryData(key, data));
+    if (snapshot.prevPost !== undefined) {
+        queryClient.setQueryData(['community', 'post', postId], snapshot.prevPost);
+    }
+};
 
 export const useVotePostMutation = () => {
     const queryClient = useQueryClient();
@@ -273,52 +394,16 @@ export const useVotePostMutation = () => {
         mutationFn: votePost,
         onMutate: async ({ postId, vote }) => {
             await queryClient.cancelQueries({ queryKey: ['community', 'feed'] });
+            await queryClient.cancelQueries({ queryKey: ['community', 'posts'] });
             await queryClient.cancelQueries({ queryKey: ['community', 'post', postId] });
 
-            const prevFeed: { key: unknown[]; data: FeedQueryData }[] = [];
-            queryClient
-                .getQueriesData<FeedQueryData>({ queryKey: ['community', 'feed'] })
-                .forEach(([key, data]) => {
-                    prevFeed.push({ key: key as unknown[], data });
-                });
-            const prevPost = queryClient.getQueryData<CommunityPost>([
-                'community',
-                'post',
-                postId,
-            ]);
-
-            queryClient.setQueriesData<FeedQueryData>(
-                { queryKey: ['community', 'feed'] },
-                (curr) => {
-                    if (!curr) return curr;
-                    return {
-                        ...curr,
-                        pages: curr.pages.map((page) => ({
-                            ...page,
-                            items: page.items.map((p) =>
-                                p.id === postId ? applyVoteTransition(p, vote) : p,
-                            ),
-                        })),
-                    };
-                },
+            const snapshot = updateAllPostCaches(queryClient, postId, (p) =>
+                applyVoteTransition(p, vote),
             );
-
-            if (prevPost) {
-                queryClient.setQueryData<CommunityPost>(
-                    ['community', 'post', postId],
-                    applyVoteTransition(prevPost, vote),
-                );
-            }
-
-            return { prevFeed, prevPost };
+            return snapshot;
         },
         onError: (_err, { postId }, context) => {
-            context?.prevFeed.forEach(({ key, data }) => {
-                queryClient.setQueryData(key, data);
-            });
-            if (context?.prevPost !== undefined) {
-                queryClient.setQueryData(['community', 'post', postId], context.prevPost);
-            }
+            if (context) restorePostCaches(queryClient, postId, context);
         },
     });
 };
@@ -469,58 +554,102 @@ export const createComment = async ({
 };
 
 /**
- * Bump `commentsCount` on the matching post in every cached feed page and on
- * the post-detail cache by `delta` (positive for create, negative for delete).
- * Kept in sync with the comments list so the post card's counter updates the
- * moment a comment is added or removed, without a feed refetch round-trip.
+ * Bump `commentsCount` on the matching post everywhere it's cached — the
+ * paginated feed, every flat list (mine/saved/coach/gym/…), and the
+ * post-detail cache. `delta` is positive for create, negative for delete.
+ * The counter stays in lock-step with the comments list without a refetch.
  */
 const adjustPostCommentsCount = (
     queryClient: ReturnType<typeof useQueryClient>,
     postId: string,
     delta: number,
 ) => {
-    queryClient.setQueriesData<FeedQueryData>(
-        { queryKey: ['community', 'feed'] },
-        (curr) => {
-            if (!curr) return curr;
-            return {
-                ...curr,
-                pages: curr.pages.map((page) => ({
-                    ...page,
-                    items: page.items.map((p) =>
-                        p.id === postId
-                            ? { ...p, commentsCount: Math.max(0, (p.commentsCount ?? 0) + delta) }
-                            : p,
-                    ),
-                })),
-            };
-        },
-    );
-    const prevPost = queryClient.getQueryData<CommunityPost>([
-        'community',
-        'post',
-        postId,
-    ]);
-    if (prevPost) {
-        queryClient.setQueryData<CommunityPost>(['community', 'post', postId], {
-            ...prevPost,
-            commentsCount: Math.max(0, (prevPost.commentsCount ?? 0) + delta),
-        });
-    }
+    const bump = (p: CommunityPost): CommunityPost => ({
+        ...p,
+        commentsCount: Math.max(0, (p.commentsCount ?? 0) + delta),
+    });
+    updateAllPostCaches(queryClient, postId, bump);
+};
+
+/** Build a placeholder author from the cached current-user profile so an
+ *  optimistic comment can render with the right avatar / name before the
+ *  server responds. Returns a minimal fallback when the profile isn't
+ *  cached yet. */
+const optimisticAuthorFromCache = (
+    queryClient: ReturnType<typeof useQueryClient>,
+): PostAuthor => {
+    const profile = queryClient.getQueryData<{
+        id: string;
+        fullName: string;
+        userType: PostAuthor['userType'];
+        profile?: { id?: string; photo?: string | null };
+    }>(['profile']);
+    return {
+        id: profile?.id ?? 'me',
+        profileId: profile?.profile?.id ?? profile?.id ?? 'me',
+        fullName: profile?.fullName ?? '',
+        userType: profile?.userType ?? 'client',
+        photo: profile?.profile?.photo ?? null,
+    };
 };
 
 export const useCreateCommentMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: createComment,
-        onSuccess: (created, vars) => {
-            // Append the new comment into the cached list directly so the count
-            // and the rendered list stay consistent without a refetch flash.
+        // Insert a placeholder immediately so the input clears and the comment
+        // appears in the list without waiting for the server. Roll back on error.
+        onMutate: async (vars) => {
+            await queryClient.cancelQueries({
+                queryKey: ['community', 'comments', vars.postId],
+            });
+
+            const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            const optimistic: CommunityComment = {
+                id: tempId,
+                author: optimisticAuthorFromCache(queryClient),
+                body: vars.body,
+                upVotes: 0,
+                downVotes: 0,
+                score: 0,
+                myVote: null,
+                createdAt: new Date().toISOString(),
+                replies: [],
+            };
+
+            const prevComments = queryClient.getQueryData<CommunityComment[]>([
+                'community',
+                'comments',
+                vars.postId,
+            ]);
             queryClient.setQueryData<CommunityComment[] | undefined>(
                 ['community', 'comments', vars.postId],
-                (curr) => (curr ? [...curr, created] : curr),
+                (curr) => (curr ? [...curr, optimistic] : [optimistic]),
             );
             adjustPostCommentsCount(queryClient, vars.postId, 1);
+
+            return { tempId, prevComments };
+        },
+        onError: (_err, vars, context) => {
+            // Drop the placeholder and undo the count bump.
+            if (context) {
+                queryClient.setQueryData<CommunityComment[] | undefined>(
+                    ['community', 'comments', vars.postId],
+                    context.prevComments,
+                );
+                adjustPostCommentsCount(queryClient, vars.postId, -1);
+            }
+        },
+        onSuccess: (created, vars, context) => {
+            // Swap the placeholder for the real server-returned comment so the
+            // id/score/timestamps reflect the actual record.
+            queryClient.setQueryData<CommunityComment[] | undefined>(
+                ['community', 'comments', vars.postId],
+                (curr) =>
+                    curr
+                        ? curr.map((c) => (c.id === context?.tempId ? created : c))
+                        : [created],
+            );
         },
     });
 };
@@ -703,52 +832,16 @@ export const useSavePostMutation = () => {
         mutationFn: savePost,
         onMutate: async ({ postId, saved }) => {
             await queryClient.cancelQueries({ queryKey: ['community', 'feed'] });
+            await queryClient.cancelQueries({ queryKey: ['community', 'posts'] });
             await queryClient.cancelQueries({ queryKey: ['community', 'post', postId] });
 
-            const prevFeed: { key: unknown[]; data: FeedQueryData }[] = [];
-            queryClient
-                .getQueriesData<FeedQueryData>({ queryKey: ['community', 'feed'] })
-                .forEach(([key, data]) => {
-                    prevFeed.push({ key: key as unknown[], data });
-                });
-            const prevPost = queryClient.getQueryData<CommunityPost>([
-                'community',
-                'post',
-                postId,
-            ]);
-
-            queryClient.setQueriesData<FeedQueryData>(
-                { queryKey: ['community', 'feed'] },
-                (curr) => {
-                    if (!curr) return curr;
-                    return {
-                        ...curr,
-                        pages: curr.pages.map((page) => ({
-                            ...page,
-                            items: page.items.map((p) =>
-                                p.id === postId ? applySaveTransition(p, saved) : p,
-                            ),
-                        })),
-                    };
-                },
+            const snapshot = updateAllPostCaches(queryClient, postId, (p) =>
+                applySaveTransition(p, saved),
             );
-
-            if (prevPost) {
-                queryClient.setQueryData<CommunityPost>(
-                    ['community', 'post', postId],
-                    applySaveTransition(prevPost, saved),
-                );
-            }
-
-            return { prevFeed, prevPost };
+            return snapshot;
         },
         onError: (_err, { postId }, context) => {
-            context?.prevFeed.forEach(({ key, data }) => {
-                queryClient.setQueryData(key, data);
-            });
-            if (context?.prevPost !== undefined) {
-                queryClient.setQueryData(['community', 'post', postId], context.prevPost);
-            }
+            if (context) restorePostCaches(queryClient, postId, context);
         },
         onSuccess: (_data, { postId }) => {
             queryClient.invalidateQueries({ queryKey: ['community', 'posts', 'saved'] });
@@ -768,10 +861,9 @@ const applyShareIncrement = (post: CommunityPost): CommunityPost => ({
 });
 
 /**
- * Optimistic share ping. Increments the server-side `sharesCount` and updates
- * cached posts immediately so the UI reflects the action. Errors are silently
- * swallowed (the user already shared on their end) and the optimistic bump is
- * left in place; the next feed/detail refetch will reconcile.
+ * Optimistic share ping. Increments `sharesCount` everywhere the post is
+ * cached (feed pages, mine/saved/coach/gym lists, post detail) so the UI
+ * reflects the action without a refetch. Rolls back on error.
  */
 export const useSharePostMutation = () => {
     const queryClient = useQueryClient();
@@ -779,35 +871,14 @@ export const useSharePostMutation = () => {
         mutationFn: sharePost,
         onMutate: async (postId) => {
             await queryClient.cancelQueries({ queryKey: ['community', 'feed'] });
+            await queryClient.cancelQueries({ queryKey: ['community', 'posts'] });
             await queryClient.cancelQueries({ queryKey: ['community', 'post', postId] });
 
-            queryClient.setQueriesData<FeedQueryData>(
-                { queryKey: ['community', 'feed'] },
-                (curr) => {
-                    if (!curr) return curr;
-                    return {
-                        ...curr,
-                        pages: curr.pages.map((page) => ({
-                            ...page,
-                            items: page.items.map((p) =>
-                                p.id === postId ? applyShareIncrement(p) : p,
-                            ),
-                        })),
-                    };
-                },
-            );
-
-            const prevPost = queryClient.getQueryData<CommunityPost>([
-                'community',
-                'post',
-                postId,
-            ]);
-            if (prevPost) {
-                queryClient.setQueryData<CommunityPost>(
-                    ['community', 'post', postId],
-                    applyShareIncrement(prevPost),
-                );
-            }
+            const snapshot = updateAllPostCaches(queryClient, postId, applyShareIncrement);
+            return snapshot;
+        },
+        onError: (_err, postId, context) => {
+            if (context) restorePostCaches(queryClient, postId, context);
         },
     });
 };

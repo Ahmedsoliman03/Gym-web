@@ -6,10 +6,10 @@ import { CoachProfileHeader } from "./coach-profile-header";
 import { CoachPhilosophy } from "./coach-philosophy";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { CoachCredentials } from "./coach-credentials";
-// import { CoachContact } from "./coach-contact";
 import { Plans } from "@/components/shared/membership-plans";
-import { CoachProfile } from "../mock-data";
+import type { CoachProfileViewModel } from "../types";
 import type { Story } from "@/features/stories/types";
+import { ProfilePosts } from "./profile-posts";
 
 const styles = {
   container: "space-y-8",
@@ -23,10 +23,19 @@ export const CoachProfileView = ({
   data,
   isOwner = true,
   stories,
+  profileId,
+  postsViewAllHref,
 }: {
-  data: CoachProfile;
+  data: CoachProfileViewModel;
   isOwner?: boolean;
   stories?: Story[];
+  /** The role-specific CoachProfile.id used to fetch authored community posts.
+   *  Distinct from `data.id`, which holds the User.id for chat/messaging. */
+  profileId?: string;
+  /** Where the inline "See all posts" link points. Defaults inside
+   *  `ProfilePosts` to `/my-posts` (right for the owner's own /profile page);
+   *  detail pages should pass e.g. `/coaches/{id}/posts`. */
+  postsViewAllHref?: string;
 }) => {
   const t = useTranslations("Profile");
   const plansRef = useRef<HTMLDivElement>(null);
@@ -50,9 +59,25 @@ export const CoachProfileView = ({
         <CoachPhilosophy
           description={data.description}
           onGoToPlans={scrollToPlans}
+          isOwner={isOwner}
         />
-        <TransformationGallery transformations={data.transformations} />
+        <TransformationGallery
+          transformations={data.transformations}
+          isOwner={isOwner}
+          emptyVisitorMessage={t('noTransformationsYet')}
+        />
       </div>
+      {/* Recent posts — placed after the philosophy + transformations cards
+          so the visitor reads the coach's pitch before browsing posts. */}
+      {profileId && (
+        <ProfilePosts
+          profileType="coach"
+          profileId={profileId}
+          ownerName={data.name}
+          isOwner={isOwner}
+          viewAllHref={postsViewAllHref}
+        />
+      )}
       <TransformationGallery
         title={t('certifications')}
         hideOverlay
@@ -61,15 +86,17 @@ export const CoachProfileView = ({
           duration: "",
           image: cert
         }))}
+        isOwner={isOwner}
+        emptyVisitorMessage={t('noCertificationsYet')}
       />
-      <Plans ref={plansRef} plans={data.plans} />
+      <Plans ref={plansRef} plans={data.plans} isOwner={isOwner} />
 
 
       <div className={styles.gridWrapper}>
         <CoachCredentials
           specializations={data.credentials.specializations}
+          isOwner={isOwner}
         />
-        {/* <CoachContact coachName={data.name} /> */}
       </div>
 
     </div>

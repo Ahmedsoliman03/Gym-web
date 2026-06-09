@@ -5,6 +5,7 @@ import { ChevronRight, Maximize2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ImageLightbox } from "./image-lightbox";
+import { EmptySection } from "./empty-section";
 
 const styles = {
   container: "bg-surface p-8 rounded-3xl border border-white/5 overflow-hidden",
@@ -34,12 +35,22 @@ interface TransformationGalleryProps {
   transformations: Transformation[];
   title?: string;
   hideOverlay?: boolean;
+  isOwner?: boolean;
+  /** Sentence shown to non-owners when the gallery is empty (e.g.
+   *  `t('noTransformationsYet')`). Defaults to the transformations label. */
+  emptyVisitorMessage?: string;
+  /** Sentence shown to the owner when empty. Falls back to the generic
+   *  "improve your profile" prompt when omitted. */
+  emptyOwnerMessage?: string;
 }
 
 export const TransformationGallery = ({
   transformations,
   title,
   hideOverlay = false,
+  isOwner,
+  emptyVisitorMessage,
+  emptyOwnerMessage,
 }: TransformationGalleryProps) => {
   const t = useTranslations("Profile");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -70,7 +81,7 @@ export const TransformationGallery = ({
         <h2 className={styles.title}>
           {title || t('transformationGallery')}
         </h2>
-        {transformations.length > 2 && (
+        {validTransformations.length > 2 && (
           <div className={styles.controls}>
             <button
               onClick={() => scroll("left")}
@@ -88,6 +99,14 @@ export const TransformationGallery = ({
         )}
       </div>
 
+      {validTransformations.length === 0 ? (
+        <EmptySection
+          isOwner={isOwner}
+          visitorMessage={emptyVisitorMessage ?? t('noTransformationsYet')}
+          ownerMessage={emptyOwnerMessage}
+          variant="compact"
+        />
+      ) : (
       <div className={styles.galleryWrapper}>
         <div
           ref={scrollRef}
@@ -121,6 +140,7 @@ export const TransformationGallery = ({
           ))}
         </div>
       </div>
+      )}
 
       <ImageLightbox
         isOpen={lightbox.isOpen}

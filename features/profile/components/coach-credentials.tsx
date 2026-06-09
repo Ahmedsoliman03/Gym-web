@@ -1,6 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { SPECIALIZATIONS } from "@/constants/specializations";
+import { EmptySection } from "@/components/shared/empty-section";
+import type { CoachCredentialsProps } from "../types";
 
 const styles = {
   container: "bg-surface p-8 rounded-3xl border border-white/5 flex-1 min-w-[300px]",
@@ -13,32 +16,40 @@ const styles = {
   tag: "bg-primary/10 text-primary text-[10px] font-bold px-3 py-1.5 rounded-lg border border-primary/20",
 };
 
-interface CoachCredentialsProps {
-  specializations: string[];
-}
-
 export const CoachCredentials = ({
   specializations,
+  isOwner,
 }: CoachCredentialsProps) => {
   const t = useTranslations("Profile");
+  const t_root = useTranslations();
+
+  // Look each value up in SPECIALIZATIONS so the chip text follows the
+  // current locale. Unknown values fall through as the raw API string so
+  // custom specializations the coach set up never disappear.
+  const translated = specializations.map((spec) => {
+    const match = SPECIALIZATIONS.find((s) => s.value === spec);
+    return match ? t_root(match.label as any) : spec;
+  });
 
   return (
     <div className={styles.container}>
-      {/* Specializations */}
       <div className={styles.section}>
-        <h2 className={styles.title}>
-          {t('specializations')}
-        </h2>
-        <div className={styles.tagsWrapper}>
-          {specializations.map((spec, index) => (
-            <span
-              key={index}
-              className={styles.tag}
-            >
-              {spec}
-            </span>
-          ))}
-        </div>
+        <h2 className={styles.title}>{t("specializations")}</h2>
+        {translated.length === 0 ? (
+          <EmptySection
+            isOwner={isOwner}
+            visitorMessage={t("noSpecializationsYet")}
+            variant="compact"
+          />
+        ) : (
+          <div className={styles.tagsWrapper}>
+            {translated.map((spec, index) => (
+              <span key={index} className={styles.tag}>
+                {spec}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

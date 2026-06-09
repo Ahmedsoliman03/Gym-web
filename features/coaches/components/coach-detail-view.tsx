@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { GLoader } from "@/components/ui/g-loader";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
-import { mockProfiles, CoachProfile } from "@/features/profile/mock-data";
-import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
+import type { CoachProfileViewModel } from "@/features/profile/types";
+import { useProfileLink } from "@/features/profile/hooks/useProfileLink";
 import { useCoach } from "../services/coaches.service";
 import { CoachDetailViewProps } from "../types";
 
@@ -17,26 +17,16 @@ const styles = {
 
 export function CoachDetailView({ id }: CoachDetailViewProps) {
   const router = useRouter();
-  const { profile } = useProfileUser();
   const { data: coach, isLoading, error } = useCoach(id);
-
-  // If the detail page id matches the logged-in user, send them to /profile.
-  // The backend echoes either the user account id or the inner profile id in
-  // `coach.id` depending on endpoint, so match either one (mirrors the same
-  // dual-id check used in job-card.tsx for gym ownership).
-  const myUserId = profile?.id;
-  const myCoachProfileId =
-    profile?.userType === 'coach' ? profile.profile?.id : undefined;
-  const isMe =
-    profile?.userType === 'coach' &&
-    !!id &&
-    (id === myUserId || id === myCoachProfileId);
+  // Dual-id self-check lives in the hook (matches user-id or inner profile id).
+  // We only act on it when the URL belongs to a coach detail page.
+  const { isSelf } = useProfileLink(id, 'coach');
 
   useEffect(() => {
-    if (isMe) router.replace('/profile');
-  }, [isMe, router]);
+    if (isSelf) router.replace('/profile');
+  }, [isSelf, router]);
 
-  if (isMe || isLoading) {
+  if (isSelf || isLoading) {
     return (
       <div className={styles.loaderWrapper}>
         <GLoader size={72} />
@@ -52,37 +42,43 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
     );
   }
 
-  const baseCoach = mockProfiles["marcus-thorne"] as CoachProfile;
-  const mappedCoach: CoachProfile = {
-    ...baseCoach,
+
+  const mappedCoach: CoachProfileViewModel = {
     id: coach.id,
-    name: coach.fullName || baseCoach.name,
-    image: coach.photo || baseCoach.image,
-    description: coach.description || baseCoach.description,
+    type: "coach",
+    name: coach.fullName || "",
+    image: coach.photo || "/images/profile/marcus.png",
+    description: coach.description || "",
     stats: [
       {
         label: "EXP",
-        value: coach.experienceYears !== undefined && coach.experienceYears !== null
-          ? `${coach.experienceYears}y`
-          : baseCoach.stats[0].value,
+        value: coach.experienceYears != null ? `${coach.experienceYears}y` : "—",
       },
-      { label: "CLIENTS", value: baseCoach.stats[1].value },
+      { label: "CLIENTS", value: "—" },
     ],
+    transformations: (coach.transformations ?? []).map((tr) => ({
+      clientName: tr.clientName,
+      duration: tr.duration ?? '',
+      image: typeof tr.image === 'string' ? tr.image : '',
+    })),
     credentials: {
-      certifications: coach.certifications && coach.certifications.length > 0
-        ? coach.certifications.map((cert) => cert.file)
-        : baseCoach.credentials.certifications,
-      specializations: coach.specialization && coach.specialization.length > 0
-        ? coach.specialization
-        : baseCoach.credentials.specializations,
+    
+      certifications: (coach.certifications ?? []).map((cert) => cert.file),
+      specializations: coach.specialization ?? [],
     },
-    type: "coach" as const,
+    plans: coach.plans ?? [],
   };
 
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <CoachProfileView data={mappedCoach} isOwner={false} stories={coach.stories} />
+        <CoachProfileView
+          data={mappedCoach}
+          isOwner={false}
+          stories={coach.stories}
+          profileId={coach.id}
+          postsViewAllHref={`/coaches/${coach.id}/posts`}
+        />
       </div>
     </main>
   );

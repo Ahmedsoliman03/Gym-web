@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X, Plus, ChevronRight, Maximize2 } from "lucide-react";
 import { ImageLightbox } from "@/components/shared/image-lightbox";
+import type { EditableImage, GalleryEditorProps } from "@/features/profile/types";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -17,11 +18,13 @@ const styles = {
   addBtn: "min-w-[200px] md:min-w-[240px] aspect-square flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/5 rounded-2xl text-foreground/20 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all group active:scale-95",
 };
 
-interface GalleryEditorProps {
-  images: string[];
-  onChange: (images: string[]) => void;
-  title?: string;
-}
+/** Build the preview URL for a row: server-hosted items expose `url`,
+ *  freshly picked Files use an object URL. */
+const previewSrc = (img: EditableImage): string => {
+  if (img.url) return img.url;
+  if (img.file) return URL.createObjectURL(img.file);
+  return '';
+};
 
 export const GalleryEditor = ({
   images,
@@ -30,11 +33,22 @@ export const GalleryEditor = ({
 }: GalleryEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
-  
+
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     index: 0
   });
+
+  // Materialize preview URLs once per render and revoke object URLs on
+  // unmount so picked Files don't leak blobs.
+  const previews = useMemo(() => images.map(previewSrc), [images]);
+  useEffect(() => {
+    return () => {
+      previews.forEach((src) => {
+        if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+      });
+    };
+  }, [previews]);
 
   const scroll = (direction: "left" | "right") => {
     if (sliderRef.current) {
@@ -45,15 +59,11 @@ export const GalleryEditor = ({
 
   const handleAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          onChange([...images, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
+    if (!files) return;
+    const next: EditableImage[] = Array.from(files).map((file) => ({ file }));
+    onChange([...images, ...next]);
+    // Allow re-picking the same file by resetting the input value.
+    e.target.value = '';
   };
 
   const handleRemove = (index: number) => {
@@ -86,7 +96,7 @@ export const GalleryEditor = ({
 
       <div ref={sliderRef} className={styles.grid}>
         {images.map((img, idx) => (
-          <div key={idx} className={styles.card}>
+          <div key={img.id ?? `new-${idx}`} className={styles.card}>
             <button
               onClick={() => handleRemove(idx)}
               className={styles.deleteBtn}
@@ -95,7 +105,7 @@ export const GalleryEditor = ({
             </button>
 
             <div className={styles.image} onClick={() => openLightbox(idx)}>
-              <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+              <img src={previews[idx]} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
               <div className={styles.imageOverlay}>
                 <Maximize2 className="text-white" size={24} />
               </div>
@@ -118,10 +128,10 @@ export const GalleryEditor = ({
         </label>
       </div>
 
-      <ImageLightbox 
+      <ImageLightbox
         isOpen={lightbox.isOpen}
         currentIndex={lightbox.index}
-        images={images}
+        images={previews}
         onClose={() => setLightbox(prev => ({ ...prev, isOpen: false }))}
       />
 

@@ -9,13 +9,15 @@ import {
   MessageCircle,
   Flag,
   MoreVertical,
+  Loader2,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/routing';
 import { Modal } from '@/components/ui/modal';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
-import type { CommentVoter, PostAuthor } from '../types';
+import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
+import type { CommentVoter } from '../types';
 import {
   useComments,
   useCreateCommentMutation,
@@ -86,38 +88,55 @@ const styles = {
 };
 
 /**
- * Resolve a public profile link for a comment / reply author, matching the
- * routing rule used elsewhere in the app (coach cards, gym cards). Clients
- * have no public detail page, so return `null` and render plain text.
+ * Single voter row in the upvoters sheet. Lives at the component level so it
+ * can call the `useProfileLink` hook per author (hooks can't run in a loop
+ * inside the sheet's body).
  */
-function getAuthorHref(
-  author: PostAuthor | undefined,
-  currentUserId?: string,
-): string | null {
-  if (!author?.profileId) return null;
-  // If the viewer authored the comment, link to their own profile page.
-  if (currentUserId && author.profileId === currentUserId) return '/profile';
-  if (author.userType === 'coach') return `/coaches/${author.profileId}`;
-  if (author.userType === 'gym') return `/gyms/${author.profileId}`;
-  return null;
+function VoterRow({
+  voter,
+  onClick,
+}: {
+  voter: CommentVoter;
+  onClick: () => void;
+}) {
+  const { href } = useProfileLink(voter.user.profileId, voter.user.userType);
+  const photo = voter.user.photo;
+  const row = (
+    <>
+      <div className={styles.voterAvatar}>
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo} alt={voter.user.fullName} className={styles.voterAvatarImg} />
+        ) : (
+          <User size={18} />
+        )}
+      </div>
+      <span className={styles.voterName}>{voter.user.fullName}</span>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={styles.voterRow} onClick={onClick}>
+      {row}
+    </Link>
+  ) : (
+    <div className={styles.voterRow}>{row}</div>
+  );
 }
 
 /**
  * Bottom-sheet style modal listing the people who upvoted a comment. Each row
- * is a link to the voter's public profile (resolved the same way comment
- * author names are linked), so clicking a row navigates straight there.
+ * resolves its destination through the shared profile-link hook, so clicking
+ * a row navigates straight to that person's detail / profile page.
  */
 function UpvotersSheet({
   isOpen,
   onClose,
   voters,
-  currentUserId,
   onVoterClick,
 }: {
   isOpen: boolean;
   onClose: () => void;
   voters: CommentVoter[];
-  currentUserId?: string;
   /** Closes the sheet when a row is clicked — the Link inside still navigates. */
   onVoterClick: () => void;
 }) {
@@ -134,34 +153,11 @@ function UpvotersSheet({
         <p className={styles.voterEmpty}>{t('noUpvoters')}</p>
       ) : (
         <ul className={styles.votersList}>
-          {voters.map((v, idx) => {
-            const href = getAuthorHref(v.user, currentUserId);
-            const photo = v.user.photo;
-            const row = (
-              <>
-                <div className={styles.voterAvatar}>
-                  {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo} alt={v.user.fullName} className={styles.voterAvatarImg} />
-                  ) : (
-                    <User size={18} />
-                  )}
-                </div>
-                <span className={styles.voterName}>{v.user.fullName}</span>
-              </>
-            );
-            return (
-              <li key={`${v.user.id}-${idx}`}>
-                {href ? (
-                  <Link href={href} className={styles.voterRow} onClick={onVoterClick}>
-                    {row}
-                  </Link>
-                ) : (
-                  <div className={styles.voterRow}>{row}</div>
-                )}
-              </li>
-            );
-          })}
+          {voters.map((v, idx) => (
+            <li key={`${v.user.id}-${idx}`}>
+              <VoterRow voter={v} onClick={onVoterClick} />
+            </li>
+          ))}
         </ul>
       )}
     </Modal>
@@ -214,7 +210,12 @@ function CommentRow({
   const canDelete = isMine || !!isPostOwner;
   const photo = comment.author?.photo;
 
-  const authorHref = getAuthorHref(comment.author, currentUserId);
+  // Shared self-aware link resolver — clients return null so the name stays
+  // un-clickable, coaches/gyms go to their detail page, self → /profile.
+  const { href: authorHref } = useProfileLink(
+    comment.author?.profileId,
+    comment.author?.userType,
+  );
   const upVoted = comment.myVote === 'up';
   const score = comment.score ?? (comment.upVotes ?? 0) - (comment.downVotes ?? 0);
   const replyCount = comment.replies?.length ?? 0;
@@ -428,7 +429,6 @@ function CommentRow({
         isOpen={votersOpen}
         onClose={() => setVotersOpen(false)}
         voters={comment.upVoters ?? []}
-        currentUserId={currentUserId}
         onVoterClick={() => setVotersOpen(false)}
       />
     </div>
@@ -449,6 +449,10 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
     e.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed || createMutation.isPending) return;
+    // The mutation's `onMutate` inserts the comment optimistically into the
+    // list so the user sees it right away. We keep the draft (and button
+    // disabled via `isPending`) until the server confirms — on success we
+    // clear the input, on failure we leave it filled so the user can retry.
     try {
       await createMutation.mutateAsync({ postId, body: trimmed });
       setDraft('');
@@ -483,8 +487,13 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
           className={styles.sendBtn}
           disabled={!draft.trim() || createMutation.isPending}
           aria-label={t('sendComment')}
+          aria-busy={createMutation.isPending}
         >
-          <Send size={14} />
+          {createMutation.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Send size={14} />
+          )}
         </button>
       </form>
 

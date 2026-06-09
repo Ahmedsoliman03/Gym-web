@@ -1,25 +1,22 @@
 "use client";
 
-import { CoachProfile, GymProfile } from "../mock-data";
+import type { EditProfileFormProps } from "../types";
+import { ClientEditForm } from "./client-edit-form";
 import { CoachEditForm } from "./coach-edit-form";
 import { GymEditForm } from "./gym-edit-form";
 
-interface EditProfileFormProps {
-  profile: CoachProfile | GymProfile;
-}
-
 export const EditProfileForm = ({ profile }: EditProfileFormProps) => {
-  if (profile.type === 'coach') {
+  if (profile.userType === 'coach') {
     return <CoachEditForm profile={profile} />;
   }
 
-  if (profile.type === 'gym') {
+  if (profile.userType === 'gym') {
     return <GymEditForm profile={profile} />;
   }
 
-  return (
-    <div className="flex items-center justify-center p-20 text-foreground/40">
-      Invalid Profile Type
-    </div>
-  );
+  if (profile.userType === 'client') {
+    return <ClientEditForm profile={profile} />;
+  }
+
+  return null;
 };

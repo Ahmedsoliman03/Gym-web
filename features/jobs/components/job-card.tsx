@@ -8,9 +8,11 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+import { Link } from '@/i18n/routing';
 import { SharePostModal } from '@/components/shared/share-post-modal';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
+import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import {
     useCloseJobMutation,
     useDeleteJobMutation,
@@ -35,7 +37,9 @@ const styles = {
     cardHeader: "flex items-center justify-between p-4 sm:p-6",
     authorWrapper: "flex items-center gap-3 sm:gap-4 min-w-0",
     avatar: "w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-primary/20 bg-primary/10 flex items-center justify-center text-primary shrink-0 overflow-hidden",
+    avatarLink: "w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-primary/20 bg-primary/10 flex items-center justify-center text-primary shrink-0 overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all",
     authorName: "font-bold text-foreground truncate",
+    authorNameLink: "font-bold text-foreground truncate hover:text-primary hover:underline transition-colors",
     authorMeta: "text-xs text-foreground/40 truncate",
     menuButton: "text-foreground/40 hover:text-primary transition-colors p-2 rounded-lg hover:bg-white/5",
     imageWrapper: "relative aspect-video md:aspect-[21/9] overflow-hidden bg-[#0D121F]",
@@ -181,6 +185,8 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
     const gym = job.gym;
     const gymName = gym?.gymName ?? '';
     const gymLocation = [gym?.area, gym?.city].filter(Boolean).join(' · ');
+    // Click-through to the gym's detail page (or /profile if it's mine).
+    const { href: gymHref } = useProfileLink(gym?.id, 'gym');
 
     return (
         <>
@@ -192,16 +198,33 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                 {/* Card header — gym identity */}
                 <div className={styles.cardHeader}>
                     <div className={styles.authorWrapper}>
-                        <div className={styles.avatar}>
-                            {gym?.mainPhoto ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={gym.mainPhoto} alt={gymName} className="w-full h-full object-cover" />
+                        {gymHref ? (
+                            <Link href={gymHref} className={styles.avatarLink} aria-label={gymName}>
+                                {gym?.mainPhoto ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={gym.mainPhoto} alt={gymName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <Building2 size={18} />
+                                )}
+                            </Link>
+                        ) : (
+                            <div className={styles.avatar}>
+                                {gym?.mainPhoto ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={gym.mainPhoto} alt={gymName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <Building2 size={18} />
+                                )}
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            {gymHref ? (
+                                <Link href={gymHref} className={styles.authorNameLink}>
+                                    <h4 className="m-0">{gymName}</h4>
+                                </Link>
                             ) : (
-                                <Building2 size={18} />
+                                <h4 className={styles.authorName}>{gymName}</h4>
                             )}
-                        </div>
-                        <div>
-                            <h4 className={styles.authorName}>{gymName}</h4>
                             <p className={styles.authorMeta}>
                                 {gymLocation || formatRelativeTime(job.createdAt, t('justNow'))}
                                 {gymLocation && job.createdAt

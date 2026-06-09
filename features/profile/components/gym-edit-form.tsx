@@ -1,51 +1,103 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, Save } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { GalleryEditor } from "./gallery-editor";
-import { PlansEditor } from "@/components/shared/plans-editor";
-import { GymProfile, GymPlan } from "../mock-data";
-import { formStyles as styles } from "@/components/shared/form-styles";
+import toast from "react-hot-toast";
 
-interface GymEditFormProps {
-  profile: GymProfile;
-}
+import { useRouter } from "@/i18n/routing";
+import { GalleryEditor } from "./gallery-editor";
+import {
+  PlansEditor,
+  validatePlans,
+  type PlanErrors,
+} from "@/components/shared/plans-editor";
+import { CustomMultiSelect } from "@/components/shared/custom-multi-select";
+import { SPECIALIZATIONS } from "@/constants/specializations";
+import { formStyles as styles } from "@/components/shared/form-styles";
+import type {
+  EditableImage,
+  GymEditFormProps,
+  ProfilePlan,
+} from "../types";
+import {
+  buildEditProfileFormData,
+  useUpdateProfileMutation,
+} from "../services/profile.service";
 
 export const GymEditForm = ({ profile }: GymEditFormProps) => {
   const t = useTranslations("Profile");
+  const t_root = useTranslations();
   const router = useRouter();
+  const updateMutation = useUpdateProfileMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const inner = profile.profile;
+  const initialPhoto = inner?.mainPhoto ?? inner?.photo ?? null;
+
   const [formData, setFormData] = useState({
-    name: profile.name,
-    image: profile.image,
-    description: profile.description,
-    gymImages: profile.images,
-    gymPlans: profile.plans || [] as GymPlan[]
+    name: inner?.gymName ?? profile.fullName ?? '',
+    description: inner?.description ?? '',
+    specializations: inner?.specializations ?? [],
+    gymImages: (inner?.images ?? []).map<EditableImage>((g) => ({
+      id: g.id,
+      url: g.image,
+    })),
+    plans: (inner?.plans ?? []) as ProfilePlan[],
   });
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
+  // Plan-row validation errors, set after a failed save attempt and cleared
+  // whenever the user touches the plans list again.
+  const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
-  const [imagePreview, setImagePreview] = useState<string | null>(profile.image);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: 'name' | 'description', value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        setFormData(prev => ({ ...prev, image: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    setPhotoFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    e.target.value = '';
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
+  const triggerFileInput = () => fileInputRef.current?.click();
+
+  const handleSave = async () => {
+    if (updateMutation.isPending) return;
+    // Drop blank rows and enforce required fields on touched ones before
+    // building the FormData — the API never sees half-finished plan cards.
+    const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
+    if (hasErrors) {
+      // No toast — the inline "Required" labels plus the shake animation
+      // on the offending plan cards are the only feedback the user needs.
+      setPlanErrors(errors);
+      return;
+    }
+    setPlanErrors({});
+    const payload = buildEditProfileFormData({
+      role: 'gym',
+      values: {
+        name: formData.name,
+        image: photoFile,
+        description: formData.description,
+        specializations: formData.specializations,
+        gymImages: formData.gymImages,
+        plans: sanitized,
+      },
+    });
+    try {
+      await updateMutation.mutateAsync(payload);
+      toast.success(t('saveSuccess'));
+      router.push('/profile');
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } } | undefined)
+          ?.response?.data?.message ?? t('saveFailed');
+      toast.error(message);
+    }
   };
 
   return (
@@ -69,6 +121,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
           <div className={styles.avatarCircle} onClick={triggerFileInput}>
             <div className={styles.avatarInner}>
               {imagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={imagePreview} alt="Profile" className={styles.avatarImage} />
               ) : (
                 <div className={styles.avatarPlaceholder}>{t('noImage')}</div>
@@ -104,29 +157,51 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
                 className={styles.textarea}
               />
             </div>
+            <div className={`${styles.inputWrapper} md:col-span-2`}>
+              <label className={styles.label}>{t('specializations')}</label>
+              <CustomMultiSelect
+                value={formData.specializations}
+                onChange={(vals) =>
+                  setFormData((prev) => ({ ...prev, specializations: vals }))
+                }
+                options={SPECIALIZATIONS.map((spec) => ({
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  label: t_root(spec.label as any) || spec.fallback,
+                  value: spec.value,
+                }))}
+                placeholder={t_root('Auth.primarySpecialization')}
+              />
+            </div>
           </div>
         </div>
 
         <GalleryEditor
           images={formData.gymImages}
-          onChange={(newImages) => setFormData(prev => ({ ...prev, gymImages: newImages }))}
+          onChange={(next) => setFormData((prev) => ({ ...prev, gymImages: next }))}
         />
 
         <PlansEditor
-          plans={formData.gymPlans}
-          onChange={(newPlans) => setFormData(prev => ({ ...prev, gymPlans: newPlans }))}
+          plans={formData.plans}
+          errors={planErrors}
+          onChange={(next) => {
+            setFormData((prev) => ({ ...prev, plans: next as ProfilePlan[] }));
+            // Clear stale errors as soon as the user edits anything in the
+            // plans list — re-validation runs again on the next Save click.
+            if (Object.keys(planErrors).length > 0) setPlanErrors({});
+          }}
         />
       </div>
 
       <div className={styles.actions}>
-        <button className={styles.saveBtn}>
-          <Save size={18} />
-          {t('saveProfile')}
-        </button>
         <button
-          onClick={() => router.back()}
-          className={styles.cancelBtn}
+          onClick={handleSave}
+          disabled={updateMutation.isPending}
+          className={styles.saveBtn}
         >
+          <Save size={18} />
+          {updateMutation.isPending ? t('saving') : t('saveProfile')}
+        </button>
+        <button onClick={() => router.back()} className={styles.cancelBtn}>
           {t('cancelChanges')}
         </button>
       </div>

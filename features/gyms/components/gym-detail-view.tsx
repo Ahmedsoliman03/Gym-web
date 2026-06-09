@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { GLoader } from "@/components/ui/g-loader";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
-import { mockProfiles, GymProfile } from "@/features/profile/mock-data";
-import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
+import type { GymProfileViewModel } from "@/features/profile/types";
+import { useProfileLink } from "@/features/profile/hooks/useProfileLink";
 import { useGym } from "../services/gyms.service";
 import { GymDetailViewProps } from "../types";
 
@@ -17,25 +17,15 @@ const styles = {
 
 export function GymDetailView({ id }: GymDetailViewProps) {
   const router = useRouter();
-  const { profile } = useProfileUser();
   const { data: gym, isLoading, error } = useGym(id);
-
-  // Self-route guard: if the logged-in gym is opening its own detail page,
-  // send them to /profile. Backends echo either the user account id or the
-  // inner gym profile id in `gym.id`, so match either.
-  const myUserId = profile?.id;
-  const myGymProfileId =
-    profile?.userType === 'gym' ? profile.profile?.id : undefined;
-  const isMe =
-    profile?.userType === 'gym' &&
-    !!id &&
-    (id === myUserId || id === myGymProfileId);
+  // Dual-id self-check lives in the hook (matches user-id or inner profile id).
+  const { isSelf } = useProfileLink(id, 'gym');
 
   useEffect(() => {
-    if (isMe) router.replace('/profile');
-  }, [isMe, router]);
+    if (isSelf) router.replace('/profile');
+  }, [isSelf, router]);
 
-  if (isMe || isLoading) {
+  if (isSelf || isLoading) {
     return (
       <div className={styles.loaderWrapper}>
         <GLoader size={72} />
@@ -51,23 +41,32 @@ export function GymDetailView({ id }: GymDetailViewProps) {
     );
   }
 
-  const baseGym = mockProfiles["elite-hq"] as GymProfile;
-  const mappedGym: GymProfile = {
-    ...baseGym,
+  // No mock fallbacks: empty fields render through the section empty-states.
+  // `isOwner={false}` below so visitor-facing copy is used instead of the
+  // "edit your profile" CTA reserved for the owner's own /profile page.
+  const mappedGym: GymProfileViewModel = {
     id: gym.id,
-    name: gym.gymName || baseGym.name,
-    location: gym.location || baseGym.location,
-    memberCount: gym.memberCount !== undefined && gym.memberCount !== null
-      ? gym.memberCount.toString()
-      : baseGym.memberCount,
-    image: gym.mainPhoto || baseGym.image,
-    type: "gym" as const,
+    type: "gym",
+    name: gym.gymName || "",
+    location: gym.location || "",
+    memberCount: gym.memberCount != null ? gym.memberCount.toString() : "",
+    description: gym.description || "",
+    image: gym.mainPhoto || gym.photo || "/images/profile/gym-logo.png",
+    images: (gym.images ?? []).map((g) => g.image),
+    programs: gym.specializations ?? [],
+    plans: gym.plans ?? [],
   };
 
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <GymProfileView data={mappedGym} isOwner={false} stories={gym.stories} />
+        <GymProfileView
+          data={mappedGym}
+          isOwner={false}
+          stories={gym.stories}
+          profileId={gym.id}
+          postsViewAllHref={`/gyms/${gym.id}/posts`}
+        />
       </div>
     </main>
   );

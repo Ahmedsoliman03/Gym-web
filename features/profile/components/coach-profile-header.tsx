@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
-import type { Story } from "@/features/stories/types";
+import type { CoachProfileHeaderProps } from "../types";
 
 const styles = {
   // ... existing styles ...
@@ -30,18 +30,6 @@ const styles = {
   primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
   secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
 };
-
-interface CoachProfileHeaderProps {
-  name: string;
-  stats: {
-    label: string;
-    value: string;
-  }[];
-  image: string;
-  isOwner?: boolean;
-  coachId?: string;
-  stories?: Story[];
-}
 
 export const CoachProfileHeader = ({
   name,
@@ -82,10 +70,7 @@ export const CoachProfileHeader = ({
 
         {/* Info */}
         <div className={styles.infoWrapper}>
-          <div className={styles.titleAndTier}>
-            <h1 className={styles.name}>{name}</h1>
-           
-          </div>
+          <h1 className={styles.name}>{name}</h1>
 
           <div className={styles.statsGrid}>
             {stats.map((stat, index) => (

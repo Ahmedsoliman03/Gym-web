@@ -1,6 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { EmptySection } from "@/components/shared/empty-section";
+import type { CoachPhilosophyProps } from "../types";
 
 const styles = {
   container: "bg-surface py-4 px-6 rounded-3xl border border-white/5 w-full overflow-hidden",
@@ -11,13 +13,13 @@ const styles = {
   description: "min-w-0 flex-1 text-foreground/80 leading-relaxed text-sm md:text-base font-light border-l-0 md:border-l border-white/10 md:pl-8 break-words whitespace-pre-wrap"
 };
 
-interface CoachPhilosophyProps {
-  description: string;
-  onGoToPlans?: () => void;
-}
-
-export const CoachPhilosophy = ({ description, onGoToPlans }: CoachPhilosophyProps) => {
+export const CoachPhilosophy = ({
+  description,
+  onGoToPlans,
+  isOwner,
+}: CoachPhilosophyProps) => {
   const t = useTranslations("Profile");
+  const hasDescription = !!description?.trim();
 
   return (
     <div className={styles.container}>
@@ -32,11 +34,19 @@ export const CoachPhilosophy = ({ description, onGoToPlans }: CoachPhilosophyPro
           </button>
         )}
       </div>
-      <div className={styles.wrapper}>
-        <p className={styles.description}>
-          "{description}"
-        </p>
-      </div>
+      {hasDescription ? (
+        <div className={styles.wrapper}>
+          <p className={styles.description}>
+            &quot;{description}&quot;
+          </p>
+        </div>
+      ) : (
+        <EmptySection
+          isOwner={isOwner}
+          visitorMessage={t('noAboutYet')}
+          variant="compact"
+        />
+      )}
     </div>
   );
 };

@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, X, Plus, ChevronRight, Maximize2 } from "lucide-react";
 import { ImageLightbox } from "@/components/shared/image-lightbox";
+import type { TransformationEditorProps, TransformationItem } from "../types";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -23,20 +24,13 @@ const styles = {
   previewBtn: "p-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-lg text-white hover:bg-white/20 transition-all",
 };
 
-import { CustomSelect } from "@/components/ui/custom-select";
-
-export interface TransformationItem {
-  id: string;
-  name: string;
-  durationValue: string;
-  durationUnit: string;
-  image: string;
-}
-
-interface TransformationEditorProps {
-  transformations: TransformationItem[];
-  onChange: (transformations: TransformationItem[]) => void;
-}
+/** Resolve a preview URL for a transformation row: keep server URLs as-is,
+ *  build a temporary blob URL for freshly picked Files. */
+const previewSrc = (image: string | File): string => {
+  if (!image) return '';
+  if (image instanceof File) return URL.createObjectURL(image);
+  return image;
+};
 
 export const TransformationEditor = ({
   transformations,
@@ -44,17 +38,11 @@ export const TransformationEditor = ({
 }: TransformationEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
-  
+
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     index: 0
   });
-
-  const durationUnitOptions = [
-    { label: t('weeks'), value: 'weeks' },
-    { label: t('months'), value: 'months' },
-    { label: t('years'), value: 'years' },
-  ];
 
   const scroll = (direction: "left" | "right") => {
     if (sliderRef.current) {
@@ -64,11 +52,12 @@ export const TransformationEditor = ({
   };
 
   const handleAdd = () => {
+    // `temp_` prefix lets the server-side builder tell new rows from rows
+    // it already has on file. Existing rows keep their real id.
     const newItem: TransformationItem = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: `temp_${Math.random().toString(36).slice(2, 11)}`,
       name: "",
-      durationValue: "",
-      durationUnit: "weeks",
+      duration: "",
       image: ""
     };
     onChange([...transformations, newItem]);
@@ -78,44 +67,22 @@ export const TransformationEditor = ({
     onChange(transformations.filter(item => item.id !== id));
   };
 
-  const handleUpdate = (id: string, field: keyof TransformationItem, value: string) => {
+  const handleUpdate = (
+    id: string,
+    field: keyof TransformationItem,
+    value: string | File,
+  ) => {
     onChange(transformations.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
+      item.id === id ? { ...item, [field]: value } as TransformationItem : item
     ));
-  };
-
-  const handleBlur = (id: string) => {
-    onChange(transformations.map(item => {
-      if (item.id === id) {
-        let newVal = item.durationValue;
-        let newUnit = item.durationUnit;
-
-        if (newVal === '4' && newUnit === 'weeks') {
-          newVal = '1';
-          newUnit = 'months';
-        } else if (newVal === '12' && newUnit === 'months') {
-          newVal = '1';
-          newUnit = 'years';
-        }
-
-        return { 
-          ...item, 
-          durationValue: newVal,
-          durationUnit: newUnit 
-        };
-      }
-      return item;
-    }));
   };
 
   const handleImageChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleUpdate(id, 'image', reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      handleUpdate(id, 'image', file);
+      // Allow re-picking the same file by resetting the input value.
+      e.target.value = '';
     }
   };
 
@@ -123,7 +90,21 @@ export const TransformationEditor = ({
     setLightbox({ isOpen: true, index });
   };
 
-  const validImages = transformations.filter(t => t.image).map(t => t.image);
+  // Memoize previews so blob URLs created for picked Files can be cleaned up
+  // when the list changes.
+  const previews = useMemo(
+    () => transformations.map((tr) => previewSrc(tr.image)),
+    [transformations],
+  );
+  useEffect(() => {
+    return () => {
+      previews.forEach((src) => {
+        if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+      });
+    };
+  }, [previews]);
+
+  const validImages = previews.filter(Boolean);
 
   return (
     <div className={styles.section}>
@@ -158,9 +139,9 @@ export const TransformationEditor = ({
             <div className={styles.transImage}>
               {item.image ? (
                 <>
-                  <img src={item.image} alt="Transformation" className="w-full h-full object-cover" />
+                  <img src={previews[idx]} alt="Transformation" className="w-full h-full object-cover" />
                   <div className={styles.imagePreviewActions}>
-                    <button 
+                    <button
                       onClick={() => openLightbox(idx)}
                       className={styles.previewBtn}
                     >
@@ -198,27 +179,13 @@ export const TransformationEditor = ({
               </div>
               <div className={styles.inputWrapper}>
                 <label className={styles.label}>{t('transformationDuration')}</label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={item.durationValue}
-                    onChange={(e) => handleUpdate(item.id, 'durationValue', e.target.value)}
-                    onBlur={() => handleBlur(item.id)}
-                    className={`${styles.input} w-24`}
-                  />
-                  <CustomSelect
-                    value={item.durationUnit}
-                    onChange={(val) => {
-                      handleUpdate(item.id, 'durationUnit', val);
-                    }}
-                    onBlur={() => handleBlur(item.id)}
-                    options={durationUnitOptions}
-                    placeholder={t('months')}
-                    className="flex-1"
-                    openUpwards
-                  />
-                </div>
+                <input
+                  type="text"
+                  placeholder="8 years"
+                  value={item.duration}
+                  onChange={(e) => handleUpdate(item.id, 'duration', e.target.value)}
+                  className={styles.input}
+                />
               </div>
             </div>
           </div>

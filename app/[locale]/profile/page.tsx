@@ -1,7 +1,7 @@
 "use client";
 
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
-import { mockProfiles, CoachProfile, GymProfile } from "@/features/profile/mock-data";
+import type { CoachProfileViewModel, GymProfileViewModel } from "@/features/profile/types";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
 import { ClientProfileView } from "@/features/profile/components/client-profile-view";
@@ -31,60 +31,72 @@ export default function ProfilePage() {
       </div>
     );
   }
-  console.log(profile.profile);
-
   const renderProfile = () => {
     switch (profile.userType) {
       case 'coach': {
         const coachProfile = profile.profile;
-        
-        const baseCoach = mockProfiles["marcus-thorne"] as CoachProfile;
-        const mockCoach: CoachProfile = {
-          ...baseCoach,
+        // No mock fallbacks. Each section's empty-state renders when its
+        // field is missing/empty, and on this page (`isOwner=true`) the
+        // empty-state shows a CTA back to /profile/edit.
+        const mappedCoach: CoachProfileViewModel = {
           id: profile.id,
-          name: profile.fullName || coachProfile.name,
+          type: "coach",
+          name: profile.fullName || coachProfile.name || "",
           image: coachProfile.photo || coachProfile.profileImage || "/images/profile/marcus.png",
-          description: coachProfile.description || baseCoach.description,
+          description: coachProfile.description || "",
           stats: [
             {
               label: "EXP",
-              value: coachProfile.experienceYears !== undefined
+              value: coachProfile.experienceYears != null
                 ? `${coachProfile.experienceYears}y`
-                : baseCoach.stats[0].value
+                : "—"
             },
-            {
-              label: "CLIENTS",
-              value: baseCoach.stats[1].value
-            },
+            { label: "CLIENTS", value: "—" },
           ],
+          transformations: (coachProfile.transformations ?? []).map((tr) => ({
+            clientName: tr.clientName,
+            duration: tr.duration ?? '',
+            image: typeof tr.image === 'string' ? tr.image : '',
+          })),
           credentials: {
-            certifications: coachProfile.certifications && coachProfile.certifications.length > 0
-              ? coachProfile.certifications.map(cert => cert.file)
-              : baseCoach.credentials.certifications,
-            specializations: coachProfile.specialization 
-            && coachProfile.specialization.length > 0
-              ? coachProfile.specialization
-              : baseCoach.credentials.specializations,
+            certifications: (coachProfile.certifications ?? []).map((c) => c.file),
+            specializations: coachProfile.specializations ?? [],
           },
-          type: "coach" as const
+          plans: coachProfile.plans ?? [],
         };
-        return <CoachProfileView data={mockCoach} />;
+        return (
+          <CoachProfileView
+            data={mappedCoach}
+            isOwner
+            profileId={coachProfile.id}
+          />
+        );
       }
       case 'gym': {
         const gymProfile = profile.profile;
-        const baseGym = mockProfiles["elite-hq"] as GymProfile;
-        const mockGym: GymProfile = {
-          ...baseGym,
+        // No mock fallbacks: each empty field flows into the section's
+        // empty-state, which on the own profile shows a CTA back to edit.
+        const mappedGym: GymProfileViewModel = {
           id: profile.id,
-          name: gymProfile.gymName || profile.fullName || gymProfile.name,
-          location: gymProfile.location || baseGym.location,
-          memberCount: gymProfile.memberCount !== undefined
+          type: "gym",
+          name: gymProfile.gymName || profile.fullName || gymProfile.name || "",
+          location: gymProfile.location || "",
+          memberCount: gymProfile.memberCount != null
             ? gymProfile.memberCount.toString()
-            : baseGym.memberCount,
-          image: gymProfile.photo || gymProfile.mainPhoto || "/images/profile/gym-logo.png",
-          type: "gym" as const
+            : "",
+          description: gymProfile.description || "",
+          image: gymProfile.mainPhoto || gymProfile.photo || "/images/profile/gym-logo.png",
+          images: (gymProfile.images ?? []).map((g) => g.image),
+          programs: gymProfile.specializations ?? [],
+          plans: gymProfile.plans ?? [],
         };
-        return <GymProfileView data={mockGym} />;
+        return (
+          <GymProfileView
+            data={mappedGym}
+            isOwner
+            profileId={gymProfile.id}
+          />
+        );
       }
       case 'client':
         return <ClientProfileView data={profile} />;

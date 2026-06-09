@@ -15,8 +15,10 @@ import {
   Bookmark,
   BookmarkCheck,
 } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 import { SharePostModal } from '@/components/shared/share-post-modal';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
+import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import {
   useVotePostMutation,
   useDeletePostMutation,
@@ -45,8 +47,11 @@ const styles = {
   authorWrap: 'flex items-center gap-3 min-w-0',
   avatar:
     'w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0',
+  avatarLink:
+    'w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0 hover:ring-2 hover:ring-primary/40 transition-all',
   avatarImg: 'w-full h-full object-cover',
   authorName: 'font-bold text-foreground text-sm',
+  authorNameLink: 'font-bold text-foreground text-sm hover:text-primary hover:underline transition-colors',
   authorMeta: 'text-[11px] text-foreground/40 uppercase font-bold tracking-wider',
   menuBtn:
     'text-foreground/40 hover:text-primary transition-colors p-2 rounded-lg hover:bg-white/5',
@@ -170,12 +175,31 @@ export function CommunityPostCard({
 
   const toggleSave = () => {
     if (saveMutation.isPending) return;
-    saveMutation.mutate({ postId: post.id, saved: !saved });
+    const nextSaved = !saved;
+    saveMutation.mutate(
+      { postId: post.id, saved: nextSaved },
+      {
+        onSuccess: () => {
+          toast.success(
+            t(nextSaved ? 'savePostSuccess' : 'unsavePostSuccess'),
+          );
+        },
+        onError: () => {
+          toast.error(t('savePostFailed'));
+        },
+      },
+    );
   };
 
   const handleComment = () => setCommentsOpen((v) => !v);
 
   const isMine = !!profile?.id && profile.id === post.author?.id;
+  // Resolve the author's destination via the shared hook: /profile for self,
+  // /coaches/{id} or /gyms/{id} otherwise, or no link for clients.
+  const { href: authorHref } = useProfileLink(
+    post.author?.profileId,
+    post.author?.userType,
+  );
   const postUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/${locale}/community/${post.id}`
@@ -192,20 +216,45 @@ export function CommunityPostCard({
     <article className={styles.card}>
       <header className={styles.header}>
         <div className={styles.authorWrap}>
-          <div className={styles.avatar}>
-            {post.author.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={post.author.photo}
-                alt={post.author.fullName}
-                className={styles.avatarImg}
-              />
+          {authorHref ? (
+            <Link
+              href={authorHref}
+              className={styles.avatarLink}
+              aria-label={post.author.fullName}
+            >
+              {post.author.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.author.photo}
+                  alt={post.author.fullName}
+                  className={styles.avatarImg}
+                />
+              ) : (
+                <User size={18} />
+              )}
+            </Link>
+          ) : (
+            <div className={styles.avatar}>
+              {post.author.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.author.photo}
+                  alt={post.author.fullName}
+                  className={styles.avatarImg}
+                />
+              ) : (
+                <User size={18} />
+              )}
+            </div>
+          )}
+          <div className="min-w-0">
+            {authorHref ? (
+              <Link href={authorHref} className={styles.authorNameLink}>
+                {post.author.fullName}
+              </Link>
             ) : (
-              <User size={18} />
+              <p className={styles.authorName}>{post.author.fullName}</p>
             )}
-          </div>
-          <div>
-            <p className={styles.authorName}>{post.author.fullName}</p>
             <p className={styles.authorMeta}>
               {t(`role.${post.author.userType}`)}
               {post.createdAt ? ` · ${formatRelativeTime(post.createdAt)}` : ''}

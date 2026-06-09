@@ -3,7 +3,8 @@
 import { forwardRef } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
-import { GymPlan } from "@/features/profile/mock-data";
+import type { ProfilePlan } from "@/features/profile/types";
+import { EmptySection } from "./empty-section";
 
 const styles = {
   section: "space-y-6 pt-4 scroll-mt-24",
@@ -22,48 +23,80 @@ const styles = {
 };
 
 interface PlansProps {
-  plans?: GymPlan[];
+  plans?: ProfilePlan[];
+  isOwner?: boolean;
 }
 
-export const Plans = forwardRef<HTMLDivElement, PlansProps>(({ plans }, ref) => {
+/** Append " EGP" to a price string when the API didn't already include the
+ *  currency. The check is case-insensitive so "egp", "EGP", "Egp" all skip
+ *  re-adding the suffix. Empty strings are returned unchanged so callers can
+ *  decide how to handle "no price set". */
+const formatPriceWithCurrency = (value: string | undefined): string => {
+  if (!value) return "";
+  return /egp/i.test(value) ? value : `${value} EGP`;
+};
+
+/** Treat a plan as "renderable" only when it has at least one of the
+ *  user-facing fields filled. Empty rows are silently dropped from the view
+ *  so a junk row returned by the API (all-empty placeholder) doesn't render
+ *  an empty card. */
+const isPlanRenderable = (p: ProfilePlan): boolean =>
+  !!p.name?.trim() ||
+  !!p.duration?.trim() ||
+  !!p.price?.trim() ||
+  !!p.salePrice?.trim() ||
+  (Array.isArray(p.features) && p.features.some((f) => !!f?.trim()));
+
+export const Plans = forwardRef<HTMLDivElement, PlansProps>(({ plans, isOwner }, ref) => {
   const t = useTranslations("Profile");
 
-  if (!plans || plans.length === 0) return null;
+  const visible = (plans ?? []).filter(isPlanRenderable);
 
   return (
     <div ref={ref} className={styles.section}>
       <h2 className={styles.sectionTitle}>{t('Plans')}</h2>
-      <div className={styles.plansGrid}>
-        {plans.map((plan, idx) => (
-          <div key={idx} className={styles.planCard}>
-            <div className={styles.planHeader}>
-              <h3 className={styles.planName}>{plan.name}</h3>
-              <span className={styles.planDuration}>{plan.duration}</span>
-            </div>
 
-            <div className={styles.planFeatures}>
-              {plan.features.map((feature, fIdx) => (
-                <div key={fIdx} className={styles.featureItem}>
-                  <Check size={14} className="text-primary" />
-                  <span>{feature}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.planPricing}>
-              {plan.salePrice && (
-                <div className={styles.oldPrice}>{plan.price}</div>
-              )}
-              <div className={styles.currentPrice}>
-                {plan.salePrice || plan.price}
+      {visible.length === 0 ? (
+        <EmptySection
+          isOwner={isOwner}
+          visitorMessage={t('noPlansYet')}
+          ownerMessage={t('addPlansPrompt')}
+        />
+      ) : (
+        <div className={styles.plansGrid}>
+          {visible.map((plan, idx) => (
+            <div key={idx} className={styles.planCard}>
+              <div className={styles.planHeader}>
+                <h3 className={styles.planName}>{plan.name}</h3>
+                <span className={styles.planDuration}>{plan.duration}</span>
               </div>
-              <button className={styles.buyBtn}>
-                {t('getStarted')}
-              </button>
+
+              <div className={styles.planFeatures}>
+                {plan.features.map((feature, fIdx) => (
+                  <div key={fIdx} className={styles.featureItem}>
+                    <Check size={14} className="text-primary" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className={styles.planPricing}>
+                {plan.salePrice && (
+                  <div className={styles.oldPrice}>
+                    {formatPriceWithCurrency(plan.price)}
+                  </div>
+                )}
+                <div className={styles.currentPrice}>
+                  {formatPriceWithCurrency(plan.salePrice || plan.price)}
+                </div>
+                <button className={styles.buyBtn}>
+                  {t('getStarted')}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 });

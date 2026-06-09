@@ -1,4 +1,5 @@
 import type { Story } from '@/features/stories/types';
+import type { GalleryImage, ProfilePlan } from '@/features/profile/types';
 
 export interface Gym {
     id: string;
@@ -16,6 +17,15 @@ export interface GymDetail {
     location: string;
     memberCount: number;
     mainPhoto: string | null;
+    description?: string;
+    contactPerson?: string;
+    city?: string;
+    area?: string;
+    address?: string;
+    photo?: string | null;
+    specializations?: string[];
+    images?: GalleryImage[];
+    plans?: ProfilePlan[];
     /** Per postman README: gym detail responses include the gym's active stories. */
     stories?: Story[];
 }

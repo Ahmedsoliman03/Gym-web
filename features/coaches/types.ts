@@ -1,4 +1,8 @@
 import type { Story } from '@/features/stories/types';
+import type {
+    CoachTransformation,
+    ProfilePlan,
+} from '@/features/profile/types';
 
 export interface Coach {
     id: string;
@@ -12,17 +16,24 @@ export interface Coach {
 }
 
 export interface CoachCertification {
+    id?: string;
     file: string;
+    createdAt?: string;
 }
 
 export interface CoachDetail {
     id: string;
     fullName: string;
     experienceYears: number;
+    /** The detail endpoint returns the singular field `specialization`
+     *  (even though /me uses the plural `specializations`). Mirror the
+     *  actual wire shape so consumers don't read `undefined`. */
     specialization: string[];
     description: string;
     photo: string | null;
     certifications: CoachCertification[];
+    plans?: ProfilePlan[];
+    transformations?: CoachTransformation[];
     stories?: Story[];
 }
 
