@@ -57,6 +57,7 @@ const styles = {
 };
 
 import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
 
 export default function ActivateProfileForm() {
     const t = useTranslations();
@@ -114,7 +115,7 @@ export default function ActivateProfileForm() {
                         toast.success(t('Auth.registrationComplete'));
                         setStep('success');
                     } catch (error: any) {
-                        toast.error(error?.response?.data?.message || t('Validation.error'));
+                        toastApiError(error, t('Validation.error'));
                     }
                 }}
             >

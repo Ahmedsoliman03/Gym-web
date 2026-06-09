@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
@@ -7,6 +8,10 @@ import { GLoader } from "@/components/ui/g-loader";
 import { Users, Building2, Briefcase, Inbox, User, ArrowRight } from "lucide-react";
 import type { UserProfile } from "@/features/profile/types";
 import type { ComponentType } from "react";
+
+const subscribeMount = () => () => {};
+const getMountedClient = () => true;
+const getMountedServer = () => false;
 
 const styles = {
   page: "min-h-screen bg-background text-foreground",
@@ -73,8 +78,14 @@ function headlineKeyFor(userType: UserProfile["userType"] | undefined) {
 export default function HomePage() {
   const t = useTranslations("Home");
   const { profile, isLoading } = useProfileUser();
+  // The profile query is gated on a client-only cookie check, so SSR sees
+  // `isLoading=false` while the client (when logged in) sees `isLoading=true`
+  // on first render — a classic hydration mismatch. Use a sync external
+  // store-backed mount flag (false on SSR, true after hydration) so both
+  // renders show the loader and swap to the page once mounted.
+  const mounted = useSyncExternalStore(subscribeMount, getMountedClient, getMountedServer);
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className={styles.loaderWrapper}>
         <GLoader size={72} />

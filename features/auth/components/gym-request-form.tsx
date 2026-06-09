@@ -8,6 +8,7 @@ import { RequestAccessRequest, GymRequestFormProps, GymFormInnerProps } from '..
 import { GymFormInner } from './gym-form-inner';
 
 import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
 
 export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
     const t = useTranslations();
@@ -28,12 +29,13 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                 contactPerson: '',
                 memberCount: '',
                 gymLicense: null,
-                gymPhoto: null
+                gymPhoto: null,
+                invitationPromocode: '',
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    const { governorate, city, area, gymAddress, ...rest } = values;
+                    const { governorate, city, area, gymAddress, invitationPromocode, ...rest } = values;
                     // Build one human-readable address by collecting every
                     // location-related text from finest to coarsest detail.
                     // Empty inputs are dropped so we don't produce stray commas.
@@ -41,6 +43,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                         .map((part) => (part ?? '').toString().trim())
                         .filter(Boolean)
                         .join(', ');
+                    const trimmedPromocode = (invitationPromocode ?? '').trim();
                     const mappedValues = {
                         ...rest,
                         // Keep the city/area split the backend already expects.
@@ -48,12 +51,15 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                         area: city,
                         // Send the combined friendly address back as gymAddress.
                         gymAddress: friendlyAddress,
+                        // Only send the promocode key when the applicant filled it in
+                        // — empty referral codes would otherwise be persisted as "".
+                        ...(trimmedPromocode ? { invitationPromocode: trimmedPromocode } : {}),
                     };
                     await requestAccess(mappedValues as RequestAccessRequest);
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
                 } catch (error: any) {
-                    toast.error(error?.response?.data?.message || t('Validation.error'));
+                    toastApiError(error, t('Validation.error'));
                 }
             }}
         >

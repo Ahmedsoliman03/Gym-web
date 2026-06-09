@@ -8,6 +8,7 @@ import { RequestAccessRequest, CoachRequestFormProps, CoachFormInnerProps } from
 import { CoachFormInner } from './coach-form-inner';
 
 import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
 
 export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
     const t = useTranslations();
@@ -28,16 +29,26 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 experience: '',
                 desc: '',
                 certifications: [] as File[],
-                profile_image: null as File | null
+                profile_image: null as File | null,
+                numberOfClients: '',
+                invitationPromocode: '',
             }}
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    await requestAccess(values as RequestAccessRequest);
+                    // Drop an empty promocode so we don't ship a meaningless ""
+                    // referral field on the request body.
+                    const { invitationPromocode, ...rest } = values;
+                    const trimmedPromocode = (invitationPromocode ?? '').trim();
+                    const payload = {
+                        ...rest,
+                        ...(trimmedPromocode ? { invitationPromocode: trimmedPromocode } : {}),
+                    };
+                    await requestAccess(payload as RequestAccessRequest);
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
                 } catch (error: any) {
-                    toast.error(error?.response?.data?.message || t('Validation.error'));
+                    toastApiError(error, t('Validation.error'));
                 }
             }}
         >

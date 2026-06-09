@@ -61,10 +61,18 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                     <ErrorMessage name="contactPerson" component="div" className={styles.error} />
                 </div>
 
-                {/* Member Count */}
+                {/* Member Count — digits only via inputMode + type=number. */}
                 <div className={styles.fieldWrapper}>
                     <label className={styles.label}>{t('Auth.memberCount')}</label>
-                    <Field name="memberCount" type="number" className={styles.input} placeholder={t('Auth.memberCountPlaceholder')} />
+                    <Field
+                        name="memberCount"
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className={styles.input}
+                        placeholder={t('Auth.memberCountPlaceholder')}
+                    />
                     <ErrorMessage name="memberCount" component="div" className={styles.error} />
                 </div>
 
@@ -80,6 +88,20 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                     <label className={styles.label}>{t('Auth.email')}</label>
                     <Field name="email" type="email" className={styles.input} placeholder={t('Auth.emailPlaceholder')} />
                     <ErrorMessage name="email" component="div" className={styles.error} />
+                </div>
+
+                {/* Optional invitation promocode — sent on the request body when filled. */}
+                <div className={`${styles.fieldWrapper} md:col-span-2`}>
+                    <label className={styles.label}>
+                        {t('Auth.invitationPromocode')} ({t('Auth.optional')})
+                    </label>
+                    <Field
+                        name="invitationPromocode"
+                        type="text"
+                        className={styles.input}
+                        placeholder={t('Auth.invitationPromocodePlaceholder')}
+                    />
+                    <ErrorMessage name="invitationPromocode" component="div" className={styles.error} />
                 </div>
             </div>
 

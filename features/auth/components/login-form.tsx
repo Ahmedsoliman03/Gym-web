@@ -9,6 +9,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
 
 const styles = {
     container: "space-y-6",
@@ -105,7 +106,7 @@ export default function LoginForm() {
                                 : '/';
                         router.push(safeNext as any);
                     } catch (error: any) {
-                        toast.error(error?.response?.data?.message || t('Auth.loginFailed'));
+                        toastApiError(error, t('Auth.loginFailed'));
                     }
                 }}
             >

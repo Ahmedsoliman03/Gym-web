@@ -54,7 +54,11 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
         label: "EXP",
         value: coach.experienceYears != null ? `${coach.experienceYears}y` : "—",
       },
-      { label: "CLIENTS", value: "—" },
+      {
+        label: "CLIENTS",
+        value:
+          coach.numberOfClients != null ? String(coach.numberOfClients) : "—",
+      },
     ],
     transformations: (coach.transformations ?? []).map((tr) => ({
       clientName: tr.clientName,
@@ -62,11 +66,13 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
       image: typeof tr.image === 'string' ? tr.image : '',
     })),
     credentials: {
-    
+
       certifications: (coach.certifications ?? []).map((cert) => cert.file),
       specializations: coach.specialization ?? [],
     },
     plans: coach.plans ?? [],
+    // Specialization-next-to-name indicator is intentionally left blank on
+    // the visitor-facing detail page; that chip is owner-profile-only.
   };
 
   return (

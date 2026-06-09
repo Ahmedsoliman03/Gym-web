@@ -35,6 +35,11 @@ export default function ProfilePage() {
     switch (profile.userType) {
       case 'coach': {
         const coachProfile = profile.profile;
+        // `specialization` and `specializations` are both present on the API
+        // payload; fall back across them so the header chip + credentials
+        // section both have something to render.
+        const specs =
+          coachProfile.specializations ?? coachProfile.specialization ?? [];
         // No mock fallbacks. Each section's empty-state renders when its
         // field is missing/empty, and on this page (`isOwner=true`) the
         // empty-state shows a CTA back to /profile/edit.
@@ -51,7 +56,13 @@ export default function ProfilePage() {
                 ? `${coachProfile.experienceYears}y`
                 : "—"
             },
-            { label: "CLIENTS", value: "—" },
+            {
+              label: "CLIENTS",
+              value:
+                coachProfile.numberOfClients != null
+                  ? String(coachProfile.numberOfClients)
+                  : "—",
+            },
           ],
           transformations: (coachProfile.transformations ?? []).map((tr) => ({
             clientName: tr.clientName,
@@ -60,15 +71,18 @@ export default function ProfilePage() {
           })),
           credentials: {
             certifications: (coachProfile.certifications ?? []).map((c) => c.file),
-            specializations: coachProfile.specializations ?? [],
+            specializations: specs,
           },
           plans: coachProfile.plans ?? [],
+          specializations: specs,
         };
         return (
           <CoachProfileView
             data={mappedCoach}
             isOwner
             profileId={coachProfile.id}
+            promocode={coachProfile.promoCode}
+            email={profile.email}
           />
         );
       }
@@ -95,6 +109,8 @@ export default function ProfilePage() {
             data={mappedGym}
             isOwner
             profileId={gymProfile.id}
+            promocode={gymProfile.promoCode}
+            email={profile.email}
           />
         );
       }

@@ -25,6 +25,9 @@ export interface CoachDetail {
     id: string;
     fullName: string;
     experienceYears: number;
+    /** Number of clients the coach is currently training. Surfaced in the
+     *  detail header stats alongside experience. */
+    numberOfClients?: number;
     /** The detail endpoint returns the singular field `specialization`
      *  (even though /me uses the plural `specializations`). Mirror the
      *  actual wire shape so consumers don't read `undefined`. */

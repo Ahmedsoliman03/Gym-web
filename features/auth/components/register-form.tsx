@@ -58,6 +58,7 @@ const styles = {
 };
 
 import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
 
 export default function RegisterForm() {
     const t = useTranslations();
@@ -141,7 +142,7 @@ export default function RegisterForm() {
                         toast.success(t('Auth.otpSent'));
                         router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
                     } catch (error: any) {
-                        toast.error(error?.response?.data?.message || t('Validation.error'));
+                        toastApiError(error, t('Validation.error'));
                     }
                 }}
             >

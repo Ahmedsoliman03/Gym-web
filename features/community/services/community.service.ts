@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
 import type {
+    CommentVoter,
     CommunityComment,
     CommunityPost,
     FeedPage,
@@ -304,6 +305,30 @@ const applyVoteTransition = (post: CommunityPost, nextVote: VoteValue): Communit
     };
 };
 
+/**
+ * Add or remove the current user from a voters list. Used by both the post
+ * and comment vote paths so the "Liked by" modal reflects the viewer's vote
+ * immediately, without waiting for the next refetch.
+ */
+const applyVoteToVotersList = (
+    list: CommentVoter[],
+    me: PostAuthor,
+    prevVote: VoteValue,
+    nextVote: VoteValue,
+    side: 'up' | 'down',
+): CommentVoter[] => {
+    let next = list;
+    if (prevVote === side && nextVote !== side) {
+        next = next.filter((v) => v.user.id !== me.id);
+    }
+    if (nextVote === side && prevVote !== side) {
+        if (!next.some((v) => v.user.id === me.id)) {
+            next = [{ user: me, value: side }, ...next];
+        }
+    }
+    return next;
+};
+
 type FeedQueryData = { pages: FeedPage[]; pageParams: unknown[] } | undefined;
 type PostListQueryData = CommunityPost[] | undefined;
 
@@ -396,14 +421,109 @@ export const useVotePostMutation = () => {
             await queryClient.cancelQueries({ queryKey: ['community', 'feed'] });
             await queryClient.cancelQueries({ queryKey: ['community', 'posts'] });
             await queryClient.cancelQueries({ queryKey: ['community', 'post', postId] });
+            await queryClient.cancelQueries({
+                queryKey: ['community', 'posts', 'voters', postId],
+            });
+
+            // Read the post's *current* myVote before the count transition so
+            // we know which side the viewer was previously on. This is what
+            // the voters-cache patch keys off of.
+            const prevPostCache = queryClient.getQueryData<CommunityPost>([
+                'community',
+                'post',
+                postId,
+            ]);
+            // Fall back to scanning the feed for the post if the detail cache
+            // is empty — same as how the optimistic count update works.
+            let prevVote: VoteValue = prevPostCache?.myVote ?? null;
+            if (!prevPostCache) {
+                const feeds =
+                    queryClient.getQueriesData<FeedQueryData>({
+                        queryKey: ['community', 'feed'],
+                    }) ?? [];
+                for (const [, data] of feeds) {
+                    const hit = data?.pages
+                        .flatMap((p) => p.items)
+                        .find((p) => p.id === postId);
+                    if (hit) {
+                        prevVote = hit.myVote ?? null;
+                        break;
+                    }
+                }
+            }
 
             const snapshot = updateAllPostCaches(queryClient, postId, (p) =>
                 applyVoteTransition(p, vote),
             );
-            return snapshot;
+
+            // Patch the post-voters cache too so the likes modal reflects the
+            // viewer's vote without refetching. Seed an empty cache when none
+            // exists — that way, when the user opens the modal right after
+            // liking (before any GET /votes has run), they still see their
+            // own avatar in the list; the background refetch fires later and
+            // replaces this seed with the server's authoritative response.
+            const me = optimisticAuthorFromCache(queryClient);
+            const prevVoters = queryClient.getQueryData<PostVotersResponse>([
+                'community',
+                'posts',
+                'voters',
+                postId,
+            ]);
+            const baseVoters: PostVotersResponse = prevVoters ?? {
+                upVotes: 0,
+                downVotes: 0,
+                upVoters: [],
+                downVoters: [],
+            };
+            const upVoters = applyVoteToVotersList(
+                baseVoters.upVoters,
+                me,
+                prevVote,
+                vote,
+                'up',
+            );
+            const downVoters = applyVoteToVotersList(
+                baseVoters.downVoters,
+                me,
+                prevVote,
+                vote,
+                'down',
+            );
+            queryClient.setQueryData<PostVotersResponse>(
+                ['community', 'posts', 'voters', postId],
+                {
+                    upVotes: upVoters.length,
+                    downVotes: downVoters.length,
+                    upVoters,
+                    downVoters,
+                },
+            );
+
+            return { ...snapshot, prevVoters };
         },
         onError: (_err, { postId }, context) => {
             if (context) restorePostCaches(queryClient, postId, context);
+            // Roll back: if we had a snapshot, restore it; otherwise drop the
+            // seeded cache so the next open refetches from scratch instead of
+            // showing a stale optimistic list.
+            if (context?.prevVoters !== undefined) {
+                queryClient.setQueryData(
+                    ['community', 'posts', 'voters', postId],
+                    context.prevVoters,
+                );
+            } else {
+                queryClient.removeQueries({
+                    queryKey: ['community', 'posts', 'voters', postId],
+                });
+            }
+        },
+        // Once the server confirms the vote, refresh the voters list so the
+        // displayed names match the backend's authoritative ordering and any
+        // votes from other users that landed in the meantime get picked up.
+        onSuccess: (_data, { postId }) => {
+            queryClient.invalidateQueries({
+                queryKey: ['community', 'posts', 'voters', postId],
+            });
         },
     });
 };
@@ -418,10 +538,16 @@ export const voteComment = async ({
     await api.post(`/api/community/comments/${commentId}/vote`, { vote });
 };
 
-/** Apply a vote transition (prev → next) to a single comment. Pure. */
+/** Apply a vote transition (prev → next) to a single comment. Pure.
+ *
+ *  `me` is the optimistic current-user author — passing it lets us patch the
+ *  embedded `upVoters` / `downVoters` arrays in lock-step with the counts, so
+ *  the "Liked by" modal renders the viewer's like immediately after they tap
+ *  it (instead of needing a manual refresh). */
 const applyCommentVoteTransition = (
     comment: CommunityComment,
     nextVote: VoteValue,
+    me: PostAuthor,
 ): CommunityComment => {
     const prevVote = comment.myVote;
     if (prevVote === nextVote) return comment;
@@ -431,12 +557,28 @@ const applyCommentVoteTransition = (
     if (prevVote === 'down') downVotes -= 1;
     if (nextVote === 'up') upVotes += 1;
     if (nextVote === 'down') downVotes += 1;
+    const upVoters = applyVoteToVotersList(
+        comment.upVoters ?? [],
+        me,
+        prevVote,
+        nextVote,
+        'up',
+    );
+    const downVoters = applyVoteToVotersList(
+        comment.downVoters ?? [],
+        me,
+        prevVote,
+        nextVote,
+        'down',
+    );
     return {
         ...comment,
         myVote: nextVote,
         upVotes,
         downVotes,
         score: upVotes - downVotes,
+        upVoters,
+        downVoters,
     };
 };
 
@@ -473,12 +615,13 @@ export const useVoteCommentMutation = () => {
                     prev.push({ key: key as unknown[], data });
                 });
 
+            const me = optimisticAuthorFromCache(queryClient);
             queryClient.setQueriesData<CommentsQueryData>(
                 { queryKey: ['community', 'comments'] },
                 (curr) =>
                     curr
                         ? mapCommentTree(curr, commentId, (c) =>
-                              applyCommentVoteTransition(c, vote),
+                              applyCommentVoteTransition(c, vote, me),
                           )
                         : curr,
             );
@@ -521,6 +664,84 @@ export const useCommentVoters = (commentId: string | null, enabled = true) =>
         queryKey: ['community', 'comments', 'voters', commentId],
         queryFn: () => getCommentVoters(commentId as string),
         enabled: enabled && !!commentId,
+    });
+
+// ─── Post voters ──────────────────────────────────────────────────────────────
+//
+// `GET /api/community/posts/{post_id}/votes` returns `upVotes`, `downVotes`,
+// plus `upVoters` / `downVoters` arrays (and a combined `voters` list). The
+// post payload itself doesn't embed these arrays, so the post likes modal
+// fetches them on demand. We normalize across a few shapes the backend may
+// return — voter rows can come either as the nested `{user, value, votedAt}`
+// shape used by comments, or as a flat author shape.
+
+interface RawPostVotersResponse {
+    upVotes?: number;
+    downVotes?: number;
+    upVoters?: unknown[];
+    downVoters?: unknown[];
+    voters?: unknown[];
+}
+
+export interface PostVotersResponse {
+    upVotes: number;
+    downVotes: number;
+    upVoters: CommentVoter[];
+    downVoters: CommentVoter[];
+}
+
+const normalizeVoter = (raw: unknown): CommentVoter | null => {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, unknown>;
+    // Already nested as `{user, value, votedAt}`.
+    if (r.user && typeof r.user === 'object') {
+        return r as unknown as CommentVoter;
+    }
+    // Flat author shape — wrap it.
+    if (typeof r.id === 'string' && typeof r.fullName === 'string') {
+        return {
+            user: {
+                id: r.id as string,
+                profileId: (r.profileId as string) ?? (r.id as string),
+                fullName: r.fullName as string,
+                userType: (r.userType as PostAuthor['userType']) ?? 'client',
+                photo: (r.photo as string | null | undefined) ?? null,
+            },
+            value: (r.vote as VoteValue) ?? null,
+        };
+    }
+    return null;
+};
+
+const normalizeVoters = (raw?: unknown[]): CommentVoter[] =>
+    (raw ?? []).map(normalizeVoter).filter((v): v is CommentVoter => v !== null);
+
+export const getPostVoters = async (postId: string): Promise<PostVotersResponse> => {
+    const { data } = await api.get<RawPostVotersResponse>(
+        `/api/community/posts/${postId}/votes`,
+    );
+    // Some backend versions return only `voters` with a `vote` discriminator
+    // instead of the split arrays. Fall back to splitting that ourselves.
+    let upVoters = normalizeVoters(data.upVoters);
+    let downVoters = normalizeVoters(data.downVoters);
+    if (upVoters.length === 0 && downVoters.length === 0 && data.voters) {
+        const all = normalizeVoters(data.voters);
+        upVoters = all.filter((v) => v.value !== 'down');
+        downVoters = all.filter((v) => v.value === 'down');
+    }
+    return {
+        upVotes: data.upVotes ?? upVoters.length,
+        downVotes: data.downVotes ?? downVoters.length,
+        upVoters,
+        downVoters,
+    };
+};
+
+export const usePostVoters = (postId: string | null, enabled = true) =>
+    useQuery<PostVotersResponse>({
+        queryKey: ['community', 'posts', 'voters', postId],
+        queryFn: () => getPostVoters(postId as string),
+        enabled: enabled && !!postId,
     });
 
 // ─── Comments ─────────────────────────────────────────────────────────────────

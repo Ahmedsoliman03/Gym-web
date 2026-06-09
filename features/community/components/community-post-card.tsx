@@ -25,12 +25,14 @@ import {
   useReportPostMutation,
   useSavePostMutation,
   useSharePostMutation,
+  usePostVoters,
 } from '../services/community.service';
 import type { CommunityPost } from '../types';
 import { CommunityComments } from './community-comments';
 import { DeletePostConfirm } from './delete-post-confirm';
 import { EditPostModal } from './edit-post-modal';
 import { ReportPostModal } from './report-post-modal';
+import { UpvotersSheet } from './upvoters-sheet';
 
 interface CommunityPostCardProps {
   post: CommunityPost;
@@ -81,8 +83,14 @@ const styles = {
     'flex items-center justify-center gap-1.5 sm:gap-2 py-3 text-foreground/60 font-bold text-[11px] sm:text-xs uppercase tracking-wider hover:bg-white/5 transition-colors',
   actionBtnLiked:
     'flex items-center justify-center gap-1.5 sm:gap-2 py-3 text-primary font-bold text-[11px] sm:text-xs uppercase tracking-wider bg-primary/5 hover:bg-primary/10 transition-colors',
+  actionGroup:
+    'flex items-center justify-center gap-1.5 sm:gap-2 py-3 font-bold text-[11px] sm:text-xs uppercase tracking-wider transition-colors',
+  actionLeft:
+    'flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity',
   countPill:
     'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none',
+  countPillBtn:
+    'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none hover:bg-white/20 hover:text-white transition-colors cursor-pointer',
 };
 
 function PostMedia({
@@ -144,8 +152,15 @@ export function CommunityPostCard({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [likesOpen, setLikesOpen] = useState(false);
   const [contentExpanded, setContentExpanded] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Fetch the post's voters lazily — only when the user opens the likes
+  // modal — so we don't issue a request per post in the feed.
+  const { data: votersData, isLoading: votersLoading } = usePostVoters(
+    likesOpen ? post.id : null,
+  );
 
   // Same see-more pattern used on the job card: clamp long bodies and let
   // the user toggle. Threshold is a cheap character-count check.
@@ -382,17 +397,31 @@ export function CommunityPostCard({
       )}
 
       <div className={styles.actions}>
-        <button
-          className={liked ? styles.actionBtnLiked : styles.actionBtn}
-          onClick={toggleLike}
-          aria-label={t('like')}
-          aria-pressed={liked}
-          disabled={voteMutation.isPending}
-        >
-          <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-          <span>{t('like')}</span>
-          {post.upVotes > 0 && <span className={styles.countPill}>{post.upVotes}</span>}
-        </button>
+        {/* Split the like cell into two clickables so tapping the count
+            opens the likes modal without also toggling the viewer's vote. */}
+        <div className={liked ? styles.actionBtnLiked : styles.actionBtn}>
+          <button
+            type="button"
+            className={styles.actionLeft}
+            onClick={toggleLike}
+            aria-label={t('like')}
+            aria-pressed={liked}
+            disabled={voteMutation.isPending}
+          >
+            <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
+            <span>{t('like')}</span>
+          </button>
+          {post.upVotes > 0 && (
+            <button
+              type="button"
+              onClick={() => setLikesOpen(true)}
+              className={styles.countPillBtn}
+              aria-label={t('viewUpvoters')}
+            >
+              {post.upVotes}
+            </button>
+          )}
+        </div>
         <button className={styles.actionBtn} onClick={handleComment}>
           <MessageCircle size={16} />
           <span>{t('comment')}</span>
@@ -458,6 +487,14 @@ export function CommunityPostCard({
             // Error stays on the mutation; modal stays open so user can retry.
           }
         }}
+      />
+
+      <UpvotersSheet
+        isOpen={likesOpen}
+        onClose={() => setLikesOpen(false)}
+        voters={votersData?.upVoters ?? []}
+        isLoading={votersLoading}
+        onVoterClick={() => setLikesOpen(false)}
       />
     </article>
   );

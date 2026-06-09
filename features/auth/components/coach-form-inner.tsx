@@ -86,10 +86,44 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                     <Field
                         name="experience"
                         type="number"
+                        min={0}
                         className={styles.input}
                         placeholder={t('Auth.experiencePlaceholder')}
                     />
                     <ErrorMessage name="experience" component="div" className={styles.error} />
+                </div>
+            </div>
+
+            <div className={styles.gridWrapper}>
+                {/* Current number of clients — digits only via inputMode + type=number. */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.numberOfClients')}
+                    </label>
+                    <Field
+                        name="numberOfClients"
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className={styles.input}
+                        placeholder={t('Auth.numberOfClientsPlaceholder')}
+                    />
+                    <ErrorMessage name="numberOfClients" component="div" className={styles.error} />
+                </div>
+
+                {/* Optional invitation promocode. */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.invitationPromocode')} ({t('Auth.optional')})
+                    </label>
+                    <Field
+                        name="invitationPromocode"
+                        type="text"
+                        className={styles.input}
+                        placeholder={t('Auth.invitationPromocodePlaceholder')}
+                    />
+                    <ErrorMessage name="invitationPromocode" component="div" className={styles.error} />
                 </div>
             </div>
 

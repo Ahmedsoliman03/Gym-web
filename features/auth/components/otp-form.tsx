@@ -10,6 +10,7 @@ import { useRouter, Link } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
 
 const styles = {
     container: "space-y-8",
@@ -125,7 +126,7 @@ export default function OtpForm() {
                         toast.success(t('Auth.registrationSuccess'));
                         router.push('/login');
                     } catch (error: any) {
-                        toast.error(error?.response?.data?.message || t('Validation.error'));
+                        toastApiError(error, t('Validation.error'));
                     }
                 }}
             >

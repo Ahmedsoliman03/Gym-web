@@ -76,6 +76,17 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.yearsOfExperience') })),
         otherwise: (schema) => schema.optional(),
     }),
+    numberOfClients: Yup.number()
+        .typeError(t('Validation.integer'))
+        .min(0, t('Validation.positive'))
+        .integer(t('Validation.integer'))
+        .when('type', {
+            is: 'coach',
+            then: (schema) => schema.required(t('Validation.required', { field: t('Auth.numberOfClients') })),
+            otherwise: (schema) => schema.optional(),
+        }),
+    // Promocode is referral-style — always optional, accepted from both flows.
+    invitationPromocode: Yup.string().trim().optional(),
     certifications: Yup.array().of(Yup.mixed()).when('type', {
         is: 'coach',
         then: (schema) => schema.min(1, t('Validation.required', { field: t('Auth.certificateUpload') })).required(t('Validation.required', { field: t('Auth.certificateUpload') })),

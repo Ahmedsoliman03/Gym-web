@@ -42,13 +42,22 @@ export interface CoachProfileData {
     type: 'coach';
     name: string;
     experienceYears?: number;
+    /** Number of active clients the coach is currently training; surfaced
+     *  in the profile header stats. */
+    numberOfClients?: number;
     specializations?: string[];
+    /** Backend also returns the singular `specialization` alongside
+     *  `specializations` — kept here so the view layer can fall back. */
+    specialization?: string[];
     description?: string;
     profileImage?: string | null;
     photo: string | null;
     certifications?: Certification[];
     plans?: ProfilePlan[];
     transformations?: CoachTransformation[];
+    /** Referral promocode the backend assigns to the coach. Rendered as a
+     *  copy chip on the owner's own profile only. */
+    promoCode?: string;
 }
 
 export interface GymProfileData {
@@ -73,6 +82,8 @@ export interface GymProfileData {
     plans?: ProfilePlan[];
     createdAt?: string;
     updatedAt?: string;
+    /** Referral promocode the backend assigns to the gym. */
+    promoCode?: string;
 }
 
 export interface ClientProfile {
@@ -182,6 +193,9 @@ export interface CoachProfileViewModel extends ProfileViewBase {
     transformations: { clientName: string; duration: string; image: string }[];
     credentials: { certifications: string[]; specializations: string[] };
     plans?: ProfilePlan[];
+    /** Flat list of specialization tags surfaced next to the coach's name
+     *  in the profile header (chip / indicator UI). */
+    specializations?: string[];
 }
 
 export interface GymProfileViewModel extends ProfileViewBase {
@@ -246,6 +260,13 @@ export interface CoachProfileHeaderProps {
     /** Active stories carried on the detail response; rendered through the
      *  story-avatar badge if present. */
     stories?: import('@/features/stories/types').Story[];
+    /** Owner-only referral code, displayed as a copy-to-clipboard chip in
+     *  the header when present. */
+    promocode?: string;
+    /** Specialization tags rendered as an indicator chip beside the name. */
+    specializations?: string[];
+    /** Owner-only email address surfaced under the name. */
+    email?: string;
 }
 
 export interface TransformationItem {

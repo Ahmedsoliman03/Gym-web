@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { MessageSquare, Settings } from "lucide-react";
+import { Mail, MessageSquare, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
+import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { CoachProfileHeaderProps } from "../types";
+import { PromocodeChip } from "./promocode-chip";
 
 const styles = {
   // ... existing styles ...
@@ -19,9 +21,17 @@ const styles = {
   statusBadge: "absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface",
   infoWrapper: "flex-1 text-center md:text-left",
   titleAndTier: "flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2",
+  nameRow: "flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2",
   name: "text-4xl font-bold text-foreground",
   tier: "bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase",
   title: "text-foreground/40 font-bold",
+  specializationChip:
+    "inline-flex items-center px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-wider",
+  specializationMore:
+    "inline-flex items-center px-2 py-1 rounded-full bg-white/5 border border-white/10 text-foreground/60 text-[10px] font-bold",
+  emailRow:
+    "flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-foreground/60 mb-3 break-all",
+  emailIcon: "text-foreground/40 shrink-0",
   statsGrid: "flex flex-wrap justify-center md:justify-start gap-8",
   statItem: "flex flex-col",
   statValue: "text-2xl font-bold text-foreground",
@@ -38,8 +48,26 @@ export const CoachProfileHeader = ({
   isOwner = true,
   coachId,
   stories,
+  promocode,
+  specializations,
+  email,
 }: CoachProfileHeaderProps) => {
   const t = useTranslations("Profile");
+  const tRoot = useTranslations();
+  // Show up to two specialization chips next to the name; collapse the rest
+  // into a "+N" badge so we don't overflow on long lists.
+  const visibleSpecs = (specializations ?? []).slice(0, 2);
+  const extraSpecCount = Math.max(0, (specializations?.length ?? 0) - visibleSpecs.length);
+  const labelFor = (value: string) => {
+    const match = SPECIALIZATIONS.find(
+      (s) => s.value.toLowerCase() === value.toLowerCase(),
+    );
+    return match
+      ? tRoot.has(match.label as any)
+        ? tRoot(match.label as any)
+        : match.fallback
+      : value;
+  };
 
   return (
     <div className={styles.container}>
@@ -70,7 +98,28 @@ export const CoachProfileHeader = ({
 
         {/* Info */}
         <div className={styles.infoWrapper}>
-          <h1 className={styles.name}>{name}</h1>
+          <div className={styles.nameRow}>
+            <h1 className={styles.name}>{name}</h1>
+            {/* Specialization indicator(s) sit right next to the name so
+                the visitor immediately knows the coach's focus area. */}
+            {visibleSpecs.map((spec) => (
+              <span key={spec} className={styles.specializationChip}>
+                {labelFor(spec)}
+              </span>
+            ))}
+            {extraSpecCount > 0 && (
+              <span className={styles.specializationMore}>+{extraSpecCount}</span>
+            )}
+          </div>
+
+          {/* Owner-only email — surfaces the account email under the name
+              so the user can sanity-check the address tied to their profile. */}
+          {isOwner && email && (
+            <div className={styles.emailRow}>
+              <Mail size={14} className={styles.emailIcon} />
+              <span>{email}</span>
+            </div>
+          )}
 
           <div className={styles.statsGrid}>
             {stats.map((stat, index) => (
@@ -85,7 +134,15 @@ export const CoachProfileHeader = ({
         </div>
 
         {/* Actions */}
+        
         <div className={styles.actionsWrapper}>
+             {/* Owner-only referral promocode chip with copy button. */}
+          {isOwner && promocode && (
+            <div className="mt-2 mb-3 flex justify-center md:justify-start">
+              <PromocodeChip code={promocode} />
+            </div>
+          )}
+          
            {!isOwner ?
           <button className={styles.primaryBtn} onClick={triggerChatOpen}>
             <MessageSquare size={18} />

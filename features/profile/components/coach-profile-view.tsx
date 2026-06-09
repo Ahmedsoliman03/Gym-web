@@ -25,6 +25,8 @@ export const CoachProfileView = ({
   stories,
   profileId,
   postsViewAllHref,
+  promocode,
+  email,
 }: {
   data: CoachProfileViewModel;
   isOwner?: boolean;
@@ -36,6 +38,10 @@ export const CoachProfileView = ({
    *  `ProfilePosts` to `/my-posts` (right for the owner's own /profile page);
    *  detail pages should pass e.g. `/coaches/{id}/posts`. */
   postsViewAllHref?: string;
+  /** Owner-only referral promocode, rendered as a chip in the header. */
+  promocode?: string;
+  /** Owner-only email, surfaced under the name in the header. */
+  email?: string;
 }) => {
   const t = useTranslations("Profile");
   const plansRef = useRef<HTMLDivElement>(null);
@@ -53,6 +59,12 @@ export const CoachProfileView = ({
         isOwner={isOwner}
         coachId={data.id}
         stories={stories}
+        promocode={promocode}
+        // Specialization indicator chips are an owner-only affordance —
+        // visitor detail pages already show the specializations in the
+        // credentials section, so we skip the header chip there.
+        specializations={isOwner ? data.specializations : undefined}
+        email={isOwner ? email : undefined}
       />
 
       <div className={styles.philosophyWrapper}>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { GymProfileViewModel } from "../types";
-import { MapPin, Users, MessageSquare, Settings } from "lucide-react";
+import { MapPin, Users, MessageSquare, Settings, Mail } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -14,6 +14,7 @@ import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-bad
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { Story } from "@/features/stories/types";
 import { ProfilePosts } from "./profile-posts";
+import { PromocodeChip } from "./promocode-chip";
 
 const styles = {
   container: "space-y-8",
@@ -58,6 +59,8 @@ export const GymProfileView = ({
   stories,
   profileId,
   postsViewAllHref,
+  promocode,
+  email,
 }: {
   data: GymProfileViewModel;
   isOwner?: boolean;
@@ -69,6 +72,10 @@ export const GymProfileView = ({
    *  `ProfilePosts` to `/my-posts` (right for the owner's own /profile page);
    *  detail pages should pass e.g. `/gyms/{id}/posts`. */
   postsViewAllHref?: string;
+  /** Owner-only referral promocode, rendered in the header as a copy chip. */
+  promocode?: string;
+  /** Owner-only email, surfaced under the name in the header. */
+  email?: string;
 }) => {
   const t = useTranslations("Profile");
   const t_root = useTranslations();
@@ -121,6 +128,19 @@ export const GymProfileView = ({
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>
+          {/* Owner-only referral promocode chip with copy button. */}
+          {isOwner && promocode && (
+            <div className="mt-2 mb-3 flex justify-center md:justify-start">
+              <PromocodeChip code={promocode} />
+            </div>
+          )}
+          {/* Owner-only email row mirrors the coach header. */}
+          {isOwner && email && (
+            <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-foreground/60 mb-3 break-all">
+              <Mail size={14} className="text-foreground/40 shrink-0" />
+              <span>{email}</span>
+            </div>
+          )}
           <div className={styles.statsList}>
             <span className={styles.statItem}><MapPin size={16} /> {data.location}</span>
             <span className={styles.statItem}><Users size={16} /> {data.memberCount} {t('members')}</span>

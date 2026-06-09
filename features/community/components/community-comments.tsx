@@ -14,10 +14,8 @@ import {
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/routing';
-import { Modal } from '@/components/ui/modal';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
-import type { CommentVoter } from '../types';
 import {
   useComments,
   useCreateCommentMutation,
@@ -28,6 +26,7 @@ import {
 } from '../services/community.service';
 import type { CommunityComment } from '../types';
 import { ReportPostModal } from './report-post-modal';
+import { UpvotersSheet } from './upvoters-sheet';
 
 interface CommunityCommentsProps {
   postId: string;
@@ -58,16 +57,10 @@ const styles = {
   voteBtnActive: 'flex items-center gap-1 text-primary transition-colors',
   replyBtn: 'flex items-center gap-1 hover:text-foreground transition-colors',
   scoreNum: 'tabular-nums text-foreground/50 hover:text-foreground hover:underline transition-colors',
-  votersList: 'space-y-1',
-  voterRow:
-    'flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors',
-  voterAvatar:
-    'w-10 h-10 rounded-full overflow-hidden bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0',
-  voterAvatarImg: 'w-full h-full object-cover',
-  voterName: 'text-sm font-bold text-foreground',
-  voterEmpty: 'text-sm text-foreground/40 text-center py-6',
   emptyText: 'text-xs text-foreground/40 text-center py-3',
   loadingText: 'text-xs text-foreground/40 text-center py-3',
+  loadMoreBtn:
+    'block mx-auto mt-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-foreground/70 text-[11px] font-bold uppercase tracking-wider hover:bg-white/10 hover:text-white transition-colors cursor-pointer',
   menuWrap: 'relative',
   menuBtn:
     'p-1 rounded-md text-foreground/30 hover:text-foreground hover:bg-white/5 transition-colors',
@@ -86,83 +79,6 @@ const styles = {
   authorNameLink:
     'text-xs font-bold text-foreground hover:text-primary hover:underline transition-colors',
 };
-
-/**
- * Single voter row in the upvoters sheet. Lives at the component level so it
- * can call the `useProfileLink` hook per author (hooks can't run in a loop
- * inside the sheet's body).
- */
-function VoterRow({
-  voter,
-  onClick,
-}: {
-  voter: CommentVoter;
-  onClick: () => void;
-}) {
-  const { href } = useProfileLink(voter.user.profileId, voter.user.userType);
-  const photo = voter.user.photo;
-  const row = (
-    <>
-      <div className={styles.voterAvatar}>
-        {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt={voter.user.fullName} className={styles.voterAvatarImg} />
-        ) : (
-          <User size={18} />
-        )}
-      </div>
-      <span className={styles.voterName}>{voter.user.fullName}</span>
-    </>
-  );
-  return href ? (
-    <Link href={href} className={styles.voterRow} onClick={onClick}>
-      {row}
-    </Link>
-  ) : (
-    <div className={styles.voterRow}>{row}</div>
-  );
-}
-
-/**
- * Bottom-sheet style modal listing the people who upvoted a comment. Each row
- * resolves its destination through the shared profile-link hook, so clicking
- * a row navigates straight to that person's detail / profile page.
- */
-function UpvotersSheet({
-  isOpen,
-  onClose,
-  voters,
-  onVoterClick,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  voters: CommentVoter[];
-  /** Closes the sheet when a row is clicked — the Link inside still navigates. */
-  onVoterClick: () => void;
-}) {
-  const t = useTranslations('Community');
-  // Title carries the like count alongside the label so the user can see
-  // "Liked by · 3 likes" without an extra subtitle row inside the body.
-  const title =
-    voters.length > 0
-      ? `${t('upvotersTitle')} · ${t('upvotersCount', { count: voters.length })}`
-      : t('upvotersTitle');
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title}>
-      {voters.length === 0 ? (
-        <p className={styles.voterEmpty}>{t('noUpvoters')}</p>
-      ) : (
-        <ul className={styles.votersList}>
-          {voters.map((v, idx) => (
-            <li key={`${v.user.id}-${idx}`}>
-              <VoterRow voter={v} onClick={onVoterClick} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </Modal>
-  );
-}
 
 function CommentRow({
   comment,
@@ -435,15 +351,23 @@ function CommentRow({
   );
 }
 
+const COMMENTS_PAGE_SIZE = 6;
+
 export function CommunityComments({ postId, postAuthorId }: CommunityCommentsProps) {
   const t = useTranslations('Community');
   const { profile } = useProfileUser();
   const { data: comments, isLoading } = useComments(postId);
   const createMutation = useCreateCommentMutation();
   const [draft, setDraft] = useState('');
+  // Show the first six comments by default; "Show more" reveals six more
+  // at a time so very chatty posts don't blow up the scroll length.
+  const [visibleCount, setVisibleCount] = useState(COMMENTS_PAGE_SIZE);
 
   const isPostOwner =
     !!profile?.id && !!postAuthorId && profile.id === postAuthorId;
+
+  const visibleComments = comments?.slice(0, visibleCount) ?? [];
+  const hasMore = (comments?.length ?? 0) > visibleCount;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -503,7 +427,7 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
         <p className={styles.emptyText}>{t('noComments')}</p>
       ) : (
         <div className={styles.list}>
-          {comments.map((c) => (
+          {visibleComments.map((c) => (
             <CommentRow
               key={c.id}
               comment={c}
@@ -512,6 +436,15 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
               isPostOwner={isPostOwner}
             />
           ))}
+          {hasMore && (
+            <button
+              type="button"
+              onClick={() => setVisibleCount((n) => n + COMMENTS_PAGE_SIZE)}
+              className={styles.loadMoreBtn}
+            >
+              {t('loadMoreComments')}
+            </button>
+          )}
         </div>
       )}
     </div>
