@@ -306,6 +306,17 @@ export const Navbar = () => {
                           {t('myJobs')}
                         </Link>
                       )}
+                      {/* My Applications is coach-only: only coaches apply to jobs. */}
+                      {profile?.userType === 'coach' && (
+                        <Link
+                          href="/my-applications"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                        >
+                          <FileText size={16} />
+                          {t('myApplications')}
+                        </Link>
+                      )}
                       <Link
                         href="/saved-jobs"
                         onClick={() => setUserMenuOpen(false)}
@@ -481,6 +492,16 @@ export const Navbar = () => {
                         >
                           <Briefcase size={16} />
                           {t('myJobs')}
+                        </Link>
+                      )}
+                      {profile?.userType === 'coach' && (
+                        <Link
+                          href="/my-applications"
+                          onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                        >
+                          <FileText size={16} />
+                          {t('myApplications')}
                         </Link>
                       )}
                       <Link

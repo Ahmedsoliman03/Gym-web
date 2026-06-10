@@ -331,6 +331,7 @@
         "sharePostFailed": "Couldn't record your share.",
         "savesCount": "{count, plural, one {# save} other {# saves}}",
         "sharesCount": "{count, plural, one {# share} other {# shares}}",
+        "likesCount": "{count, plural, one {# like} other {# likes}}",
         "commentCount": "{count, plural, one {# comment} other {# comments}}",
         "commentPlaceholder": "Write a comment...",
         "sendComment": "Post comment",
@@ -530,6 +531,7 @@
         "yourPostsDescription": "Manage your active job listings and review incoming professional applications.",
         "yourPostsStatsLabel": "Active Posts",
         "myJobs": "My Jobs",
+        "myApplications": "My Applications",
         "savedJobs": "Saved Jobs",
         "applications": "Applications",
         "about": "About Us",
@@ -678,6 +680,20 @@
         "viewPost": "View Job Post",
         "contactVia": "Contact via",
         "email": "Email",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "cvViewed": "CV viewed",
+        "cvNotViewed": "CV not viewed",
+        "myTitle": "My",
+        "myHighlight": "Applications",
+        "myDescription": "Track the jobs you've applied to and whether the gym has reviewed your CV.",
+        "noMyApplications": "You haven't applied to any jobs yet",
+        "statusOpen": "Open",
+        "statusClosed": "Closed",
+        "filterAll": "All",
+        "filterOpen": "Open Jobs",
+        "filterClosed": "Closed Jobs",
+        "filterByPost": "Filter by post",
+        "filterByStatus": "Filter by status",
+        "filterBySpecialization": "Filter by specialization"
     }
 }

@@ -26,7 +26,7 @@ export interface Job {
     applicationsCount?: number;
     isSaved?: boolean;
     /** Coach-side: whether the current user already applied. */
-    hasApplied?: boolean;
+    isApplied?: boolean;
     createdAt?: string;
     /** Non-null timestamp means the job is closed for applications. */
     closedAt?: string | null;

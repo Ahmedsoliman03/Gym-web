@@ -285,16 +285,28 @@ export const applyForJob = async (input: ApplyJobInput): Promise<void> => {
     });
 };
 
+/** Flip `isApplied` to true on the matching job inside any cached list. */
+const applyJobAppliedTransition = (job: Job, jobId: string): Job =>
+    job.id === jobId ? { ...job, isApplied: true } : job;
+
 export const useApplyForJobMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: applyForJob,
         onSuccess: (_data, vars) => {
-            // Optimistically mark the job as applied in the detail cache so the
-            // UI hides the apply button immediately.
+            // Patch every cached list view (feed, mine, saved, and any future
+            // list under the ['jobs'] root) so the Apply button swaps to the
+            // "Already applied" pill everywhere the same job is rendered.
+            queryClient.setQueriesData<Job[] | undefined>(
+                { queryKey: ['jobs'] },
+                (curr) =>
+                    curr
+                        ? curr.map((j) => applyJobAppliedTransition(j, vars.jobId))
+                        : curr,
+            );
             queryClient.setQueryData<Job | undefined>(
                 ['jobs', vars.jobId],
-                (curr) => (curr ? { ...curr, hasApplied: true } : curr),
+                (curr) => (curr ? { ...curr, isApplied: true } : curr),
             );
         },
     });

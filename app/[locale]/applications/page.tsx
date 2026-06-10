@@ -1,154 +1,125 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { User } from 'lucide-react';
-import { JOBS } from '@/constants/jops';
 import { SPECIALIZATIONS } from '@/constants/specializations';
-import { ApplicationCard } from '@/features/jobs/components/application-card';
-import type { Application } from '@/features/jobs/components/application-card';
+import { ApplicationCard } from '@/features/applications/components/application-card';
+import { useMyJobsApplications } from '@/features/applications/services/applications.service';
 import { PageHeader } from '@/components/ui/page-header';
-
-// ─── Mock data ─────────────────────────────────────────────────────────────────
-// In production this would come from the API.
-
-const MOCK_APPLICATIONS: Application[] = [
-  {
-    id: 'app-1',
-    jobId: 1,
-    specialization: 'Strength & Conditioning',
-    name: 'Ahmed Soliman',
-    email: 'ahmed.soliman@email.com',
-    whatsapp: '01012345678',
-    headline: 'Certified NASM Coach with 7 years of experience in strength & conditioning.',
-    cvFile: 'ahmed_cv.pdf',
-    appliedAt: '2 hours ago',
-    avatar: 'https://i.pravatar.cc/100?img=12',
-  },
-  {
-    id: 'app-2',
-    jobId: 1,
-    specialization: 'Strength & Conditioning',
-    name: 'Sara Khalil',
-    email: 'sara.khalil@email.com',
-    whatsapp: '01159133110',
-    headline: 'Yoga & Mobility specialist, 5 years pro experience .',
-    cvFile: 'sara_cv.pdf',
-    appliedAt: '5 hours ago',
-    avatar: 'https://i.pravatar.cc/100?img=22',
-  },
-  {
-    id: 'app-3',
-    jobId: 3,
-    specialization: 'CrossFit',
-    name: 'Omar Farouq',
-    email: 'omar.farouq@email.com',
-    whatsapp: '01159133110',
-    headline: 'CrossFit Level 2 Trainer, nutrition-certified.',
-    cvFile: 'omar_cv.pdf',
-    appliedAt: '1 day ago',
-    avatar: 'https://i.pravatar.cc/100?img=33',
-  },
-  {
-    id: 'app-4',
-    jobId: 2,
-    specialization: 'Yoga',
-    name: 'Nour Hassan',
-    email: 'nour.hassan@email.com',
-    whatsapp: '01159133110',
-    headline: 'Yoga & Mobility coach — worked with national-level athletes.',
-    cvFile: 'nour_cv.pdf',
-    appliedAt: '2 days ago',
-    avatar: 'https://i.pravatar.cc/100?img=44',
-  },
-];
-
-// Only show filter tabs for specializations that appear in the data
-const ACTIVE_SPECIALIZATIONS = SPECIALIZATIONS.filter(spec =>
-  MOCK_APPLICATIONS.some(a => a.specialization === spec.value)
-);
-
-// ─── Page styles ───────────────────────────────────────────────────────────────
+import { GLoader } from '@/components/ui/g-loader';
+import { CustomSelect } from '@/components/ui/custom-select';
 
 const styles = {
-  page: "pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen",
-  inner: "max-w-5xl mx-auto",
-  pageHeader: "mb-12",
-  tag: "inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mb-4",
-  title: "text-3xl sm:text-4xl md:text-5xl font-headline font-black text-foreground mb-3",
-  subtitle: "text-foreground/50 max-w-xl",
-  filterBar: "-mx-3 sm:mx-0 flex items-center gap-3 mb-6 sm:mb-8 overflow-x-auto pb-2 px-3 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-  filterBtnActive: "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase whitespace-nowrap transition-all bg-primary text-primary-foreground shadow-[0_4px_15px_rgba(34,197,94,0.2)]",
-  filterBtnIdle: "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase whitespace-nowrap transition-all bg-white/5 text-foreground/50 hover:bg-white/10",
-  emptyState: "text-center py-16 sm:py-24 text-foreground/30",
-  emptyIcon: "mx-auto mb-4 opacity-20",
-  emptyText: "text-base sm:text-lg font-bold",
-  grid: "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6",
+    page: "pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen",
+    inner: "max-w-5xl mx-auto",
+    pageHeader: "mb-12",
+    filterRow: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 sm:mb-8",
+    loaderWrap: "flex items-center justify-center py-24 text-primary",
+    emptyState: "text-center py-16 sm:py-24 text-foreground/30",
+    emptyIcon: "mx-auto mb-4 opacity-20",
+    emptyText: "text-base sm:text-lg font-bold",
+    grid: "grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6",
 };
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
+type StatusFilter = 'all' | 'open' | 'closed';
 
 export default function ApplicationsPage() {
-  const t = useTranslations('Applications');
-  const [filter, setFilter] = useState<string | 'all'>('all');
+    const t = useTranslations('Applications');
+    const [specFilter, setSpecFilter] = useState<string>('all');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  const filtered = filter === 'all'
-    ? MOCK_APPLICATIONS
-    : MOCK_APPLICATIONS.filter(a => a.specialization === filter);
+    const { data: applications = [], isLoading } = useMyJobsApplications();
 
-  return (
-    <div className={styles.page}>
-      <div className={styles.inner}>
+    // Build the specialization options from the disciplines that actually
+    // appear in the incoming applications — no point offering "Yoga" if no
+    // open post is yoga-related. Each option carries its applicant count.
+    const specOptions = useMemo(() => {
+        const counts = new Map<string, number>();
+        applications.forEach((app) => {
+            (app.job?.specialization ?? []).forEach((s) => {
+                counts.set(s, (counts.get(s) ?? 0) + 1);
+            });
+        });
+        const opts = [
+            { value: 'all', label: `${t('allPosts')} (${applications.length})` },
+        ];
+        SPECIALIZATIONS.forEach((spec) => {
+            const count = counts.get(spec.value);
+            if (count) opts.push({ value: spec.value, label: `${spec.fallback} (${count})` });
+        });
+        return opts;
+    }, [applications, t]);
 
-        {/* Page header */}
-        <PageHeader
-          title={t('title')}
-          description={t('description')}
-          highlight={t('highlight')}
-        />
+    const openCount = useMemo(
+        () => applications.filter((app) => app.job?.status === 'open').length,
+        [applications],
+    );
+    const closedCount = applications.length - openCount;
 
-        {/* Filter bar — driven by SPECIALIZATIONS constant */}
-        <div className={styles.filterBar}>
-          <button
-            onClick={() => setFilter('all')}
-            className={filter === 'all' ? styles.filterBtnActive : styles.filterBtnIdle}
-          >
-            {t('allPosts')} ({MOCK_APPLICATIONS.length})
-          </button>
+    const statusOptions = [
+        { value: 'all', label: `${t('filterAll')} (${applications.length})` },
+        { value: 'open', label: `${t('filterOpen')} (${openCount})` },
+        { value: 'closed', label: `${t('filterClosed')} (${closedCount})` },
+    ];
 
-          {ACTIVE_SPECIALIZATIONS.map(spec => {
-            const count = MOCK_APPLICATIONS.filter(a => a.specialization === spec.value).length;
-            return (
-              <button
-                key={spec.id}
-                onClick={() => setFilter(spec.value)}
-                className={filter === spec.value ? styles.filterBtnActive : styles.filterBtnIdle}
-              >
-                {spec.fallback} ({count})
-              </button>
-            );
-          })}
+    const filtered = useMemo(() => {
+        return applications.filter((app) => {
+            const matchesSpec =
+                specFilter === 'all' ||
+                (app.job?.specialization ?? []).includes(specFilter);
+            const matchesStatus =
+                statusFilter === 'all' ||
+                (statusFilter === 'open'
+                    ? app.job?.status === 'open'
+                    : app.job?.status !== 'open');
+            return matchesSpec && matchesStatus;
+        });
+    }, [applications, specFilter, statusFilter]);
+
+    return (
+        <div className={styles.page}>
+            <div className={styles.inner}>
+
+                <PageHeader
+                    title={t('title')}
+                    description={t('description')}
+                    highlight={t('highlight')}
+                />
+
+                <div className={styles.filterRow}>
+                    <CustomSelect
+                        value={specFilter}
+                        onChange={setSpecFilter}
+                        options={specOptions}
+                        placeholder={t('filterBySpecialization')}
+                    />
+                    <CustomSelect
+                        value={statusFilter}
+                        onChange={(v) => setStatusFilter(v as StatusFilter)}
+                        options={statusOptions}
+                        placeholder={t('filterByStatus')}
+                    />
+                </div>
+
+                {isLoading ? (
+                    <div className={styles.loaderWrap}>
+                        <GLoader size={64} />
+                    </div>
+                ) : filtered.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <User size={48} className={styles.emptyIcon} />
+                        <p className={styles.emptyText}>{t('noApplications')}</p>
+                    </div>
+                ) : (
+                    <div className={styles.grid}>
+                        {filtered.map((app) => (
+                            <ApplicationCard key={app.id} app={app} />
+                        ))}
+                    </div>
+                )}
+
+            </div>
         </div>
-
-        {/* Applications grid */}
-        {filtered.length === 0 ? (
-          <div className={styles.emptyState}>
-            <User size={48} className={styles.emptyIcon} />
-            <p className={styles.emptyText}>{t('noApplications')}</p>
-          </div>
-        ) : (
-          <div className={styles.grid}>
-            {filtered.map(app => (
-              <ApplicationCard
-                key={app.id}
-                app={app}
-                job={JOBS.find(j => j.id === app.jobId)}
-              />
-            ))}
-          </div>
-        )}
-
-      </div>
-    </div>
-  );
+    );
 }

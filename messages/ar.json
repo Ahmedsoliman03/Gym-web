@@ -332,6 +332,7 @@
         "sharePostFailed": "تعذّر تسجيل مشاركتك.",
         "savesCount": "{count, plural, zero {لا توجد حفظات} one {حفظ واحد} two {حفظان} few {# حفظات} many {# حفظاً} other {# حفظ}}",
         "sharesCount": "{count, plural, zero {لا توجد مشاركات} one {مشاركة واحدة} two {مشاركتان} few {# مشاركات} many {# مشاركة} other {# مشاركة}}",
+        "likesCount": "{count, plural, zero {لا توجد إعجابات} one {إعجاب واحد} two {إعجابان} few {# إعجابات} many {# إعجاباً} other {# إعجاب}}",
         "commentCount": "{count, plural, one {تعليق واحد} two {تعليقان} few {# تعليقات} many {# تعليقاً} other {# تعليق}}",
         "commentPlaceholder": "اكتب تعليقاً...",
         "sendComment": "إرسال التعليق",
@@ -531,6 +532,7 @@
         "yourPostsDescription": "إدارة قوائم الوظائف النشطة الخاصة بك ومراجعة الطلبات المهنية الواردة.",
         "yourPostsStatsLabel": "المنشورات النشطة",
         "myJobs": "وظائفي",
+        "myApplications": "طلباتي",
         "savedJobs": "الوظائف المحفوظة",
         "applications": "الطلبات الواردة",
         "about": "من نحن",
@@ -678,6 +680,20 @@
         "viewPost": "عرض الوظيفة",
         "contactVia": "التواصل عبر",
         "email": "البريد الإلكتروني",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "cvViewed": "تم عرض السيرة",
+        "cvNotViewed": "لم تُعرض السيرة بعد",
+        "myTitle": "طلباتي",
+        "myHighlight": "للوظائف",
+        "myDescription": "تابع الوظائف التي تقدّمت لها واعرف ما إذا كانت الصالة قد اطّلعت على سيرتك الذاتية.",
+        "noMyApplications": "لم تتقدم لأي وظيفة بعد",
+        "statusOpen": "مفتوحة",
+        "statusClosed": "مغلقة",
+        "filterAll": "الكل",
+        "filterOpen": "الوظائف المفتوحة",
+        "filterClosed": "الوظائف المغلقة",
+        "filterByPost": "تصفية حسب الوظيفة",
+        "filterByStatus": "تصفية حسب الحالة",
+        "filterBySpecialization": "تصفية حسب التخصص"
     }
 }

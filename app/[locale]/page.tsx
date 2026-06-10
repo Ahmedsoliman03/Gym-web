@@ -1,21 +1,13 @@
-"use client";
-
-import { useSyncExternalStore } from "react";
-import { useTranslations } from "next-intl";
+import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
-import { GLoader } from "@/components/ui/g-loader";
 import { Users, Building2, Briefcase, Inbox, User, ArrowRight } from "lucide-react";
+import { HomeGreeting } from "./_components/home-greeting";
 import type { UserProfile } from "@/features/profile/types";
 import type { ComponentType } from "react";
 
-const subscribeMount = () => () => {};
-const getMountedClient = () => true;
-const getMountedServer = () => false;
-
 const styles = {
   page: "min-h-screen bg-background text-foreground",
-  loaderWrapper: "min-h-screen flex items-center justify-center bg-background text-primary",
   main: "pt-24 pb-12 px-6 md:px-12 max-w-7xl mx-auto",
   hero: "relative overflow-hidden rounded-3xl border border-white/5 bg-surface p-8 md:p-12 mb-12",
   heroGlow: "absolute -top-32 -right-32 w-96 h-96 bg-primary/10 blur-3xl rounded-full -z-0",
@@ -31,6 +23,8 @@ const styles = {
   ctaArrow: "mt-auto pt-2 text-primary text-xs font-black uppercase flex items-center gap-1 group-hover:gap-2 transition-all",
 };
 
+type UserType = UserProfile["userType"];
+
 interface CtaItem {
   href: string;
   icon: ComponentType<{ size?: number }>;
@@ -38,7 +32,7 @@ interface CtaItem {
   descKey: string;
 }
 
-function ctasForUserType(userType: UserProfile["userType"] | undefined): CtaItem[] {
+function ctasForUserType(userType: UserType | undefined): CtaItem[] {
   switch (userType) {
     case "coach":
       return [
@@ -63,7 +57,7 @@ function ctasForUserType(userType: UserProfile["userType"] | undefined): CtaItem
   }
 }
 
-function headlineKeyFor(userType: UserProfile["userType"] | undefined) {
+function headlineKeyFor(userType: UserType | undefined) {
   switch (userType) {
     case "coach":
       return { headline: "coachHeadline", subtitle: "coachSubtitle" } as const;
@@ -75,27 +69,34 @@ function headlineKeyFor(userType: UserProfile["userType"] | undefined) {
   }
 }
 
-export default function HomePage() {
-  const t = useTranslations("Home");
-  const { profile, isLoading } = useProfileUser();
-  // The profile query is gated on a client-only cookie check, so SSR sees
-  // `isLoading=false` while the client (when logged in) sees `isLoading=true`
-  // on first render — a classic hydration mismatch. Use a sync external
-  // store-backed mount flag (false on SSR, true after hydration) so both
-  // renders show the loader and swap to the page once mounted.
-  const mounted = useSyncExternalStore(subscribeMount, getMountedClient, getMountedServer);
-
-  if (!mounted || isLoading) {
-    return (
-      <div className={styles.loaderWrapper}>
-        <GLoader size={72} />
-      </div>
-    );
+// JWT payload is the only trustworthy source for userType (the `user_type`
+// cookie is non-HttpOnly and exists for UI convenience only — see middleware.ts
+// comment around the same decode). We only need this for picking which CTA
+// set to render; access control still lives in middleware.
+function userTypeFromJwt(token: string | undefined): UserType | undefined {
+  if (!token) return undefined;
+  const parts = token.split(".");
+  if (parts.length !== 3) return undefined;
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = Buffer.from(base64, "base64").toString("utf-8");
+    const payload = JSON.parse(json) as Record<string, unknown>;
+    const value = payload.userType ?? payload.user_type ?? payload.role;
+    if (value === "coach" || value === "gym" || value === "client") return value;
+    return undefined;
+  } catch {
+    return undefined;
   }
+}
 
-  const firstName = profile?.fullName ? profile.fullName.trim().split(/\s+/)[0] : "";
-  const { headline, subtitle } = headlineKeyFor(profile?.userType);
-  const ctas = ctasForUserType(profile?.userType);
+export default async function HomePage() {
+  const t = await getTranslations("Home");
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value || cookieStore.get("token")?.value;
+  const userType = userTypeFromJwt(token);
+
+  const { headline, subtitle } = headlineKeyFor(userType);
+  const ctas = ctasForUserType(userType);
 
   return (
     <div className={styles.page}>
@@ -104,7 +105,7 @@ export default function HomePage() {
           <div className={styles.heroGlow} />
           <div className={styles.heroContent}>
             <p className={styles.greeting}>
-              {firstName ? t("welcomeBack", { name: firstName }) : t("welcome")}
+              <HomeGreeting fallback={t("welcome")} />
             </p>
             <h1 className={styles.headline}>{t(headline)}</h1>
             <p className={styles.subtitle}>{t(subtitle)}</p>

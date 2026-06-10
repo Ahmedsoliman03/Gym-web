@@ -78,6 +78,10 @@ const styles = {
     'flex items-center gap-3 px-4 sm:px-6 py-2 text-[11px] text-foreground/40 font-bold uppercase tracking-wider',
   metaSaves:
     'inline-flex items-center gap-1 text-primary/80',
+  metaLikesBtn:
+    'inline-flex items-center gap-1 text-primary/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded',
+  metaCommentsBtn:
+    'inline-flex items-center gap-1 text-primary/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded',
   actions: 'grid grid-cols-3 border-t border-white/5',
   actionBtn:
     'flex items-center justify-center gap-1.5 sm:gap-2 py-3 text-foreground/60 font-bold text-[11px] sm:text-xs uppercase tracking-wider hover:bg-white/5 transition-colors',
@@ -90,7 +94,7 @@ const styles = {
   countPill:
     'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none',
   countPillBtn:
-    'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none hover:bg-white/20 hover:text-white transition-colors cursor-pointer',
+    'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none hover:bg-white/20 hover:text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
 };
 
 function PostMedia({
@@ -387,47 +391,57 @@ export function CommunityPostCard({
         </div>
       )}
 
-      {savesCount > 0 && (
+      {(post.upVotes > 0 || post.commentsCount > 0 || savesCount > 0) && (
         <div className={styles.metaBar}>
-          <span className={styles.metaSaves}>
-            <Bookmark size={12} />
-            {t('savesCount', { count: savesCount })}
-          </span>
-        </div>
-      )}
-
-      <div className={styles.actions}>
-        {/* Split the like cell into two clickables so tapping the count
-            opens the likes modal without also toggling the viewer's vote. */}
-        <div className={liked ? styles.actionBtnLiked : styles.actionBtn}>
-          <button
-            type="button"
-            className={styles.actionLeft}
-            onClick={toggleLike}
-            aria-label={t('like')}
-            aria-pressed={liked}
-            disabled={voteMutation.isPending}
-          >
-            <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-            <span>{t('like')}</span>
-          </button>
           {post.upVotes > 0 && (
             <button
               type="button"
               onClick={() => setLikesOpen(true)}
-              className={styles.countPillBtn}
+              className={styles.metaLikesBtn}
               aria-label={t('viewUpvoters')}
             >
-              {post.upVotes}
+              <Heart size={12} fill="currentColor" />
+              {t('likesCount', { count: post.upVotes })}
             </button>
           )}
+          {post.commentsCount > 0 && (
+            <button
+              type="button"
+              onClick={handleComment}
+              className={styles.metaCommentsBtn}
+              aria-label={t('comment')}
+            >
+              <MessageCircle size={12} />
+              {t('commentCount', { count: post.commentsCount })}
+            </button>
+          )}
+          {savesCount > 0 && (
+            <span className={styles.metaSaves}>
+              <Bookmark size={12} />
+              {t('savesCount', { count: savesCount })}
+            </span>
+          )}
         </div>
+      )}
+
+      <div className={styles.actions}>
+        {/* The whole cell toggles the viewer's vote — clicks on the count
+            pill toggle too (no nested interactive). The upvoters sheet is
+            opened from the "Liked by N" meta entry above. */}
+        <button
+          type="button"
+          className={liked ? styles.actionBtnLiked : styles.actionBtn}
+          onClick={toggleLike}
+          aria-label={t('like')}
+          aria-pressed={liked}
+          disabled={voteMutation.isPending}
+        >
+          <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
+          <span>{t('like')}</span>
+        </button>
         <button className={styles.actionBtn} onClick={handleComment}>
           <MessageCircle size={16} />
           <span>{t('comment')}</span>
-          {post.commentsCount > 0 && (
-            <span className={styles.countPill}>{post.commentsCount}</span>
-          )}
         </button>
         <button className={styles.actionBtn} onClick={handleShare}>
           <Share2 size={16} />

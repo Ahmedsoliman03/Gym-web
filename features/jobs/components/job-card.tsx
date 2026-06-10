@@ -399,7 +399,7 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                     <div className={styles.footerActions}>
                         {/* Apply slot — coach can apply; "Already applied" once they have. */}
                         {canApply && (
-                            job.hasApplied ? (
+                            job.isApplied ? (
                                 <div className={styles.appliedPill}>
                                     <Zap size={18} fill="currentColor" />
                                     <span>{t('alreadyApplied')}</span>
