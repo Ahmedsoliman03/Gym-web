@@ -98,7 +98,6 @@ export const GymProfileView = ({
             toast.success(tChat("requestSentToast"));
             triggerChatOpen('outgoing');
           } else {
-            toast.success(tChat("requestStartedToast"));
             triggerChatOpen('conversations');
           }
         },
