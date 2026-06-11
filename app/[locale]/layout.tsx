@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 import { Navbar } from '@/components/navbar';
 import { ChatWidget } from '@/features/chat/components/chat-widget';
+import { ChatSocketProvider } from '@/features/chat/socket/chat-socket-provider';
 import { ScrollToTopButton } from '@/components/shared/scroll-to-top-button';
 import { Toaster } from 'react-hot-toast';
 
@@ -45,6 +46,7 @@ export default async function LocaleLayout({
             <body className="font-sans antialiased selection:bg-primary/30">
                 <NextIntlClientProvider messages={messages}>
                     <QueryProvider>
+                        <ChatSocketProvider>
                         <ThemeProvider
                             attribute="class"
                             defaultTheme="dark"
@@ -102,6 +104,7 @@ export default async function LocaleLayout({
                             <ChatWidget />
                             <ScrollToTopButton />
                         </ThemeProvider>
+                        </ChatSocketProvider>
                     </QueryProvider>
                 </NextIntlClientProvider>
             </body>

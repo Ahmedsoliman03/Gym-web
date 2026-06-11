@@ -31,16 +31,9 @@ export const CoachProfileView = ({
   data: CoachProfileViewModel;
   isOwner?: boolean;
   stories?: Story[];
-  /** The role-specific CoachProfile.id used to fetch authored community posts.
-   *  Distinct from `data.id`, which holds the User.id for chat/messaging. */
   profileId?: string;
-  /** Where the inline "See all posts" link points. Defaults inside
-   *  `ProfilePosts` to `/my-posts` (right for the owner's own /profile page);
-   *  detail pages should pass e.g. `/coaches/{id}/posts`. */
   postsViewAllHref?: string;
-  /** Owner-only referral promocode, rendered as a chip in the header. */
   promocode?: string;
-  /** Owner-only email, surfaced under the name in the header. */
   email?: string;
 }) => {
   const t = useTranslations("Profile");
@@ -58,11 +51,10 @@ export const CoachProfileView = ({
         image={data.image}
         isOwner={isOwner}
         coachId={data.id}
+        coachUserId={data.userId}
         stories={stories}
         promocode={promocode}
-        // Specialization indicator chips are an owner-only affordance —
-        // visitor detail pages already show the specializations in the
-        // credentials section, so we skip the header chip there.
+    
         specializations={isOwner ? data.specializations : undefined}
         email={isOwner ? email : undefined}
       />

@@ -1,7 +1,7 @@
 "use client";
 
 import type { GymProfileViewModel } from "../types";
-import { MapPin, Users, MessageSquare, Settings, Mail } from "lucide-react";
+import { MapPin, Users, MessageSquare, Settings, Mail, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -9,7 +9,9 @@ import { TransformationGallery } from "@/components/shared/transformation-galler
 import { Plans } from "@/components/shared/membership-plans";
 import { EmptySection } from "@/components/shared/empty-section";
 import { useRef } from "react";
+import toast from "react-hot-toast";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
+import { useStartChatMutation } from "@/features/chat/services/chat.service";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { Story } from "@/features/stories/types";
@@ -78,8 +80,28 @@ export const GymProfileView = ({
   email?: string;
 }) => {
   const t = useTranslations("Profile");
+  const tChat = useTranslations("Chat");
   const t_root = useTranslations();
   const plansRef = useRef<HTMLDivElement>(null);
+  const startChat = useStartChatMutation();
+
+  const handleStartChat = () => {
+    if (!data.userId) return;
+    startChat.mutate(
+      { userId: data.userId },
+      {
+        onSuccess: (result) => {
+          if (result.status === "request") {
+            toast.success(tChat("requestSentToast"));
+          } else {
+            toast.success(tChat("requestStartedToast"));
+          }
+          triggerChatOpen('conversations');
+        },
+        onError: () => toast.error(tChat("requestErrorToast")),
+      },
+    );
+  };
 
   const scrollToPlans = () => {
     plansRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -151,8 +173,16 @@ export const GymProfileView = ({
               has no one to chat with on their own page. Mirrors the coach
               profile header, which already hides chat for the owner. */}
           {!isOwner && (
-            <button className={styles.primaryBtn} onClick={triggerChatOpen}>
-              <MessageSquare size={18} />
+            <button
+              className={styles.primaryBtn}
+              onClick={handleStartChat}
+              disabled={startChat.isPending || !data.userId}
+            >
+              {startChat.isPending ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <MessageSquare size={18} />
+              )}
               {t('chat')}
             </button>
           )}

@@ -179,6 +179,7 @@ export type ProfileViewType = 'coach' | 'gym' | 'client';
 
 export interface ProfileViewBase {
     id: string;
+        userId?: string;
     type: ProfileViewType;
     name: string;
     image: string;
@@ -257,6 +258,7 @@ export interface CoachProfileHeaderProps {
     image: string;
     isOwner?: boolean;
     coachId?: string;
+    coachUserId?: string;
     /** Active stories carried on the detail response; rendered through the
      *  story-avatar badge if present. */
     stories?: import('@/features/stories/types').Story[];

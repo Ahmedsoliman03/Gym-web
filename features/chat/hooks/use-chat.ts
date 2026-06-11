@@ -1,29 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 
 // Simple global event-based state for opening the chat panel
 const CHAT_OPEN_EVENT = "gymspot-chat-open";
 
+/** Tab the widget should display when it opens. Mirrors `WidgetTab` in
+ *  `components/chat-tabs.tsx` — kept loose here so this hook doesn't import
+ *  a component module. */
+export type ChatOpenTab = 'conversations' | 'incoming' | 'outgoing';
+
+export interface ChatOpenDetail {
+    tab?: ChatOpenTab;
+}
+
 export const useChat = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [requestedTab, setRequestedTab] = useState<ChatOpenTab | undefined>(undefined);
 
     useEffect(() => {
-        const handleOpen = () => setIsOpen(true);
+        const handleOpen = (e: Event) => {
+            setIsOpen(true);
+            const detail = (e as CustomEvent<ChatOpenDetail>).detail;
+            if (detail?.tab) setRequestedTab(detail.tab);
+        };
         window.addEventListener(CHAT_OPEN_EVENT, handleOpen);
         return () => window.removeEventListener(CHAT_OPEN_EVENT, handleOpen);
     }, []);
 
-    const openChat = () => {
+    const openChat = (tab?: ChatOpenTab) => {
         setIsOpen(true);
-        window.dispatchEvent(new CustomEvent(CHAT_OPEN_EVENT));
+        if (tab) setRequestedTab(tab);
+        window.dispatchEvent(
+            new CustomEvent<ChatOpenDetail>(CHAT_OPEN_EVENT, { detail: { tab } }),
+        );
     };
 
     const closeChat = () => setIsOpen(false);
 
-    return { isOpen, openChat, closeChat, setIsOpen };
+    /** Acknowledge that the consumer applied the requested tab — prevents
+     *  the same value from re-triggering a tab change on later renders. */
+    const clearRequestedTab = useCallback(() => setRequestedTab(undefined), []);
+
+    return { isOpen, openChat, closeChat, setIsOpen, requestedTab, clearRequestedTab };
 };
 
-export const triggerChatOpen = () => {
-    window.dispatchEvent(new CustomEvent(CHAT_OPEN_EVENT));
+export const triggerChatOpen = (tab?: ChatOpenTab) => {
+    window.dispatchEvent(
+        new CustomEvent<ChatOpenDetail>(CHAT_OPEN_EVENT, { detail: { tab } }),
+    );
 };

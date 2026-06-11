@@ -46,6 +46,7 @@ export function GymDetailView({ id }: GymDetailViewProps) {
   // "edit your profile" CTA reserved for the owner's own /profile page.
   const mappedGym: GymProfileViewModel = {
     id: gym.id,
+    userId: gym.userId,
     type: "gym",
     name: gym.gymName || "",
     location: gym.location || "",

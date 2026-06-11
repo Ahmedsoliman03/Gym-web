@@ -45,6 +45,8 @@ export default function ProfilePage() {
         // empty-state shows a CTA back to /profile/edit.
         const mappedCoach: CoachProfileViewModel = {
           id: profile.id,
+          // `/api/me` returns `User.id` at the top level — chat-target id.
+          userId: profile.id,
           type: "coach",
           name: profile.fullName || coachProfile.name || "",
           image: coachProfile.photo || coachProfile.profileImage || "/images/profile/marcus.png",
@@ -92,6 +94,8 @@ export default function ProfilePage() {
         // empty-state, which on the own profile shows a CTA back to edit.
         const mappedGym: GymProfileViewModel = {
           id: profile.id,
+          // `/api/me` returns `User.id` at the top level — chat-target id.
+          userId: profile.id,
           type: "gym",
           name: gymProfile.gymName || profile.fullName || gymProfile.name || "",
           location: gymProfile.location || "",

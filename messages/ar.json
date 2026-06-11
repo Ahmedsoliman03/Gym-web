@@ -1,3 +1,4 @@
+
 {
     "Auth": {
         "login": "بوابة الدخول",
@@ -547,7 +548,37 @@
     "Chat": {
         "support": " GymSpot",
         "online": "متصل الآن",
-        "placeholder": "اكتب رسالتك..."
+        "placeholder": "اكتب رسالتك...",
+        "requestsTitle": "طلبات الدردشة",
+        "tabIncoming": "الواردة",
+        "tabOutgoing": "الصادرة",
+        "tabConversations": "المحادثات",
+        "loading": "جاري تحميل الطلبات...",
+        "loadError": "تعذّر تحميل الطلبات.",
+        "loadingConversations": "جاري تحميل المحادثات...",
+        "loadErrorConversations": "تعذّر تحميل المحادثات.",
+        "emptyIncoming": "لا توجد طلبات واردة بعد.",
+        "emptyOutgoing": "لم ترسل أي طلبات بعد.",
+        "emptyConversations": "لا توجد محادثات بعد.",
+        "noMessagesYet": "لا توجد رسائل بعد.",
+        "back": "رجوع",
+        "threadComingSoon": "ستظهر الرسائل هنا.",
+        "send": "إرسال",
+        "socketDisconnected": "جارٍ إعادة الاتصال…",
+        "approve": "قبول",
+        "reject": "رفض",
+        "statusPending": "قيد الانتظار",
+        "statusApproved": "مقبول",
+        "statusRejected": "مرفوض",
+        "wantsToChat": "يرغب في الدردشة معك",
+        "sentRequestTo": "تم إرسال طلب إلى",
+        "requestSentToast": "تم إرسال طلب الدردشة. في انتظار الموافقة.",
+        "requestStartedToast": "تم فتح المحادثة.",
+        "requestErrorToast": "تعذّر إرسال طلب الدردشة.",
+        "approveSuccessToast": "تمت الموافقة على الطلب.",
+        "approveErrorToast": "تعذّر قبول الطلب.",
+        "rejectSuccessToast": "تم رفض الطلب.",
+        "rejectErrorToast": "تعذّر رفض الطلب."
     },
     "Notifications": {
         "title": "الإشعارات",

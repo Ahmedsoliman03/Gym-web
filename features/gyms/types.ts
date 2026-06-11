@@ -13,6 +13,10 @@ export interface Gym {
 
 export interface GymDetail {
     id: string;
+    /** Owner's `User.id` — the same id `/api/me` returns at top level.
+     *  The detail endpoint is keyed by profile id, but chat/messaging
+     *  must use the User.id, so the backend exposes it as `userId`. */
+    userId: string;
     gymName: string;
     location: string;
     memberCount: number;

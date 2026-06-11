@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Mail, MessageSquare, Settings } from "lucide-react";
+import { Mail, MessageSquare, Settings, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
+import { useStartChatMutation } from "@/features/chat/services/chat.service";
+import toast from "react-hot-toast";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { CoachProfileHeaderProps } from "../types";
@@ -47,13 +49,34 @@ export const CoachProfileHeader = ({
   image,
   isOwner = true,
   coachId,
+  coachUserId,
   stories,
   promocode,
   specializations,
   email,
 }: CoachProfileHeaderProps) => {
   const t = useTranslations("Profile");
+  const tChat = useTranslations("Chat");
   const tRoot = useTranslations();
+  const startChat = useStartChatMutation();
+
+  const handleStartChat = () => {
+    if (!coachUserId) return;
+    startChat.mutate(
+      { userId: coachUserId },
+      {
+        onSuccess: (result) => {
+          if (result.status === "request") {
+            toast.success(tChat("requestSentToast"));
+          } else {
+            toast.success(tChat("requestStartedToast"));
+          }
+          triggerChatOpen('conversations');
+        },
+        onError: () => toast.error(tChat("requestErrorToast")),
+      },
+    );
+  };
   // Show up to two specialization chips next to the name; collapse the rest
   // into a "+N" badge so we don't overflow on long lists.
   const visibleSpecs = (specializations ?? []).slice(0, 2);
@@ -144,8 +167,16 @@ export const CoachProfileHeader = ({
           )}
           
            {!isOwner ?
-          <button className={styles.primaryBtn} onClick={triggerChatOpen}>
-            <MessageSquare size={18} />
+          <button
+            className={styles.primaryBtn}
+            onClick={handleStartChat}
+            disabled={startChat.isPending || !coachUserId}
+          >
+            {startChat.isPending ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <MessageSquare size={18} />
+            )}
             {t('chat')}
           </button>
          :

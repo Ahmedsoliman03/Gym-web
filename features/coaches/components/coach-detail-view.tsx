@@ -44,7 +44,11 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
 
 
   const mappedCoach: CoachProfileViewModel = {
+    // `data.id` carries the User.id (used for chat + story-author links).
+    // `/api/coaches/{id}` is keyed by profile id, so we read the dedicated
+    // `userId` field the backend exposes for messaging.
     id: coach.id,
+    userId: coach.userId,
     type: "coach",
     name: coach.fullName || "",
     image: coach.photo || "/images/profile/marcus.png",
