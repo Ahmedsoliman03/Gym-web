@@ -99,6 +99,24 @@ export const getWsTicket = async (): Promise<string> => {
     return data.ticket;
 };
 
+// Authenticated password change. The endpoint follows the same shape as the
+// register/activate flows (currentPassword + newPassword + confirmPassword)
+// so the backend can reuse its password validators.
+export interface ChangePasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
+export const useChangePasswordMutation = () => {
+    return useMutation({
+        mutationFn: async (values: ChangePasswordRequest) => {
+            const { data } = await api.post('/api/auth/change-password', values);
+            return data;
+        },
+    });
+};
+
 export const useLogoutMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({

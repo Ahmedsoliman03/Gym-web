@@ -1,10 +1,10 @@
 "use client"
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { Menu, User, LogOut, Globe, X, Bookmark, Lock, Briefcase, FileText, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Menu, User, LogOut, Globe, X, Bookmark, Settings, Briefcase, FileText, ChevronDown, MoreHorizontal, Inbox } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { ChangePasswordModal } from "./change-password-modal";
 import { NotificationsMenu } from "@/features/notification/components/notifications-menu";
+import { ChatTrigger } from "@/features/chat/components/chat-trigger";
 import { useAuthUser } from "@/features/auth/hooks/useAuthUser";
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 
@@ -32,6 +32,8 @@ const styles = {
   actionButton: "hidden sm:flex p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
   notifButton: "relative p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
   notifBadge: "absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse",
+  chatButton: "relative p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
+  chatBadge: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-black rounded-full border-2 border-background flex items-center justify-center tabular-nums",
   divider: "h-8 w-[1px] bg-white/5 mx-2 hidden sm:block",
   profileLink: (isActive: boolean, isRtl: boolean) => `
     flex items-center gap-3 ${isRtl ? "sm:pl-4 sm:pr-1" : "sm:pl-1 sm:pr-4"} sm:py-1 transition-all group rounded-full border 
@@ -79,7 +81,6 @@ export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [changePassOpen, setChangePassOpen] = useState(false);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -233,6 +234,11 @@ export const Navbar = () => {
 
             {!isAuthPage && isLoggedIn && (
               <>
+                <ChatTrigger
+                  buttonClassName={styles.chatButton}
+                  badgeClassName={styles.chatBadge}
+                />
+
                 <NotificationsMenu
                   buttonClassName={styles.notifButton}
                   badgeClassName={styles.notifBadge}
@@ -270,13 +276,15 @@ export const Navbar = () => {
                         <User size={16} />
                         {t('profile')}
                       </Link>
-                      <button
-                        onClick={() => { setUserMenuOpen(false); setChangePassOpen(true); }}
+                     
+                      <Link
+                        href="/chat/requests"
+                        onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
                       >
-                        <Lock size={16} />
-                        {t('changePassword')}
-                      </button>
+                        <Inbox size={16} />
+                        {t('chatRequests')}
+                      </Link>
                        <Link
                         href="/my-posts"
                         onClick={() => setUserMenuOpen(false)}
@@ -325,6 +333,14 @@ export const Navbar = () => {
                        <Bookmark size={16} />
                         {t('savedJobs')}
                       </Link>
+                       <Link
+                        href="/settings"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all"
+                      >
+                        <Settings size={16} />
+                        {t('settings')}
+                      </Link>
                       <div className="h-[1px] bg-white/5 my-1" />
                       <button
                         onClick={async () => {
@@ -355,11 +371,6 @@ export const Navbar = () => {
           </div>
         </div>
       </nav>
-
-      <ChangePasswordModal
-        isOpen={changePassOpen}
-        onClose={() => setChangePassOpen(false)}
-      />
 
       {/* Mobile Menu Overlay */}
       <div
@@ -461,13 +472,22 @@ export const Navbar = () => {
                 >
                   <div className="overflow-hidden">
                     <div className="px-1 pb-2 flex flex-col">
-                      <button
-                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); setChangePassOpen(true); }}
-                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all text-left"
+                      <Link
+                        href="/settings"
+                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
                       >
-                        <Lock size={16} />
-                        {t('changePassword')}
-                      </button>
+                        <Settings size={16} />
+                        {t('settings')}
+                      </Link>
+                      <Link
+                        href="/chat/requests"
+                        onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                      >
+                        <Inbox size={16} />
+                        {t('chatRequests')}
+                      </Link>
                       <Link
                         href="/my-posts"
                         onClick={() => { setIsOpen(false); setMobileMoreOpen(false); }}

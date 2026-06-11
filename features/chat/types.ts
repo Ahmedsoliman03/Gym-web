@@ -8,7 +8,7 @@ export type PresenceStatus = 'online' | 'offline' | 'busy';
 /** Who is allowed to start a chat with this user without an approval step.
  *  - `open`: direct conversation is created on `POST /api/chat/start`.
  *  - `request_required`: a pending ChatRequest is created instead. */
-export type ChatAccessRule = 'open' | 'request_required' | 'blocked';
+export type ChatAccessRule = 'open' | 'request_required';
 
 export type ChatRequestBox = 'incoming' | 'outgoing';
 
@@ -102,7 +102,7 @@ export interface ChatRequest {
  *  `status` (not `kind`). */
 export type StartChatResult =
     | { status: 'conversation'; conversation: ChatConversation }
-    | { status: 'request';      request: ChatRequest };
+    | { status: 'request_pending';      request: ChatRequest };
 
 export interface StartChatRequest {
     userId: string;

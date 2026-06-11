@@ -66,12 +66,16 @@ export const CoachProfileHeader = ({
       { userId: coachUserId },
       {
         onSuccess: (result) => {
-          if (result.status === "request") {
+          // Land on the tab that shows what just happened: Outgoing for a
+          // pending request the target still needs to approve, Conversations
+          // for an open chat that's ready to use.
+          if (result.status === "request_pending") {
             toast.success(tChat("requestSentToast"));
+            triggerChatOpen('outgoing');
           } else {
             toast.success(tChat("requestStartedToast"));
+            triggerChatOpen('conversations');
           }
-          triggerChatOpen('conversations');
         },
         onError: () => toast.error(tChat("requestErrorToast")),
       },

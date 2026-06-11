@@ -4,6 +4,7 @@ import { Inbox, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { useChat } from '@/features/chat/hooks/use-chat';
+import { usePendingIncomingCount } from '@/features/chat/hooks/use-pending-incoming-count';
 import { ChatTabs, type WidgetTab } from './chat-tabs';
 import { ConversationsList } from './conversations-list';
 import { ConversationThread } from './conversation-thread';
@@ -45,6 +46,7 @@ export const ChatWidget = () => {
         string | null
     >(null);
     const panelRef = useRef<HTMLDivElement>(null);
+    const pendingIncoming = usePendingIncomingCount();
 
     // Drop the open thread when the panel closes so reopening starts on the
     // list. We don't clear on tab change — switching to Incoming and back to
@@ -54,13 +56,24 @@ export const ChatWidget = () => {
     }, [isOpen]);
 
     // Honor an externally-requested tab (e.g. from a profile "Chat" button
-    // that wants the panel to land on the Conversations tab).
+    // that wants the panel to land on a specific tab). When no tab was
+    // requested but there are pending incoming requests, default to Incoming
+    // so the recipient sees the actionable items first.
     useEffect(() => {
-        if (requestedTab && requestedTab !== tab) {
-            setTab(requestedTab);
+        if (!isOpen) return;
+        if (requestedTab) {
+            if (requestedTab !== tab) setTab(requestedTab);
+            clearRequestedTab();
+            return;
         }
-        if (requestedTab) clearRequestedTab();
-    }, [requestedTab, tab, clearRequestedTab]);
+        if (pendingIncoming > 0 && tab === 'conversations') {
+            setTab('incoming');
+        }
+        // Intentionally only re-evaluate when the panel opens or the requested
+        // tab changes — we don't want to force the user back to Incoming after
+        // they manually switch tabs.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, requestedTab]);
 
     // Close when clicking outside the panel. The mobile overlay handles this
     // case via its onClick, but on desktop (sm:hidden) there's no element

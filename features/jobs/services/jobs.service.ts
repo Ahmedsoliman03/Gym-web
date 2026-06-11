@@ -202,10 +202,12 @@ export const useSaveJobMutation = () => {
                 });
             const prevDetail = queryClient.getQueryData<Job>(['jobs', jobId]);
 
+            // The ['jobs'] prefix also matches the single-Job detail query
+            // (['jobs', id]), so guard against non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
-                    curr
+                    Array.isArray(curr)
                         ? curr.map((j) =>
                               j.id === jobId ? applyJobSaveTransition(j, saved) : j,
                           )
@@ -250,10 +252,12 @@ export const useShareJobMutation = () => {
         mutationFn: shareJob,
         onMutate: async (jobId) => {
             await queryClient.cancelQueries({ queryKey: ['jobs'] });
+            // The ['jobs'] prefix also matches the single-Job detail query
+            // (['jobs', id]), so guard against non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
-                    curr
+                    Array.isArray(curr)
                         ? curr.map((j) =>
                               j.id === jobId ? applyJobShareIncrement(j) : j,
                           )
@@ -297,10 +301,12 @@ export const useApplyForJobMutation = () => {
             // Patch every cached list view (feed, mine, saved, and any future
             // list under the ['jobs'] root) so the Apply button swaps to the
             // "Already applied" pill everywhere the same job is rendered.
+            // The ['jobs'] prefix also matches the single-Job detail query
+            // (['jobs', id]), so guard against non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
-                    curr
+                    Array.isArray(curr)
                         ? curr.map((j) => applyJobAppliedTransition(j, vars.jobId))
                         : curr,
             );
