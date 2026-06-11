@@ -89,6 +89,16 @@ export const useRequestAccessMutation = () => {
 };
 
 
+// Trades the authenticated HTTP session for a short-lived (60s) JWT that the
+// client passes as `?ticket=...` on the chat WS upgrade. The HttpOnly cookie
+// can't be relied on at the WS host because the Next proxy (:3000) and Daphne
+// (:8001) live on different origins and Chrome's storage partitioning blocks
+// the cookie on the upgrade request. See backend `apps/chat/auth.py`.
+export const getWsTicket = async (): Promise<string> => {
+    const { data } = await api.post<{ ticket: string }>('/api/auth/ws-ticket');
+    return data.ticket;
+};
+
 export const useLogoutMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({

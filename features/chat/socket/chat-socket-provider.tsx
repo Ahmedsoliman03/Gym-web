@@ -10,7 +10,9 @@ import {
     type ReactNode,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { chatKeys } from '../services/chat.service';
+import { getWsTicket } from '@/features/auth/services/auth.service';
 import { useProfileQuery } from '@/features/profile/services/profile.service';
 import type { UserProfile } from '@/features/profile/types';
 import type {
@@ -79,26 +81,17 @@ const log = (event: string, extra?: Record<string, unknown>) => {
     }
 };
 
-const buildWsUrl = (): string => {
-
+/** Resolve the chat WebSocket URL from the dedicated env var. Kept separate
+ *  from `NEXT_PUBLIC_API_URL` on purpose: the WS endpoint can live on a
+ *  different host/port (and uses a different scheme), so coupling the two
+ *  was masking misconfigurations as connection failures. Returns `null`
+ *  when the env var is missing so the caller can surface a clear error
+ *  instead of silently dialing a wrong URL. */
+const buildWsUrl = (): string | null => {
     const explicit = process.env.NEXT_PUBLIC_WS_URL;
-    if (explicit) {
-        return explicit.endsWith('/ws/chat/')
-            ? explicit
-            : `${explicit.replace(/\/$/, '')}/ws/chat/`;
-    }
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8001';
-    if (typeof window !== 'undefined') {
-        try {
-            const apiUrl = new URL(apiBase);
-            const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-            const port = apiUrl.port ? `:${apiUrl.port}` : '';
-            return `${scheme}://${window.location.hostname}${port}/ws/chat/`;
-        } catch {
-            // Fall through if NEXT_PUBLIC_API_URL is malformed.
-        }
-    }
-    return `${apiBase.replace(/^http/, 'ws').replace(/\/$/, '')}/ws/chat/`;
+    if (!explicit) return null;
+    const trimmed = explicit.replace(/\/+$/, '');
+    return trimmed.endsWith('/ws/chat') ? `${trimmed}/` : `${trimmed}/ws/chat/`;
 };
 
 export function ChatSocketProvider({ children }: { children: ReactNode }) {
@@ -113,9 +106,12 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const aliveCheckTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const typingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-    /** Timestamp of the last frame we received. Used by the alive-check to
-     *  detect half-open TCP where the readyState is still OPEN but the peer
-     *  is gone. */
+    // Generation counter for connect attempts. Bumped on every connect() call,
+    // teardown(), and retry(). The ticket fetch awaits an HTTP round-trip, so
+    // we use this to detect when the in-flight attempt has been superseded by
+    // a newer one (e.g. retry() during ticket fetch, or auth-state change).
+    const connectGenRef = useRef(0);
+ 
     const lastInboundAtRef = useRef<number>(0);
     /** Events queued because the socket wasn't OPEN. Flushed on the next
      *  successful `open`. Capped at `OUTBOUND_QUEUE_MAX`. */
@@ -270,6 +266,9 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         clearReconnect();
         typingTimeoutsRef.current.forEach(clearTimeout);
         typingTimeoutsRef.current.clear();
+        // Invalidate any in-flight ticket fetch so it doesn't resurrect a
+        // socket after we've torn down.
+        connectGenRef.current += 1;
         const ws = wsRef.current;
         wsRef.current = null;
         if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -286,7 +285,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         log('teardown');
     }, []);
 
-    const connect = useCallback(() => {
+    const connect = useCallback(async () => {
         if (typeof window === 'undefined') return;
         if (!isLoggedInRef.current) return;
         if (wsRef.current) return;
@@ -295,14 +294,57 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         // the catch-up branch can decide whether to refetch.
         pendingCatchupRef.current = reconnectAttemptRef.current > 0;
 
-        const url = buildWsUrl();
-        log('connecting', { attempt: reconnectAttemptRef.current, url });
+        const baseUrl = buildWsUrl();
+        if (!baseUrl) {
+            log('NEXT_PUBLIC_WS_URL is not set — cannot connect');
+            setLastError({ reason: 'missing-ws-url', at: Date.now() });
+            setStatus('closed');
+            setGaveUp(true);
+            return;
+        }
+        const myGen = ++connectGenRef.current;
+        log('connecting', { attempt: reconnectAttemptRef.current });
         setStatus('connecting');
+
+        // Trade the HTTP session for a 60-second WS ticket. The HttpOnly
+        // access_token cookie can't be relied on at the WS host because
+        // Chrome partitions cookies across the Next proxy origin (:3000)
+        // and Daphne (:8001), so the backend hands us a short-lived JWT
+        // to put on the upgrade URL. A fresh ticket per (re)connect keeps
+        // us well inside the 60s exp window.
+        let ticket: string;
+        try {
+            ticket = await getWsTicket();
+        } catch (err) {
+            // Superseded by a newer attempt — let it own status/state.
+            if (myGen !== connectGenRef.current) return;
+            const httpStatus = isAxiosError(err) ? err.response?.status : undefined;
+            log('ticket fetch failed', { status: httpStatus, err: String(err) });
+            setLastError({ code: httpStatus, reason: 'ticket-failed', at: Date.now() });
+            setStatus('closed');
+            // 401/403 means we're not authenticated. The axios interceptor
+            // already redirects to /login on 401, and the auth-state effect
+            // will tear us down once the profile query reflects the logout.
+            // Don't burn reconnect attempts in the meantime.
+            if (httpStatus === 401 || httpStatus === 403) {
+                setGaveUp(true);
+                return;
+            }
+            scheduleReconnect();
+            return;
+        }
+
+        // Bail if auth state flipped or a newer connect superseded us
+        // during the await.
+        if (myGen !== connectGenRef.current) return;
+        if (!isLoggedInRef.current) {
+            setStatus('idle');
+            return;
+        }
+
+        const url = `${baseUrl}?ticket=${encodeURIComponent(ticket)}`;
         let ws: WebSocket;
         try {
-            // NOTE on auth: the HttpOnly access_token cookie is sent on the
-            // upgrade IFF the WS hostname matches the page hostname (port is
-            // ignored by cookie scoping). `buildWsUrl` enforces this in dev.
             ws = new WebSocket(url);
         } catch (err) {
             log('constructor threw', { err: String(err) });
@@ -452,7 +494,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         log('scheduled reconnect', { attempt: reconnectAttemptRef.current, delayMs: delay });
         reconnectTimerRef.current = setTimeout(() => {
             reconnectTimerRef.current = null;
-            connect();
+            void connect();
         }, delay);
     }, [connect]);
 
@@ -464,17 +506,19 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         clearReconnect();
         reconnectAttemptRef.current = 0;
         setGaveUp(false);
+        // Supersede any in-flight ticket fetch from the previous attempt.
+        connectGenRef.current += 1;
         const ws = wsRef.current;
         wsRef.current = null;
         if (ws && ws.readyState !== WebSocket.CLOSED) {
             try { ws.close(1000, 'retry'); } catch { /* noop */ }
         }
-        connect();
+        void connect();
     }, [connect]);
 
     // Gate connection on auth state.
     useEffect(() => {
-        if (isLoggedIn) connect();
+        if (isLoggedIn) void connect();
         else teardown();
     }, [isLoggedIn, connect, teardown]);
 
