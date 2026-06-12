@@ -512,6 +512,103 @@
         "addFeature": "Add Feature",
         "planName": "Plan Name"
     },
+    "Plans": {
+        "title": "Membership",
+        "highlight": "Plans",
+        "description": "Simple, transparent pricing for gyms and coaches. Start free, then upgrade for more reach and GymSpot AI — with a limited-time launch discount.",
+        "limitedOffer": "Limited-time launch offer · Save up to 29%",
+        "currency": "EGP",
+        "perMonth": "/mo",
+        "free": "Free",
+        "billedMonthly": "Billed monthly · Cancel anytime",
+        "foreverFree": "Free forever · No card required",
+        "save": "Save {percent}%",
+        "mostPopular": "Most Popular",
+        "choosePlan": "Choose Plan",
+        "startFree": "Start Free",
+        "forGyms": "For Gyms",
+        "forGymsSubtitle": "Grow your facility, fill your classes, and hire the best coaches.",
+        "forCoaches": "For Coaches",
+        "forCoachesSubtitle": "Build your brand, win clients, and land your next role.",
+        "aiTitle": "Powered by GymSpot AI",
+        "aiDescription": "Your in-platform assistant. Gyms ask it to find the best coaches, surface the strongest applicants for a job post, and spot the top-performing posts to model. Coaches ask it to find the best gyms and jobs to apply to and to sharpen their profile. Available on Pro and Premium plans.",
+        "gym": {
+            "free": {
+                "name": "Warm Up",
+                "tagline": "Get your gym listed and start building a presence.",
+                "features": [
+                    "Public gym listing",
+                    "Up to 5 profile images",
+                    "1–2 job postings / month",
+                    "See first 10 applicants only",
+                    "3 profile edits / month",
+                    "Chat included"
+                ]
+            },
+            "pro": {
+                "name": "Power Set",
+                "tagline": "Stand out, see every applicant, and unlock GymSpot AI.",
+                "features": [
+                    "Up to 15 profile images",
+                    "Up to 10 job postings / month",
+                    "Full access to all applicants",
+                    "10 profile edits / month",
+                    "Chat included",
+                    "GymSpot AI · 10 smart searches / day"
+                ]
+            },
+            "premium": {
+                "name": "Beast Mode",
+                "tagline": "Maximum reach with the highest GymSpot AI limits.",
+                "features": [
+                    "Up to 50 profile images",
+                    "Unlimited job postings",
+                    "Full access to all applicants",
+                    "Unlimited profile edits",
+                    "Chat included",
+                    "GymSpot AI · 50 smart searches / day"
+                ]
+            }
+        },
+        "coach": {
+            "free": {
+                "name": "Warm Up",
+                "tagline": "Create your profile and start getting noticed.",
+                "features": [
+                    "Public coach profile",
+                    "Up to 5 transformation photos",
+                    "Up to 3 certifications",
+                    "5–10 job applications / month",
+                    "3 profile edits / month",
+                    "Chat included"
+                ]
+            },
+            "pro": {
+                "name": "Power Set",
+                "tagline": "Apply to unlimited jobs and unlock GymSpot AI.",
+                "features": [
+                    "Up to 15 transformation photos",
+                    "Up to 10 certifications",
+                    "Unlimited job applications",
+                    "10 profile edits / month",
+                    "Chat included",
+                    "GymSpot AI · 10 smart searches / day"
+                ]
+            },
+            "premium": {
+                "name": "Beast Mode",
+                "tagline": "Top visibility with the highest GymSpot AI limits.",
+                "features": [
+                    "Up to 50 transformation photos",
+                    "Unlimited certifications",
+                    "Unlimited job applications",
+                    "Unlimited profile edits",
+                    "Chat included",
+                    "GymSpot AI · 50 smart searches / day"
+                ]
+            }
+        }
+    },
     "Navbar": {
         "signIn": "Sign In",
         "coaches": "Coaches",
@@ -537,6 +634,8 @@
         "savedJobs": "Saved Jobs",
         "applications": "Applications",
         "about": "About Us",
+        "explore": "Explore",
+        "careers": "Careers",
         "more": "More",
         "userMenu": "User Menu",
         "currentPassword": "Current Password",

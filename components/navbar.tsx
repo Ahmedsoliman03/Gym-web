@@ -26,6 +26,20 @@ const styles = {
   `,
   activeIndicator: "absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]",
   hoverIndicator: "absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 origin-center opacity-50",
+  navGroup: "relative group/navgroup",
+  navGroupTrigger: (isActive: boolean) => `
+    flex items-center gap-1 text-sm font-bold uppercase transition-all relative group/nav cursor-pointer
+    ${isActive ? "text-primary" : "text-foreground/60 hover:text-primary"}
+  `,
+  navGroupChevron: "transition-transform duration-300 group-hover/navgroup:rotate-180",
+  // pt-3 keeps the trigger and panel within one hover region so the dropdown
+  // doesn't vanish while the cursor crosses the gap.
+  navDropdownWrap: "absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[210px] z-[120] invisible opacity-0 translate-y-1 group-hover/navgroup:visible group-hover/navgroup:opacity-100 group-hover/navgroup:translate-y-0 focus-within:visible focus-within:opacity-100 focus-within:translate-y-0 transition-all duration-200",
+  navDropdownPanel: "bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2",
+  navDropdownItem: (isActive: boolean) => `
+    block px-5 py-2.5 text-sm font-bold uppercase transition-all
+    ${isActive ? "text-primary bg-primary/10" : "text-foreground/70 hover:text-primary hover:bg-white/5"}
+  `,
   rightActions: "flex items-center gap-2",
   langButton: "p-2 text-foreground/40 hover:text-primary hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 flex items-center gap-1",
   langText: "text-xs font-black uppercase",
@@ -129,16 +143,50 @@ export const Navbar = () => {
   const canSeeApplications = userType === 'gym';
   const canSeeJobs = userType === 'gym' || userType === 'coach';
 
-  const navLinks = [
-    { label: t('community'), href: "/community" },
-    { label: t('coaches'), href: "/coaches" },
-    { label: t('gyms'), href: "/gyms" },
+  // Related destinations are bundled under a single labelled group that opens
+  // a dropdown on hover (desktop) / expands inline (mobile), keeping the top
+  // bar uncluttered. Standalone links (Plans, About) sit at the top level.
+  // Role gating still mirrors the middleware restriction table.
+  const careersItems = [
     ...(canSeeJobs ? [{ label: t('jobBoard'), href: "/jobs" }] : []),
     ...(canSeeApplications
       ? [{ label: t('applications'), href: "/applications" }]
       : []),
-    { label: t('about'), href: "/about" },
   ];
+
+  type NavEntry =
+    | { type: 'link'; label: string; href: string }
+    | { type: 'group'; label: string; items: { label: string; href: string }[] };
+
+  // Clients keep the classic flat navbar (no dropdown groups): only the pages
+  // they're allowed to reach, plus Plans (public for everyone). Gyms, coaches
+  // and logged-out visitors get the grouped Explore/Careers navbar.
+  const isClient = userType === 'client';
+
+  const navEntries: NavEntry[] = isClient
+    ? [
+        { type: 'link', label: t('community'), href: "/community" },
+        { type: 'link', label: t('coaches'), href: "/coaches" },
+        { type: 'link', label: t('gyms'), href: "/gyms" },
+        { type: 'link', label: t('plans'), href: "/plans" },
+        { type: 'link', label: t('about'), href: "/about" },
+      ]
+    : [
+        {
+          type: 'group',
+          label: t('explore'),
+          items: [
+            { label: t('coaches'), href: "/coaches" },
+            { label: t('gyms'), href: "/gyms" },
+            { label: t('community'), href: "/community" },
+          ],
+        },
+        ...(careersItems.length
+          ? [{ type: 'group' as const, label: t('careers'), items: careersItems }]
+          : []),
+        { type: 'link', label: t('plans'), href: "/plans" },
+        { type: 'link', label: t('about'), href: "/about" },
+      ];
 
   const toggleLanguage = () => {
     const nextLocale = locale === 'en' ? 'ar' : 'en';
@@ -165,6 +213,15 @@ export const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Close every menu whenever the route changes so navigating (from any link,
+  // including programmatic pushes) never leaves the mobile drawer or a dropdown
+  // hanging open over the new page.
+  useEffect(() => {
+    setIsOpen(false);
+    setUserMenuOpen(false);
+    setMobileMoreOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (isOpen) {
@@ -196,21 +253,58 @@ export const Navbar = () => {
           {/* Desktop Navigation */}
           {!isAuthPage && (
             <div className={styles.desktopNav}>
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+              {navEntries.map((entry) => {
+                if (entry.type === 'link') {
+                  const isActive = pathname === entry.href;
+                  return (
+                    <Link
+                      key={entry.href}
+                      href={entry.href as any}
+                      className={styles.navLink(isActive)}
+                    >
+                      {entry.label}
+                      {isActive ? (
+                        <div className={styles.activeIndicator} />
+                      ) : (
+                        <div className={styles.hoverIndicator} />
+                      )}
+                    </Link>
+                  );
+                }
+
+                // Grouped entry: label + chevron that reveals a dropdown of the
+                // related pages on hover/focus.
+                const groupActive = entry.items.some((i) => pathname === i.href);
                 return (
-                  <Link
-                    key={link.href}
-                    href={link.href as any}
-                    className={styles.navLink(isActive)}
-                  >
-                    {link.label}
-                    {isActive ? (
-                      <div className={styles.activeIndicator} />
-                    ) : (
-                      <div className={styles.hoverIndicator} />
-                    )}
-                  </Link>
+                  <div key={entry.label} className={styles.navGroup}>
+                    <button
+                      type="button"
+                      className={styles.navGroupTrigger(groupActive)}
+                      aria-haspopup="menu"
+                    >
+                      {entry.label}
+                      <ChevronDown size={14} className={styles.navGroupChevron} />
+                      {groupActive ? (
+                        <div className={styles.activeIndicator} />
+                      ) : (
+                        <div className={styles.hoverIndicator} />
+                      )}
+                    </button>
+                    <div className={styles.navDropdownWrap}>
+                      <div className={styles.navDropdownPanel} role="menu">
+                        {entry.items.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href as any}
+                            className={styles.navDropdownItem(pathname === item.href)}
+                            role="menuitem"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -421,18 +515,44 @@ export const Navbar = () => {
           )}
 
           <div className={styles.mobileNav}>
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+            {navEntries.map((entry) => {
+              if (entry.type === 'link') {
+                const isActive = pathname === entry.href;
+                return (
+                  <Link
+                    key={entry.href}
+                    href={entry.href as any}
+                    className={styles.mobileNavLink(isActive)}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className={styles.mobileLinkDot} />
+                    {entry.label}
+                  </Link>
+                );
+              }
+
+              // Grouped entry: a section label with its related links listed
+              // beneath it (always expanded on mobile for one-tap reach).
               return (
-                <Link
-                  key={link.href}
-                  href={link.href as any}
-                  className={styles.mobileNavLink(isActive)}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <div className={styles.mobileLinkDot} />
-                  {link.label}
-                </Link>
+                <div key={entry.label} className="flex flex-col gap-4">
+                  <span className="text-xs font-black uppercase tracking-widest text-foreground/30">
+                    {entry.label}
+                  </span>
+                  {entry.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href as any}
+                        className={styles.mobileNavLink(isActive)}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <div className={styles.mobileLinkDot} />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
