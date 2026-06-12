@@ -28,9 +28,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
 
 async function handleProxy(request: Request, params: { slug: string[] }) {
     try {
-        // حماية إضافية (CSRF Protection): التأكد أن الطلب قادم من الموقع الخاص بك.
-        // نقارن الـ host المستخرج من الـ origin مقارنة دقيقة، لأن includes()
-        // يمكن تجاوزها (مثال: https://evil-example.com يحتوي example.com).
+      
         const origin = request.headers.get('origin');
         if (origin && process.env.NODE_ENV === 'production') {
             const host = request.headers.get('host') || '';
@@ -61,7 +59,6 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
         // Bypass ngrok browser warning page
         headers.set('ngrok-skip-browser-warning', '798414');
 
-        // تمرير عنوان الـ IP الحقيقي للمستخدم للباك إند
         const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
         if (ip) {
             headers.set('X-Forwarded-For', ip);
@@ -92,10 +89,7 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
             cache: "no-store",
         });
 
-        // قراءة الـ Headers القادمة من الباك إند
         const resHeaders = new Headers(response.headers);
-
-        // إزالة Set-Cookie من الـ Headers العادية لمنع دمجها بشكل خاطئ
         resHeaders.delete("set-cookie");
 
         if (!resHeaders.has("Content-Type")) {
@@ -104,13 +98,11 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
 
         const data = response.status === 204 ? null : await response.text();
 
-        // تجهيز الـ Response الخاص بـ Next.js
         const nextResponse = new NextResponse(data, {
             status: response.status,
             headers: resHeaders,
         });
 
-        // المعالجة الصحيحة والآمنة لتمرير الـ Cookies إلى المتصفح عبر HttpOnly
         const setCookies = response.headers.getSetCookie();
         if (setCookies && setCookies.length > 0) {
             setCookies.forEach(cookie => {

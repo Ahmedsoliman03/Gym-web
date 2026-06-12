@@ -66,7 +66,11 @@ export const ProfilePosts = ({
 
       <div className={styles.list}>
         {visible.map((post) => (
-          <CommunityPostCard key={post.id} post={post} />
+          <CommunityPostCard
+            key={post.id}
+            post={post}
+            href={`/community/${post.id}`}
+          />
         ))}
       </div>
 

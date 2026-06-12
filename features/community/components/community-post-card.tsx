@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import {
@@ -40,6 +40,13 @@ interface CommunityPostCardProps {
   defaultCommentsOpen?: boolean;
   /** Called after the post is successfully deleted (e.g., to leave the detail page). */
   onDeleted?: () => void;
+  /**
+   * When set, the post body + media become a link to this href (e.g. the
+   * `/community/{id}` detail page). The header menu and action buttons stay
+   * interactive — only the content/media region navigates. Used by the
+   * profile "Posts of {owner}" strip so each preview opens its full page.
+   */
+  href?: string;
 }
 
 const styles = {
@@ -121,6 +128,27 @@ function PostMedia({
   return <img src={file} alt="" className={className} />;
 }
 
+// Wraps the media region in a link to the detail page when `href` is given
+// (profile preview), otherwise renders a plain container (feed/detail page).
+function MediaRegion({
+  href,
+  className,
+  children,
+}: {
+  href?: string;
+  className: string;
+  children: ReactNode;
+}) {
+  if (href) {
+    return (
+      <Link href={href} className={`block ${className}`}>
+        {children}
+      </Link>
+    );
+  }
+  return <div className={className}>{children}</div>;
+}
+
 function formatRelativeTime(iso?: string) {
   if (!iso) return '';
   const date = new Date(iso);
@@ -140,6 +168,7 @@ export function CommunityPostCard({
   post,
   defaultCommentsOpen = false,
   onDeleted,
+  href,
 }: CommunityPostCardProps) {
   const t = useTranslations('Community');
   const locale = useLocale();
@@ -344,31 +373,38 @@ export function CommunityPostCard({
         </div>
       </header>
 
-      {post.content && (
-        <>
-          <div
-            className={
-              contentExpanded || !contentNeedsToggle
-                ? styles.content
-                : styles.contentClamped
-            }
-          >
+      {post.content &&
+        // With an href the body is a link to the detail page: render it
+        // clamped and skip the see-more toggle (clicking opens the full page).
+        (href ? (
+          <Link href={href} className={`block ${styles.contentClamped}`}>
             {post.content}
-          </div>
-          {contentNeedsToggle && (
-            <button
-              type="button"
-              onClick={() => setContentExpanded((v) => !v)}
-              className={styles.seeMoreBtn}
+          </Link>
+        ) : (
+          <>
+            <div
+              className={
+                contentExpanded || !contentNeedsToggle
+                  ? styles.content
+                  : styles.contentClamped
+              }
             >
-              {contentExpanded ? t('seeLess') : t('seeMore')}
-            </button>
-          )}
-        </>
-      )}
+              {post.content}
+            </div>
+            {contentNeedsToggle && (
+              <button
+                type="button"
+                onClick={() => setContentExpanded((v) => !v)}
+                className={styles.seeMoreBtn}
+              >
+                {contentExpanded ? t('seeLess') : t('seeMore')}
+              </button>
+            )}
+          </>
+        ))}
 
       {post.media && post.media.length > 0 && (
-        <div className={styles.mediaWrap}>
+        <MediaRegion href={href} className={styles.mediaWrap}>
           {post.media.length === 1 ? (
             <PostMedia
               file={post.media[0].file}
@@ -388,7 +424,7 @@ export function CommunityPostCard({
               ))}
             </div>
           )}
-        </div>
+        </MediaRegion>
       )}
 
       {(post.upVotes > 0 || post.commentsCount > 0 || savesCount > 0) && (
