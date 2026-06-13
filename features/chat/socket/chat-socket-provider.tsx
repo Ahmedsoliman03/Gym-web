@@ -36,6 +36,13 @@ export interface ChatSocketContextValue extends ChatSocketActions {
     status: ChatSocketStatus;
     typingByConversation: Record<string, ReadonlySet<string>>;
     presenceByUser: Record<string, PresenceStatus>;
+    /** Locally-tracked unread counts, keyed by conversation id. Survives
+     *  `/api/chat/conversations` refetches (which would otherwise clobber the
+     *  optimistic increment with a stale/zero server value). Reconcile against
+     *  the server's `unreadCount` with `Math.max` at the display site. */
+    unreadByConversation: Record<string, number>;
+    /** Drop a conversation's local unread tally — call alongside markRead. */
+    clearUnread: (conversationId: string) => void;
     lastError: { code?: number; reason?: string; at: number } | null;
     gaveUp: boolean;
     retry: () => void;
@@ -99,6 +106,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         Record<string, ReadonlySet<string>>
     >({});
     const [presenceByUser, setPresenceByUser] = useState<Record<string, PresenceStatus>>({});
+    const [unreadByConversation, setUnreadByConversation] = useState<Record<string, number>>({});
     const [lastError, setLastError] = useState<ChatSocketContextValue['lastError']>(null);
     const [gaveUp, setGaveUp] = useState(false);
 
@@ -124,6 +132,8 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
 
     const applyMessageNew = useCallback(
         (conversationId: string, message: ChatMessage) => {
+            const me = qc.getQueryData<UserProfile>(['profile']);
+            const isMine = !!me && message.sender?.id === me.id;
 
             qc.setQueryData<ChatMessage[]>(chatKeys.messages(conversationId), (prev) => {
                 if (!prev) return prev;
@@ -148,8 +158,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     qc.invalidateQueries({ queryKey: chatKeys.conversations });
                     return prev;
                 }
-                const me = qc.getQueryData<UserProfile>(['profile']);
-                const isMine = !!me && message.sender?.id === me.id;
                 const conv = prev[idx];
                 const updated: ChatConversation = {
                     ...conv,
@@ -159,9 +167,29 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 };
                 return [updated, ...prev.slice(0, idx), ...prev.slice(idx + 1)];
             });
+
+            // Track unread locally too. The cache write above gets clobbered by
+            // the next `/api/chat/conversations` refetch (which may return a
+            // stale/zero `unreadCount`); this tally does not, so the badge
+            // survives until the user actually opens the thread.
+            if (!isMine) {
+                setUnreadByConversation((prev) => ({
+                    ...prev,
+                    [conversationId]: (prev[conversationId] ?? 0) + 1,
+                }));
+            }
         },
         [qc],
     );
+
+    const clearUnread = useCallback((conversationId: string) => {
+        setUnreadByConversation((prev) => {
+            if (!(conversationId in prev)) return prev;
+            const next = { ...prev };
+            delete next[conversationId];
+            return next;
+        });
+    }, []);
 
     const applyTypingUpdate = useCallback(
         (conversationId: string, userId: string, isTyping: boolean) => {
@@ -235,6 +263,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         setStatus('idle');
         setTypingByConversation({});
         setPresenceByUser({});
+        setUnreadByConversation({});
         setLastError(null);
         setGaveUp(false);
         log('teardown');
@@ -521,6 +550,8 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 status,
                 typingByConversation,
                 presenceByUser,
+                unreadByConversation,
+                clearUnread,
                 lastError,
                 gaveUp,
                 retry,

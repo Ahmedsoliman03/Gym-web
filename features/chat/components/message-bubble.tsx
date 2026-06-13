@@ -1,5 +1,6 @@
 'use client';
 
+import { Check, CheckCheck, Clock } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import type { ChatMessage } from '../types';
 
@@ -15,8 +16,9 @@ const styles = {
     body: 'whitespace-pre-wrap',
     attachment:
         'mt-1 max-w-full rounded-lg border border-white/10 max-h-60 object-cover',
-    time: (mine: boolean) =>
-        `text-[10px] mt-1 ${mine ? 'opacity-70 text-right' : 'opacity-60 text-left'}`,
+    meta: (mine: boolean) =>
+        `flex items-center gap-1 mt-1 ${mine ? 'justify-end' : 'justify-start'}`,
+    time: (mine: boolean) => `text-[10px] ${mine ? 'opacity-70' : 'opacity-60'}`,
 };
 
 const formatTime = (iso: string, locale: string) => {
@@ -33,11 +35,16 @@ const formatTime = (iso: string, locale: string) => {
 export const MessageBubble = ({
     message,
     mine,
+    read,
 }: {
     message: ChatMessage;
     mine: boolean;
+    /** Whether the other participant has read this (mine) message. */
+    read?: boolean;
 }) => {
     const locale = useLocale();
+    // Optimistic messages keep a `tmp:` id until the server echo arrives.
+    const sending = message.id.startsWith('tmp:');
     return (
         <div className={styles.row(mine)}>
             <div className={styles.bubble(mine)}>
@@ -50,8 +57,19 @@ export const MessageBubble = ({
                         className={styles.attachment}
                     />
                 )}
-                <div className={styles.time(mine)}>
-                    {formatTime(message.createdAt, locale)}
+                <div className={styles.meta(mine)}>
+                    <span className={styles.time(mine)}>
+                        {formatTime(message.createdAt, locale)}
+                    </span>
+                    {mine &&
+                        (sending ? (
+                            <Clock size={12} className="opacity-60" />
+                        ) : read ? (
+                            // Coloured double-check once the recipient has read it.
+                            <CheckCheck size={14} className="text-sky-300" />
+                        ) : (
+                            <Check size={14} className="opacity-60" />
+                        ))}
                 </div>
             </div>
         </div>

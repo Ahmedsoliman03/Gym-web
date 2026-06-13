@@ -1,4 +1,3 @@
-
 {
     "Auth": {
         "login": "بوابة الدخول",
@@ -200,7 +199,7 @@
         "title": "الفرص المهنية",
         "highlight": "المتميزة",
         "openOpportunities": "أدوار مهنية متاحة",
-        "description": "نربط نخبة محترفي اللياقة البدنية بالمنشآت الرياضية الرائدة عالمياً.",
+        "description": "نبذة مختصرة...",
         "applyNow": "قدم الآن",
         "savePost": "حفظ",
         "sharePost": "مشاركة",
@@ -214,7 +213,6 @@
         "whatsappNumber": "رقم واتساب",
         "whatsappInvalid": "أدخل رقماً مصرياً صحيحاً (مثلاً: 01XXXXXXXXX)",
         "headline": "المسمى الوظيفي (اختياري)",
-        "description": "نبذة مختصرة...",
         "uploadCv": "رفع السيرة الذاتية",
         "cvSelected": "السيرة الذاتية جاهزة · اضغط للاستبدال",
         "cvRemove": "إزالة السيرة الذاتية",
@@ -680,7 +678,9 @@
         "approveSuccessToast": "تمت الموافقة على الطلب.",
         "approveErrorToast": "تعذّر قبول الطلب.",
         "rejectSuccessToast": "تم رفض الطلب.",
-        "rejectErrorToast": "تعذّر رفض الطلب."
+        "rejectErrorToast": "تعذّر رفض الطلب.",
+        "searchPlaceholder": "ابحث بالاسم…",
+        "searchNoResults": "لا توجد محادثات مطابقة لبحثك."
     },
     "Settings": {
         "title": "الإعدادات",
@@ -736,7 +736,6 @@
         "chatDesc": "أرسلت لك سارة رسالة: \"مرحباً، هل نحن على موعدنا اليوم؟\"",
         "coachApplyTitle": "طلب انضمام مدرب جديد",
         "coachApplyDesc": "قدم أحمد طلباً للانضمام إلى الصالة الرياضية الخاصة بك.",
-        "time5m": "منذ 5 دقائق",
         "time5m": "منذ 5 دقائق",
         "time1h": "منذ ساعة"
     },

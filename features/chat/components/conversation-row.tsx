@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
+import { useChatSocket } from '../socket/chat-socket-provider';
 import type { ChatConversation } from '../types';
 import { formatWhen, pickOtherUser } from '../utils/format';
 import { ChatRowAvatar } from './chat-row-avatar';
@@ -30,7 +31,19 @@ export const ConversationRow = ({
     // Conversation endpoint doesn't flag which participant is the current
     // user, so we match against `/api/me`'s id.
     const { profile } = useProfileUser();
+    const { unreadByConversation, presenceByUser } = useChatSocket();
     const other = pickOtherUser(conversation, profile?.id);
+    // Prefer the live socket presence; fall back to the status baked into the
+    // REST payload (may be stale or missing until the socket delivers one).
+    const status = other ? (presenceByUser[other.id] ?? other.status) : undefined;
+
+    // Reconcile the server's count with our local tally: the socket increment
+    // lives in the local tally and survives conversation-list refetches, so
+    // take whichever is higher.
+    const unreadCount = Math.max(
+        conversation.unreadCount,
+        unreadByConversation[conversation.id] ?? 0,
+    );
 
     return (
         <button
@@ -38,7 +51,11 @@ export const ConversationRow = ({
             className={styles.conversationCard}
             onClick={() => onOpen?.(conversation.id)}
         >
-            <ChatRowAvatar photo={other?.photo} name={other?.fullName ?? ''} />
+            <ChatRowAvatar
+                photo={other?.photo}
+                name={other?.fullName ?? ''}
+                status={status}
+            />
             <div className={styles.rowInfo}>
                 <div className={styles.rowName}>{other?.fullName}</div>
                 <div className={styles.conversationPreview}>
@@ -49,10 +66,8 @@ export const ConversationRow = ({
                 <span className={styles.conversationTime}>
                     {formatWhen(conversation.updatedAt, locale)}
                 </span>
-                {conversation.unreadCount > 0 && (
-                    <span className={styles.unreadBadge}>
-                        {conversation.unreadCount}
-                    </span>
+                {unreadCount > 0 && (
+                    <span className={styles.unreadBadge}>{unreadCount}</span>
                 )}
             </div>
         </button>

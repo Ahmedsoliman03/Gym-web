@@ -140,7 +140,8 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
         }
 
         // Translate the cookie token to the Authorization Bearer header for backends
-        // that accept it; Django still receives the Cookie header too.
+        // that accept it; Django still receives the
+        //  Cookie header too.
         const cookieStore = await cookies();
         const token = cookieStore.get('access_token')?.value || cookieStore.get('token')?.value;
         if (token && !headers.has('Authorization')) {

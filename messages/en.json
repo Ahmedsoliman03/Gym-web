@@ -198,7 +198,7 @@
         "title": "Elite Career",
         "highlight": "Feed",
         "openOpportunities": "Professional Roles Available",
-        "description": "Connecting the world's most elite fitness professionals with state-of-the-art facilities across the globe.",
+        "description": "Brief headline or note...",
         "applyNow": "Apply Now",
         "savePost": "Save",
         "sharePost": "Share",
@@ -212,7 +212,6 @@
         "whatsappNumber": "WhatsApp Number",
         "whatsappInvalid": "Enter a valid Egyptian number (e.g. 01XXXXXXXXX)",
         "headline": "Headline (Optional)",
-        "description": "Brief headline or note...",
         "uploadCv": "Upload CV",
         "cvSelected": "CV ready · tap to replace",
         "cvRemove": "Remove CV",
@@ -678,7 +677,9 @@
         "approveSuccessToast": "Request approved.",
         "approveErrorToast": "Couldn't approve request.",
         "rejectSuccessToast": "Request rejected.",
-        "rejectErrorToast": "Couldn't reject request."
+        "rejectErrorToast": "Couldn't reject request.",
+        "searchPlaceholder": "Search by name…",
+        "searchNoResults": "No conversations match your search."
     },
     "Settings": {
         "title": "Settings",
@@ -734,7 +735,6 @@
         "chatDesc": "Sarah sent you a message: \"Hey, are we still on for today?\"",
         "coachApplyTitle": "New Coach Application",
         "coachApplyDesc": "Ahmed submitted an application to join your gym.",
-        "time5m": "5m ago",
         "time5m": "5m ago",
         "time1h": "1h ago"
     },

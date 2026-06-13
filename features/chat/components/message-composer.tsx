@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { chatKeys } from '../services/chat.service';
 import { useChatSocket } from '../socket/chat-socket-provider';
@@ -56,8 +56,42 @@ export const MessageComposer = ({
     const t = useTranslations('Chat');
     const queryClient = useQueryClient();
     const { profile } = useProfileUser();
-    const { sendMessage, status } = useChatSocket();
+    const { sendMessage, startTyping, stopTyping, status } = useChatSocket();
     const [value, setValue] = useState('');
+
+    // Typing indicator: emit `typing.start` on the first keystroke, then
+    // `typing.stop` either after a short idle window or on send/blur/unmount.
+    const isTypingRef = useRef(false);
+    const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const emitStopTyping = useCallback(() => {
+        if (stopTimerRef.current) {
+            clearTimeout(stopTimerRef.current);
+            stopTimerRef.current = null;
+        }
+        if (isTypingRef.current) {
+            isTypingRef.current = false;
+            stopTyping(conversationId);
+        }
+    }, [conversationId, stopTyping]);
+
+    const handleChange = (next: string) => {
+        setValue(next);
+        if (status !== 'open') return;
+        if (next.trim().length === 0) {
+            emitStopTyping();
+            return;
+        }
+        if (!isTypingRef.current) {
+            isTypingRef.current = true;
+            startTyping(conversationId);
+        }
+        if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
+        stopTimerRef.current = setTimeout(emitStopTyping, 2500);
+    };
+
+    // Stop typing when the thread changes or the composer unmounts.
+    useEffect(() => emitStopTyping, [conversationId, emitStopTyping]);
 
     const trimmed = value.trim();
     const canSend = trimmed.length > 0 && status === 'open' && !!profile;
@@ -91,6 +125,7 @@ export const MessageComposer = ({
 
         sendMessage(conversationId, body, clientMessageId);
         setValue('');
+        emitStopTyping();
     };
 
     const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -111,8 +146,9 @@ export const MessageComposer = ({
                 <textarea
                     rows={1}
                     value={value}
-                    onChange={(e) => setValue(e.target.value)}
+                    onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={onKeyDown}
+                    onBlur={emitStopTyping}
                     placeholder={t('placeholder')}
                     className={styles.input}
                 />

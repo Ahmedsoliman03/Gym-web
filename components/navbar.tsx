@@ -95,6 +95,7 @@ export const Navbar = () => {
                 <ChatTrigger
                   buttonClassName={styles.chatButton}
                   badgeClassName={styles.chatBadge}
+                  dotClassName={styles.chatDot}
                 />
                 <NotificationsMenu
                   buttonClassName={styles.notifButton}

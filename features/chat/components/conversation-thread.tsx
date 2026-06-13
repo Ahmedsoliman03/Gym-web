@@ -8,9 +8,10 @@ import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import {
     chatKeys,
     useConversationMessages,
+    useConversations,
     useMarkConversationReadMutation,
 } from '../services/chat.service';
-import type { ChatConversation } from '../types';
+import { useChatSocket } from '../socket/chat-socket-provider';
 import { pickOtherUser } from '../utils/format';
 import { ChatRowAvatar } from './chat-row-avatar';
 import {
@@ -20,6 +21,7 @@ import {
 } from './chat-empty-state';
 import { MessageBubble } from './message-bubble';
 import { MessageComposer } from './message-composer';
+import { TypingIndicator } from './typing-indicator';
 
 const styles = {
     header:
@@ -47,27 +49,60 @@ export const ConversationThread = ({
     const queryClient = useQueryClient();
     const messagesQuery = useConversationMessages(conversationId);
     const markRead = useMarkConversationReadMutation();
+    const { clearUnread, typingByConversation, presenceByUser } = useChatSocket();
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Pull the conversation from the cached list rather than refetching it —
-    // the user landed here by clicking a row, so the cache is guaranteed warm.
-    const conversations =
-        queryClient.getQueryData<ChatConversation[]>(chatKeys.conversations) ?? [];
-    const conversation = conversations.find((c) => c.id === conversationId);
-    const other = conversation ? pickOtherUser(conversation, profile?.id) : undefined;
+    // Subscribe to the conversations cache (reactive) — NOT a one-off
+    // `getQueryData` read — so the thread re-renders when the other
+    // participant's `lastReadAt` advances and the read receipt can flip live.
+    const conversationsQuery = useConversations();
+    const conversation = conversationsQuery.data?.find((c) => c.id === conversationId);
+    const meId = profile?.id;
+    const other = conversation ? pickOtherUser(conversation, meId) : undefined;
+    const otherStatus = other ? (presenceByUser[other.id] ?? other.status) : undefined;
+
+    // Read receipts: a message I sent is "read" once the other participant's
+    // last-read timestamp catches up to it. Derived from the conversation's
+    // participants (the backend has no per-message read event).
+    const otherParticipant = conversation?.participants.find(
+        (p) => p.user?.id !== meId,
+    );
+    const otherLastReadMs = otherParticipant?.lastReadAt
+        ? new Date(otherParticipant.lastReadAt).getTime()
+        : 0;
+
+    // Typing: show the indicator when someone other than me is typing here.
+    const typers = typingByConversation[conversationId];
+    const someoneTyping = !!typers && Array.from(typers).some((id) => id !== meId);
 
     // Mark as read when the thread mounts (or when switching between threads).
     // The mutation's onMutate already zeroes the unread badge optimistically.
     useEffect(() => {
         markRead.mutate(conversationId);
+        clearUnread(conversationId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationId]);
 
-    // Jump to the bottom on initial load and whenever new messages arrive.
+    // Read receipts have no backend WS event, so while the thread is open we
+    // refetch the conversation list on a short interval to pick up the other
+    // participant's advancing `lastReadAt`. Combined with the reactive
+    // `useConversations` above, the sent → read check flips within one tick of
+    // them opening the message. Paused while the tab is hidden.
+    useEffect(() => {
+        const id = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
+            }
+        }, 4000);
+        return () => clearInterval(id);
+    }, [queryClient]);
+
+    // Jump to the bottom on initial load, on new messages, and when the typing
+    // indicator appears.
     const messageCount = messagesQuery.data?.length ?? 0;
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ block: 'end' });
-    }, [messageCount]);
+    }, [messageCount, someoneTyping]);
 
     const BackIcon = isRtl ? ArrowRight : ArrowLeft;
 
@@ -87,6 +122,7 @@ export const ConversationThread = ({
                     <ChatRowAvatar
                         photo={other?.photo}
                         name={other?.fullName ?? ''}
+                        status={otherStatus}
                     />
                     <div className={styles.nameWrap}>
                         <div className={styles.name}>{other?.fullName}</div>
@@ -102,23 +138,32 @@ export const ConversationThread = ({
                     <ChatLoadingState label={t('loading')} />
                 ) : messagesQuery.isError ? (
                     <ChatErrorState label={t('loadError')} />
-                ) : messageCount === 0 ? (
+                ) : messageCount === 0 && !someoneTyping ? (
                     <ChatEmptyState
                         icon={<MessageSquare size={22} />}
                         label={t('noMessagesYet')}
                     />
                 ) : (
                     <>
-                        {messagesQuery.data!.map((m) => (
-                            <MessageBubble
-                                // Prefer clientMessageId so the optimistic
-                                // bubble keeps its mount when the server echo
-                                // swaps in the real id — no flicker on send.
-                                key={m.clientMessageId || m.id}
-                                message={m}
-                                mine={!!profile?.id && m.sender?.id === profile.id}
-                            />
-                        ))}
+                        {messagesQuery.data?.map((m) => {
+                            const mine = !!meId && m.sender?.id === meId;
+                            const read =
+                                mine &&
+                                otherLastReadMs >=
+                                    new Date(m.createdAt).getTime();
+                            return (
+                                <MessageBubble
+                                    // Prefer clientMessageId so the optimistic
+                                    // bubble keeps its mount when the server echo
+                                    // swaps in the real id — no flicker on send.
+                                    key={m.clientMessageId || m.id}
+                                    message={m}
+                                    mine={mine}
+                                    read={read}
+                                />
+                            );
+                        })}
+                        {someoneTyping && <TypingIndicator />}
                         <div ref={bottomRef} />
                     </>
                 )}

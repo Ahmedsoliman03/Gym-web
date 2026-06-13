@@ -39,7 +39,10 @@ export const styles = {
   notifButton: "relative p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
   notifBadge: "absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse",
   chatButton: "relative p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
-  chatBadge: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-black rounded-full border-2 border-background flex items-center justify-center tabular-nums",
+  chatBadge: "absolute -bottom-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-black rounded-full border-2 border-background flex items-center justify-center tabular-nums",
+  // Unread-messages indicator — a static red dot. Sits at the top corner so it
+  // never collides with the (bottom-corner) request count badge.
+  chatDot: "absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background",
   divider: "h-8 w-[1px] bg-white/5 mx-2 hidden sm:block",
   profileLink: (isActive: boolean, isRtl: boolean) => `
     flex items-center gap-3 ${isRtl ? "sm:pl-4 sm:pr-1" : "sm:pl-1 sm:pr-4"} sm:py-1 transition-all group rounded-full border

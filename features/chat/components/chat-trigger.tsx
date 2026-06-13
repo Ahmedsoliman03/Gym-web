@@ -4,19 +4,24 @@ import { MessageSquare } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { triggerChatOpen } from '../hooks/use-chat';
+import { useChatUnreadCount } from '../hooks/use-chat-unread-count';
 import { usePendingIncomingCount } from '../hooks/use-pending-incoming-count';
 
 interface ChatTriggerProps {
     buttonClassName: string;
+    /** Numeric badge for pending incoming chat requests. */
     badgeClassName: string;
+    /** Positioning wrapper for the unread-messages red dot. */
+    dotClassName: string;
 }
 
-/** Navbar chat icon — opens the side chat widget and surfaces a count badge
- *  for pending incoming requests so the recipient can spot them without
- *  hunting through the panel. */
-export const ChatTrigger = ({ buttonClassName, badgeClassName }: ChatTriggerProps) => {
+/** Navbar chat icon — opens the side chat widget and surfaces two signals:
+ *  a numeric badge for pending incoming requests, and a pulsing red dot when
+ *  any conversation has unread messages. */
+export const ChatTrigger = ({ buttonClassName, badgeClassName, dotClassName }: ChatTriggerProps) => {
     const t = useTranslations('Chat');
     const pending = usePendingIncomingCount();
+    const unread = useChatUnreadCount();
 
     return (
         <button
@@ -26,6 +31,7 @@ export const ChatTrigger = ({ buttonClassName, badgeClassName }: ChatTriggerProp
             aria-label={t('requestsTitle')}
             title={t('requestsTitle')}
         >
+            {unread > 0 && <span className={dotClassName} aria-hidden="true" />}
             {pending > 0 && (
                 <span className={badgeClassName} aria-hidden="true">
                     {pending > 9 ? '9+' : pending}

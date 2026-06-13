@@ -167,7 +167,9 @@ export const getConversationMessages = async ({
         `/api/chat/conversations/${conversationId}/messages`,
         { params: { limit, ...(before ? { before } : {}) } }
     );
-    return data;
+    // The endpoint returns newest-first; reverse to oldest-first so the thread
+    // reads top→bottom and socket/optimistic appends land at the bottom.
+    return [...data].reverse();
 };
 
 export const useConversationMessages = (conversationId: string, limit = 50) => {
