@@ -8,6 +8,7 @@ import {
     useChatSettings,
     useUpdateChatSettingsMutation,
 } from '@/features/chat/services/chat.service';
+import { useChatSocket } from '@/features/chat/socket/chat-socket-provider';
 import type {
     ChatAccessRule,
     ChatSettings,
@@ -33,6 +34,7 @@ export function ChatSettingsSection() {
     const t = useTranslations('Settings');
     const { data: settings, isLoading, isError } = useChatSettings();
     const updateMutation = useUpdateChatSettingsMutation();
+    const { setPresence } = useChatSocket();
 
     // Local draft so the user can tweak multiple toggles and commit them all
     // with one Save call. We resync whenever the server value updates.
@@ -55,8 +57,15 @@ export function ChatSettingsSection() {
 
     const handleSave = () => {
         if (!dirty) return;
+        const presenceChanged = draft.manualStatus !== settings.manualStatus;
         updateMutation.mutate(draft, {
-            onSuccess: () => toast.success(t('chatUpdateSuccess')),
+            onSuccess: () => {
+                // Persisted via REST; also broadcast the new status live over
+                // the socket so other users' presence dots update immediately
+                // instead of waiting on the backend to apply the saved value.
+                if (presenceChanged) setPresence(draft.manualStatus);
+                toast.success(t('chatUpdateSuccess'));
+            },
             onError: () => toast.error(t('chatUpdateError')),
         });
     };

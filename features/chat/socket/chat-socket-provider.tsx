@@ -20,6 +20,7 @@ import type {
     ChatConversation,
     ChatMessage,
     ChatServerEvent,
+    ChatSettings,
     PresenceStatus,
 } from '../types';
 
@@ -342,6 +343,16 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     ws.send(JSON.stringify({ type: 'presence.heartbeat' } satisfies ChatClientEvent));
                 }
             }, HEARTBEAT_MS);
+
+            const settings = qc.getQueryData<ChatSettings>(chatKeys.settings);
+            if (settings?.manualStatus) {
+                ws.send(
+                    JSON.stringify({
+                        type: 'presence.set',
+                        status: settings.manualStatus,
+                    } satisfies ChatClientEvent),
+                );
+            }
 
             aliveCheckTimerRef.current = setInterval(() => {
                 if (ws.readyState !== WebSocket.OPEN) return;
