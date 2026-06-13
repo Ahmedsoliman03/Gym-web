@@ -59,9 +59,18 @@ const log = (event: string, extra?: Record<string, unknown>) => {
 };
 
 const buildWsUrl = (): string | null => {
-    const explicit = process.env.NEXT_PUBLIC_WS_URL;
-    if (!explicit) return null;
-    const trimmed = explicit.replace(/\/+$/, '');
+    const explicit = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL;
+    const fallback =
+        typeof window !== 'undefined'
+            ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:8000`
+            : null;
+    const raw = explicit || fallback;
+    if (!raw) return null;
+    const trimmed = raw
+        .replace(/^http:\/\//, 'ws://')
+        .replace(/^https:\/\//, 'wss://')
+        .replace(/\/api\/?$/, '')
+        .replace(/\/+$/, '');
     return trimmed.endsWith('/ws/chat') ? `${trimmed}/` : `${trimmed}/ws/chat/`;
 };
 
@@ -74,6 +83,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const wsRef = useRef<WebSocket | null>(null);
     const reconnectAttemptRef = useRef(0);
     const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const scheduleReconnectRef = useRef<(() => void) | null>(null);
     const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const aliveCheckTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const typingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -83,7 +93,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const outboundQueueRef = useRef<ChatClientEvent[]>([]);
     const pendingCatchupRef = useRef(false);
     const isLoggedInRef = useRef(isLoggedIn);
-    isLoggedInRef.current = isLoggedIn;
 
     const [status, setStatus] = useState<ChatSocketStatus>('idle');
     const [typingByConversation, setTypingByConversation] = useState<
@@ -92,6 +101,10 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const [presenceByUser, setPresenceByUser] = useState<Record<string, PresenceStatus>>({});
     const [lastError, setLastError] = useState<ChatSocketContextValue['lastError']>(null);
     const [gaveUp, setGaveUp] = useState(false);
+
+    useEffect(() => {
+        isLoggedInRef.current = isLoggedIn;
+    }, [isLoggedIn]);
 
     const send = useCallback((event: ChatClientEvent) => {
         const ws = wsRef.current;
@@ -236,7 +249,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
 
         const baseUrl = buildWsUrl();
         if (!baseUrl) {
-            log('NEXT_PUBLIC_WS_URL is not set — cannot connect');
+            log('WebSocket URL could not be resolved — cannot connect');
             setLastError({ reason: 'missing-ws-url', at: Date.now() });
             setStatus('closed');
             setGaveUp(true);
@@ -259,7 +272,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 setGaveUp(true);
                 return;
             }
-            scheduleReconnect();
+            scheduleReconnectRef.current?.();
             return;
         }
 
@@ -277,7 +290,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             log('constructor threw', { err: String(err) });
             setLastError({ reason: 'constructor-threw', at: Date.now() });
             setStatus('closed');
-            scheduleReconnect();
+            scheduleReconnectRef.current?.();
             return;
         }
         wsRef.current = ws;
@@ -372,7 +385,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 setGaveUp(true);
                 return;
             }
-            scheduleReconnect();
+            scheduleReconnectRef.current?.();
         });
 
         ws.addEventListener('error', () => {
@@ -403,6 +416,10 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         }, delay);
     }, [connect]);
 
+    useEffect(() => {
+        scheduleReconnectRef.current = scheduleReconnect;
+    }, [scheduleReconnect]);
+
     const retry = useCallback(() => {
         if (!isLoggedInRef.current) return;
         log('manual retry');
@@ -419,8 +436,11 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     }, [connect]);
 
     useEffect(() => {
-        if (isLoggedIn) void connect();
-        else teardown();
+        const timer = setTimeout(() => {
+            if (isLoggedIn) void connect();
+            else teardown();
+        }, 0);
+        return () => clearTimeout(timer);
     }, [isLoggedIn, connect, teardown]);
 
     useEffect(() => () => teardown(), [teardown]);

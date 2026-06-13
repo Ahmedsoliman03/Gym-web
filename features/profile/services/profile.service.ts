@@ -19,15 +19,11 @@ export const updateProfile = async (payload: FormData): Promise<UserProfile> => 
 };
 
 export const useProfileQuery = () => {
-    // The `user_type` cookie is set by the backend proxy on login and cleared
-    // on logout. Use its presence as a "we have a session" hint so logged-out
-    // users on public pages don't churn 401s against /api/me.
-    const isPossiblyLoggedIn =
-        typeof document !== 'undefined' && /(?:^|;\s*)user_type=/.test(document.cookie);
     return useQuery({
         queryKey: ['profile'],
         queryFn: getProfile,
-        enabled: isPossiblyLoggedIn,
+        retry: false,
+        staleTime: 30_000,
     });
 };
 

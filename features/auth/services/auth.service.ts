@@ -8,6 +8,17 @@ import {
     ActivateRequest,
 } from '../types';
 
+const syncAuthenticatedUser = (
+    queryClient: ReturnType<typeof useQueryClient>,
+    user: unknown,
+) => {
+    if (!user) return;
+    queryClient.setQueryData(['session'], user);
+    queryClient.setQueryData(['profile'], (previous: unknown) => previous ?? user);
+    void queryClient.invalidateQueries({ queryKey: ['profile'] });
+    void queryClient.invalidateQueries({ queryKey: ['session'] });
+};
+
 export const useLoginMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -21,7 +32,7 @@ export const useLoginMutation = () => {
             //     expires.setDate(expires.getDate() + 7); // 7 days
             //     document.cookie = `access_token=${data.token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax; Secure`;
             // }
-            queryClient.setQueryData(['session'], data.user);
+            syncAuthenticatedUser(queryClient, data.user);
         }
     });
 };
@@ -36,20 +47,28 @@ export const useRegisterMutation = () => {
 };
 
 export const useVerifyOTPMutation = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (values: VerifyOTPRequest) => {
             const { data } = await api.post('/api/auth/verify-otp', values);
             return data;
-        }
+        },
+        onSuccess: (data) => {
+            syncAuthenticatedUser(queryClient, data.user);
+        },
     });
 };
 
 export const useActivateMutation = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (values: ActivateRequest) => {
             const { data } = await api.post('/api/auth/activate', values);
             return data;
-        }
+        },
+        onSuccess: (data) => {
+            syncAuthenticatedUser(queryClient, data.user);
+        },
     });
 };
 
