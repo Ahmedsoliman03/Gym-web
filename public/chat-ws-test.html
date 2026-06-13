@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GymSpot Chat WS Test</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #090d16;
+      color: #eef2ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      min-height: 100vh;
+      background: #090d16;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: 22px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: #a7f3d0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 420px) minmax(320px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.12);
+      background: #111827;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .stack { display: grid; gap: 10px; }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    input, textarea, button {
+      font: inherit;
+      border-radius: 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.14);
+      background: #050816;
+      color: #f9fafb;
+      padding: 10px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #22c55e;
+    }
+
+    button {
+      border: 0;
+      background: #22c55e;
+      color: #04110a;
+      font-weight: 800;
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #263244;
+      color: #e5e7eb;
+    }
+
+    button.danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #cbd5e1;
+      background: #0b1020;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #6b7280;
+    }
+
+    .dot.open { background: #22c55e; }
+    .dot.connecting { background: #f59e0b; }
+    .dot.closed { background: #ef4444; }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .item {
+      border: 1px solid rgba(255,255,255,.10);
+      background: #0b1020;
+      border-radius: 8px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #9ca3af;
+      overflow-wrap: anywhere;
+    }
+
+    .messages {
+      min-height: 260px;
+      max-height: 420px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 8px;
+      padding: 12px;
+      background: #050816;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .msg {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #182235;
+      max-width: 80%;
+    }
+
+    .msg.mine {
+      justify-self: end;
+      background: #14532d;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .logs {
+      max-height: 300px;
+      overflow: auto;
+      background: #050816;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+
+    @media (max-width: 900px) {
+      body { padding: 14px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>GymSpot Chat WebSocket Test</h1>
+
+  <div class="grid">
+    <div class="stack">
+      <section class="panel stack">
+        <h2>1. Login</h2>
+        <label>
+          Email or phone
+          <input id="email" autocomplete="username" placeholder="user@example.com" />
+        </label>
+        <label>
+          Password
+          <input id="password" type="password" autocomplete="current-password" />
+        </label>
+        <button id="loginBtn">Login</button>
+        <button id="meBtn" class="secondary">Check /api/me</button>
+        <div class="small" id="meText">Not checked.</div>
+      </section>
+
+      <section class="panel stack">
+        <h2>2. WebSocket</h2>
+        <label>
+          WS base URL
+          <input id="wsBase" value="ws://localhost:8000" />
+        </label>
+        <div class="row">
+          <button id="connectBtn">Get ticket + connect</button>
+          <button id="disconnectBtn" class="danger">Disconnect</button>
+        </div>
+        <div class="status">
+          <span id="dot" class="dot closed"></span>
+          <span id="statusText">closed</span>
+        </div>
+      </section>
+
+      <section class="panel stack">
+        <h2>3. Start Or Pick Chat</h2>
+        <label>
+          Target user id
+          <input id="targetUserId" placeholder="UUID of the other user" />
+        </label>
+        <button id="startChatBtn">Start chat with target</button>
+        <label>
+          Current conversation id
+          <input id="conversationId" placeholder="Conversation UUID" />
+        </label>
+        <div class="row">
+          <button id="loadConversationsBtn" class="secondary">Load conversations</button>
+          <button id="loadIncomingBtn" class="secondary">Load incoming requests</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel stack">
+        <h2>Conversation</h2>
+        <div class="row">
+          <button id="loadMessagesBtn" class="secondary">Load messages</button>
+          <button id="markReadBtn" class="secondary">Mark read</button>
+        </div>
+        <div class="messages" id="messages"></div>
+        <label>
+          Message
+          <textarea id="body" placeholder="Type anything..."></textarea>
+        </label>
+        <button id="sendBtn">Send over WebSocket</button>
+      </section>
+
+      <section class="panel stack">
+        <h2>Conversations / Requests</h2>
+        <div class="list" id="list"></div>
+      </section>
+
+      <section class="panel stack">
+        <h2>Logs</h2>
+        <div class="logs"><pre id="logs"></pre></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      ws: null,
+      me: null,
+      conversationId: localStorage.getItem("gymspot-test-conversation") || "",
+    };
+
+    $("conversationId").value = state.conversationId;
+    $("email").value = localStorage.getItem("gymspot-test-email") || "";
+    $("targetUserId").value = localStorage.getItem("gymspot-test-target") || "";
+    $("wsBase").value = localStorage.getItem("gymspot-test-ws") || "ws://localhost:8000";
+
+    function log(label, value) {
+      const time = new Date().toLocaleTimeString();
+      const text = typeof value === "undefined"
+        ? ""
+        : typeof value === "string"
+          ? value
+          : JSON.stringify(value, null, 2);
+      $("logs").textContent += `[${time}] ${label}${text ? " " + text : ""}\n`;
+      $("logs").parentElement.scrollTop = $("logs").parentElement.scrollHeight;
+      console.log("[ws-test]", label, value ?? "");
+    }
+
+    function setStatus(status) {
+      $("statusText").textContent = status;
+      $("dot").className = "dot " + (status === "open" ? "open" : status === "connecting" ? "connecting" : "closed");
+    }
+
+    function wsUrl(base, ticket) {
+      const trimmed = base.replace(/\/+$/, "");
+      const path = trimmed.endsWith("/ws/chat") ? trimmed + "/" : trimmed + "/ws/chat/";
+      return path + "?ticket=" + encodeURIComponent(ticket);
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+        },
+        ...options,
+      });
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!response.ok) {
+        const err = new Error(response.status + " " + response.statusText);
+        err.status = response.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
+    }
+
+    function rememberConversation(id) {
+      state.conversationId = id || "";
+      $("conversationId").value = state.conversationId;
+      if (id) localStorage.setItem("gymspot-test-conversation", id);
+    }
+
+    function renderMessage(message) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg" + (state.me && message.sender && message.sender.id === state.me.id ? " mine" : "");
+      const name = message.sender ? message.sender.fullName : "unknown";
+      wrap.innerHTML = `<div class="small">${escapeHtml(name)} · ${escapeHtml(message.createdAt || "")}</div><div>${escapeHtml(message.body || "")}</div>`;
+      $("messages").appendChild(wrap);
+      $("messages").scrollTop = $("messages").scrollHeight;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function checkMe() {
+      const me = await api("/api/me");
+      state.me = me;
+      $("meText").textContent = `${me.fullName} (${me.userType}) id=${me.id}`;
+      log("/api/me", me);
+      return me;
+    }
+
+    $("loginBtn").addEventListener("click", async () => {
+      try {
+        const email = $("email").value.trim();
+        const password = $("password").value;
+        localStorage.setItem("gymspot-test-email", email);
+        const data = await api("/api/auth/login", {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+        });
+        log("login ok", data);
+        await checkMe();
+      } catch (err) {
+        log("login failed", { message: err.message, data: err.data });
+      }
+    });
+
+    $("meBtn").addEventListener("click", async () => {
+      try { await checkMe(); }
+      catch (err) { log("/api/me failed", { message: err.message, data: err.data }); }
+    });
+
+    $("connectBtn").addEventListener("click", async () => {
+      try {
+        if (state.ws && state.ws.readyState !== WebSocket.CLOSED) {
+          state.ws.close(1000, "reconnect");
+        }
+        const base = $("wsBase").value.trim();
+        localStorage.setItem("gymspot-test-ws", base);
+        setStatus("connecting");
+        const { ticket } = await api("/api/auth/ws-ticket", { method: "POST", body: "{}" });
+        const url = wsUrl(base, ticket);
+        log("connecting", url.replace(ticket, "[ticket]"));
+        const ws = new WebSocket(url);
+        state.ws = ws;
+
+        ws.addEventListener("open", () => {
+          setStatus("open");
+          log("ws open");
+        });
+
+        ws.addEventListener("message", (event) => {
+          let data = event.data;
+          try { data = JSON.parse(event.data); } catch {}
+          log("ws message", data);
+          if (data && data.type === "message.new") {
+            if (!state.conversationId || data.conversationId === state.conversationId) {
+              rememberConversation(data.conversationId);
+              renderMessage(data.message);
+            }
+          }
+        });
+
+        ws.addEventListener("close", (event) => {
+          setStatus("closed");
+          log("ws close", { code: event.code, reason: event.reason, wasClean: event.wasClean });
+        });
+
+        ws.addEventListener("error", () => {
+          log("ws error");
+        });
+      } catch (err) {
+        setStatus("closed");
+        log("connect failed", { message: err.message, data: err.data });
+      }
+    });
+
+    $("disconnectBtn").addEventListener("click", () => {
+      if (state.ws) state.ws.close(1000, "manual disconnect");
+    });
+
+    $("startChatBtn").addEventListener("click", async () => {
+      try {
+        const userId = $("targetUserId").value.trim();
+        localStorage.setItem("gymspot-test-target", userId);
+        const result = await api("/api/chat/start", {
+          method: "POST",
+          body: JSON.stringify({ userId }),
+        });
+        log("chat/start", result);
+        if (result.status === "conversation") {
+          rememberConversation(result.conversation.id);
+          await loadMessages();
+        } else {
+          log("request pending", "Open the other browser, login as target, load incoming requests, then approve.");
+        }
+      } catch (err) {
+        log("start chat failed", { message: err.message, data: err.data });
+      }
+    });
+
+    async function loadConversations() {
+      const conversations = await api("/api/chat/conversations");
+      log("conversations", conversations);
+      $("list").innerHTML = "";
+      conversations.forEach((conversation) => {
+        const item = document.createElement("div");
+        item.className = "item";
+        const otherNames = conversation.participants
+          .map((p) => p.user.fullName + " / " + p.user.id)
+          .join("\n");
+        item.innerHTML = `<div><strong>${escapeHtml(conversation.id)}</strong></div><div class="small">${escapeHtml(otherNames)}</div>`;
+        const btn = document.createElement("button");
+        btn.className = "secondary";
+        btn.textContent = "Use this conversation";
+        btn.addEventListener("click", async () => {
+          rememberConversation(conversation.id);
+          await loadMessages();
+        });
+        item.appendChild(btn);
+        $("list").appendChild(item);
+      });
+    }
+
+    $("loadConversationsBtn").addEventListener("click", async () => {
+      try { await loadConversations(); }
+      catch (err) { log("load conversations failed", { message: err.message, data: err.data }); }
+    });
+
+    $("loadIncomingBtn").addEventListener("click", async () => {
+      try {
+        const requests = await api("/api/chat/requests?box=incoming");
+        log("incoming requests", requests);
+        $("list").innerHTML = "";
+        requests.forEach((request) => {
+          const item = document.createElement("div");
+          item.className = "item";
+          item.innerHTML = `<div><strong>${escapeHtml(request.fromUser.fullName)}</strong> wants to chat</div><div class="small">request=${escapeHtml(request.id)} status=${escapeHtml(request.status)}</div>`;
+          if (request.status === "pending") {
+            const btn = document.createElement("button");
+            btn.textContent = "Approve";
+            btn.addEventListener("click", async () => {
+              const result = await api(`/api/chat/requests/${request.id}/approve`, {
+                method: "POST",
+                body: "{}",
+              });
+              log("approved", result);
+              rememberConversation(result.conversation.id);
+              await loadMessages();
+            });
+            item.appendChild(btn);
+          }
+          $("list").appendChild(item);
+        });
+      } catch (err) {
+        log("load incoming failed", { message: err.message, data: err.data });
+      }
+    });
+
+    async function loadMessages() {
+      const id = $("conversationId").value.trim();
+      rememberConversation(id);
+      if (!id) throw new Error("Missing conversation id");
+      const messages = await api(`/api/chat/conversations/${id}/messages?limit=50`);
+      log("messages", messages);
+      $("messages").innerHTML = "";
+      messages.slice().reverse().forEach(renderMessage);
+    }
+
+    $("loadMessagesBtn").addEventListener("click", async () => {
+      try { await loadMessages(); }
+      catch (err) { log("load messages failed", { message: err.message, data: err.data }); }
+    });
+
+    $("markReadBtn").addEventListener("click", async () => {
+      try {
+        const id = $("conversationId").value.trim();
+        const result = await api(`/api/chat/conversations/${id}/read`, {
+          method: "POST",
+          body: "{}",
+        });
+        log("mark read", result);
+      } catch (err) {
+        log("mark read failed", { message: err.message, data: err.data });
+      }
+    });
+
+    $("sendBtn").addEventListener("click", () => {
+      const id = $("conversationId").value.trim();
+      rememberConversation(id);
+      const body = $("body").value.trim();
+      if (!id || !body) return log("send blocked", "conversation id and message are required");
+      if (!state.ws || state.ws.readyState !== WebSocket.OPEN) {
+        return log("send blocked", "websocket is not open");
+      }
+      const event = {
+        type: "message.send",
+        conversationId: id,
+        body,
+        clientMessageId: "test-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+      };
+      state.ws.send(JSON.stringify(event));
+      $("body").value = "";
+      log("ws sent", event);
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+        state.ws.close(1000, "page unload");
+      }
+    });
+
+    log("ready", "Open this page at http://localhost:3000/chat-ws-test.html");
+  </script>
+</body>
+</html>

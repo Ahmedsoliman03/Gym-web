@@ -61,6 +61,7 @@ export const MessageComposer = ({
 
     const trimmed = value.trim();
     const canSend = trimmed.length > 0 && status === 'open' && !!profile;
+    const showSocketStatusHint = status === 'connecting' || status === 'closed';
 
     const handleSend = () => {
         if (!canSend) return;
@@ -103,7 +104,7 @@ export const MessageComposer = ({
 
     return (
         <div className="relative">
-            {status !== 'open' && (
+            {showSocketStatusHint && (
                 <div className={styles.statusHint}>{t('socketDisconnected')}</div>
             )}
             <div className={styles.wrap}>
