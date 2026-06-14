@@ -19,6 +19,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
+import { LiveValidate } from '@/components/shared/live-validate';
 
 const styles = {
     container: "space-y-4 max-w-[420px] mx-auto",
@@ -148,6 +149,7 @@ export default function RegisterForm() {
             >
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
+                        <LiveValidate />
                         {/* Name Grid */}
                         <div className="grid grid-cols-2 gap-3">
                             {/* First Name */}

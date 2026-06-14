@@ -21,7 +21,7 @@ type Panel = 'password' | 'chat' | 'notifications' | null;
 
 export function SettingsView() {
     const t = useTranslations('Settings');
-    const [open, setOpen] = useState<Panel>('password');
+    const [open, setOpen] = useState<Panel>(null);
 
     const toggle = (panel: Exclude<Panel, null>) =>
         setOpen((curr) => (curr === panel ? null : panel));

@@ -11,6 +11,7 @@ import {
 } from '@fluentui/react-icons';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
+import { LiveValidate } from '@/components/shared/live-validate';
 import { GymFormInnerProps } from '../types';
 
 const styles = {
@@ -46,6 +47,7 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
 
     return (
         <Form className={styles.form}>
+            <LiveValidate />
             <div className={styles.gridWrapper}>
                 {/* Gym Name */}
                 <div className={styles.fieldWrapper}>

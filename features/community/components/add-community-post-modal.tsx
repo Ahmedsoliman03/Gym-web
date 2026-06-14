@@ -7,6 +7,7 @@ import { Image as ImageIcon, Send, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/modal';
+import { LiveValidate } from '@/components/shared/live-validate';
 import { useCreatePostMutation } from '../services/community.service';
 
 interface AddCommunityPostModalProps {
@@ -88,6 +89,7 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
 
           return (
             <Form className={styles.form}>
+              <LiveValidate />
               <div className={styles.fieldWrapper}>
                 <label className={styles.label}>{t('contentLabel')}</label>
                 <Field

@@ -5,6 +5,7 @@ import { MapPin, ImageIcon, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/modal';
+import { LiveValidate } from '@/components/shared/live-validate';
 import { useEditJobMutation } from '../services/jobs.service';
 import type { Job } from '../types';
 
@@ -64,6 +65,7 @@ export function EditJobModal({ job, onClose }: EditJobModalProps) {
       >
         {() => (
           <Form className={styles.formWrapper}>
+            <LiveValidate />
 
             {/* ── Read-only section ── */}
             <p className={styles.sectionDivider}>{t('editReadOnly')}</p>

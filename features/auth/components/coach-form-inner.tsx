@@ -13,6 +13,7 @@ import { CustomMultiSelect } from '@/components/shared/custom-multi-select';
 import { SPECIALIZATIONS } from '@/constants/specializations';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
+import { LiveValidate } from '@/components/shared/live-validate';
 import { CoachFormInnerProps } from '../types';
 
 const styles = {
@@ -64,6 +65,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
 
     return (
         <Form className={styles.form}>
+            <LiveValidate />
             <div className={styles.gridWrapper}>
                 {/* Full Name */}
                 <div className={styles.fieldWrapper}>

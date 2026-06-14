@@ -6,6 +6,7 @@ import { Upload, Phone, FileCheck2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/modal';
+import { LiveValidate } from '@/components/shared/live-validate';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useApplyForJobMutation } from '../services/jobs.service';
 import type { Job } from '../types';
@@ -90,6 +91,7 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
             >
                 {({ setFieldValue, values }) => (
                     <Form className={styles.formWrapper}>
+                        <LiveValidate />
                         <div>
                             <label className={styles.label}>{t('userName')}</label>
                             <Field name="name" className={styles.input} placeholder={t('userName')} />

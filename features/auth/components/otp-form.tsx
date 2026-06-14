@@ -11,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
+import { LiveValidate } from '@/components/shared/live-validate';
 
 const styles = {
     container: "space-y-8",
@@ -103,6 +104,26 @@ export default function OtpForm() {
         }
     };
 
+    const handlePaste = (
+        e: React.ClipboardEvent<HTMLInputElement>,
+        setFieldValue: (field: string, value: string) => void,
+    ) => {
+        e.preventDefault();
+        // Pull only the digits out of whatever was pasted (handles "123 456",
+        // "123-456", or a full code dropped onto any square) and spread them
+        // across all six boxes starting from the first.
+        const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, otp.length);
+        if (!digits) return;
+
+        const newOtp = Array.from({ length: otp.length }, (_, i) => digits[i] ?? '');
+        setOtp(newOtp);
+        setFieldValue('code', newOtp.join(''));
+
+        // Focus the box after the last filled digit (or the final box).
+        const nextIndex = Math.min(digits.length, otp.length - 1);
+        inputRefs.current[nextIndex]?.focus();
+    };
+
     return (
         <div className={styles.container}>
             <Link href="/register" className={styles.backButton}>
@@ -132,6 +153,7 @@ export default function OtpForm() {
             >
                 {({ isSubmitting, setFieldValue }) => (
                     <Form className={styles.form}>
+                        <LiveValidate />
                         <div className={styles.otpWrapper}>
                             {otp.map((digit, index) => (
                                 <input
@@ -142,6 +164,7 @@ export default function OtpForm() {
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value, setFieldValue)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
+                                    onPaste={(e) => handlePaste(e, setFieldValue)}
                                     className={styles.otpInput}
                                     disabled={isExpired}
                                 />

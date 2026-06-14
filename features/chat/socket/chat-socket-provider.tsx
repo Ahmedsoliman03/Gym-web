@@ -12,6 +12,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { chatKeys } from '../services/chat.service';
+import { playNewMessageSound } from '../utils/notification-sound';
 import { getWsTicket } from '@/features/auth/services/auth.service';
 import { useProfileQuery } from '@/features/profile/services/profile.service';
 import type { UserProfile } from '@/features/profile/types';
@@ -44,6 +45,10 @@ export interface ChatSocketContextValue extends ChatSocketActions {
     unreadByConversation: Record<string, number>;
     /** Drop a conversation's local unread tally — call alongside markRead. */
     clearUnread: (conversationId: string) => void;
+    /** Tell the provider which conversation thread is currently open on screen.
+     *  Used to suppress the new-message sound for a conversation the user is
+     *  already looking at. Pass `null` when no thread is open. */
+    setActiveConversation: (conversationId: string | null) => void;
     lastError: { code?: number; reason?: string; at: number } | null;
     gaveUp: boolean;
     retry: () => void;
@@ -102,6 +107,11 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const connectGenRef = useRef(0);
 
     const lastInboundAtRef = useRef<number>(0);
+    // Conversation whose thread is open on screen — read in applyMessageNew to
+    // skip the alert sound for a chat the user is already viewing. A ref (not
+    // state) so the message handler always sees the latest value without
+    // re-creating the callback.
+    const activeConversationIdRef = useRef<string | null>(null);
     const outboundQueueRef = useRef<ChatClientEvent[]>([]);
     const pendingCatchupRef = useRef(false);
     const isLoggedInRef = useRef(isLoggedIn);
@@ -140,6 +150,16 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             const me = qc.getQueryData<UserProfile>(['profile']);
             const isMine = !!me && message.sender?.id === me.id;
 
+            // Is the user already looking at this exact conversation (its thread
+            // is open AND the tab is in the foreground)? Then the message is
+            // effectively "seen" — it must not ding or bump any unread count.
+            const isViewingThisChat =
+                activeConversationIdRef.current === conversationId &&
+                typeof document !== 'undefined' &&
+                document.visibilityState === 'visible';
+            // A message I sent, or one in the chat I'm watching, is never unread.
+            const countsAsUnread = !isMine && !isViewingThisChat;
+
             qc.setQueryData<ChatMessage[]>(chatKeys.messages(conversationId), (prev) => {
                 if (!prev) return prev;
                 if (message.clientMessageId) {
@@ -168,7 +188,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     ...conv,
                     lastMessage: message,
                     updatedAt: message.createdAt,
-                    unreadCount: isMine ? conv.unreadCount : conv.unreadCount + 1,
+                    unreadCount: countsAsUnread ? conv.unreadCount + 1 : conv.unreadCount,
                 };
                 return [updated, ...prev.slice(0, idx), ...prev.slice(idx + 1)];
             });
@@ -177,15 +197,21 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             // the next `/api/chat/conversations` refetch (which may return a
             // stale/zero `unreadCount`); this tally does not, so the badge
             // survives until the user actually opens the thread.
-            if (!isMine) {
+            if (countsAsUnread) {
                 setUnreadByConversation((prev) => ({
                     ...prev,
                     [conversationId]: (prev[conversationId] ?? 0) + 1,
                 }));
+                // Audible alert for the incoming message (gym boxing-bell).
+                playNewMessageSound();
             }
         },
         [qc],
     );
+
+    const setActiveConversation = useCallback((conversationId: string | null) => {
+        activeConversationIdRef.current = conversationId;
+    }, []);
 
     const clearUnread = useCallback((conversationId: string) => {
         setUnreadByConversation((prev) => {
@@ -567,6 +593,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 presenceByUser,
                 unreadByConversation,
                 clearUnread,
+                setActiveConversation,
                 lastError,
                 gaveUp,
                 retry,

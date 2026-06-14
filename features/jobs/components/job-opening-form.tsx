@@ -4,6 +4,7 @@ import { Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { SpecializationSelect } from '@/features/jobs/components/specialization-select';
 import { PostImageUpload } from '@/components/shared/post-image-upload';
+import { LiveValidate } from '@/components/shared/live-validate';
 
 interface JobOpeningFormProps {
   onSubmit: (values: {
@@ -55,6 +56,7 @@ export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
     >
       {({ setFieldValue, values, isSubmitting }) => (
         <Form className={styles.form}>
+          <LiveValidate />
           {/* Title */}
           <div className={styles.fieldWrapper}>
             <label className={styles.label}>{t('postTitle')}</label>

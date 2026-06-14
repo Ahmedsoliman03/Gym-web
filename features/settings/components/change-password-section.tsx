@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 
 import { useChangePasswordMutation } from '@/features/auth/services/auth.service';
+import { LiveValidate } from '@/components/shared/live-validate';
 import { settingsStyles as s } from './styles';
 
 export function ChangePasswordSection() {
@@ -41,6 +42,7 @@ export function ChangePasswordSection() {
         >
             {() => (
                 <Form className={`${s.formWrapper} mt-4`}>
+                    <LiveValidate />
                     <div>
                         <label className={s.label}>{tNav('currentPassword')}</label>
                         <Field name="currentPassword" type="password" className={s.input} />

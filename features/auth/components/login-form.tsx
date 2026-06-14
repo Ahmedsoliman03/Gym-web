@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
+import { LiveValidate } from '@/components/shared/live-validate';
 
 const styles = {
     container: "space-y-6",
@@ -112,6 +113,7 @@ export default function LoginForm() {
             >
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
+                        <LiveValidate />
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
                                 {t('Auth.email')}

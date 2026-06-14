@@ -16,6 +16,7 @@ import {
 } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
+import { LiveValidate } from '@/components/shared/live-validate';
 
 const styles = {
     success: {
@@ -121,6 +122,7 @@ export default function ActivateProfileForm() {
             >
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
+                        <LiveValidate />
 
 
                         <div className={styles.fieldWrapper}>

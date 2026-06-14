@@ -49,7 +49,8 @@ export const ConversationThread = ({
     const queryClient = useQueryClient();
     const messagesQuery = useConversationMessages(conversationId);
     const markRead = useMarkConversationReadMutation();
-    const { clearUnread, typingByConversation, presenceByUser } = useChatSocket();
+    const { clearUnread, setActiveConversation, typingByConversation, presenceByUser } =
+        useChatSocket();
     const bottomRef = useRef<HTMLDivElement>(null);
 
     // Subscribe to the conversations cache (reactive) — NOT a one-off
@@ -83,6 +84,14 @@ export const ConversationThread = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationId]);
 
+    // Register this thread as the on-screen conversation so the socket provider
+    // can skip the new-message sound while the user is viewing it. Cleared on
+    // unmount (panel closed / back to the list / thread switched).
+    useEffect(() => {
+        setActiveConversation(conversationId);
+        return () => setActiveConversation(null);
+    }, [conversationId, setActiveConversation]);
+
     // Read receipts have no backend WS event, so while the thread is open we
     // refetch the conversation list on a short interval to pick up the other
     // participant's advancing `lastReadAt`. Combined with the reactive
@@ -103,6 +112,21 @@ export const ConversationThread = ({
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ block: 'end' });
     }, [messageCount, someoneTyping]);
+
+    // A message can arrive over the socket while this thread is already open.
+    // The socket provider keeps its local count at zero, but the server may
+    // still have counted it — so re-mark the conversation read on each new
+    // message (while the tab is visible) to stop the badge resurfacing on the
+    // next periodic refetch.
+    useEffect(() => {
+        if (messageCount === 0) return;
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+            return;
+        }
+        markRead.mutate(conversationId);
+        clearUnread(conversationId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [messageCount]);
 
     const BackIcon = isRtl ? ArrowRight : ArrowLeft;
 
