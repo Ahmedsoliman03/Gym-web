@@ -21,6 +21,29 @@ const styles = {
     time: (mine: boolean) => `text-[10px] ${mine ? 'opacity-70' : 'opacity-60'}`,
 };
 
+/** Split a message body into text + clickable links. Keeps the regex local
+ *  (no shared `lastIndex` state) and tests each part with a non-global pattern
+ *  so URLs — including shared map locations — render as anchors. */
+const URL_SPLIT_RE = /(https?:\/\/[^\s]+)/g;
+const isUrl = (part: string) => /^https?:\/\//.test(part);
+
+const renderBody = (text: string) =>
+    text.split(URL_SPLIT_RE).map((part, i) =>
+        isUrl(part) ? (
+            <a
+                key={i}
+                href={part}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 break-all hover:opacity-80"
+            >
+                {part}
+            </a>
+        ) : (
+            <span key={i}>{part}</span>
+        ),
+    );
+
 const formatTime = (iso: string, locale: string) => {
     try {
         return new Intl.DateTimeFormat(locale, {
@@ -48,7 +71,9 @@ export const MessageBubble = ({
     return (
         <div className={styles.row(mine)}>
             <div className={styles.bubble(mine)}>
-                {message.body && <div className={styles.body}>{message.body}</div>}
+                {message.body && (
+                    <div className={styles.body}>{renderBody(message.body)}</div>
+                )}
                 {message.attachment && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

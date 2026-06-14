@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Mail, MessageSquare, Settings, Loader2 } from "lucide-react";
+import { Mail, MessageSquare, Settings, Loader2, Tag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
@@ -27,10 +27,15 @@ const styles = {
   name: "text-4xl font-bold text-foreground",
   tier: "bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase",
   title: "text-foreground/40 font-bold",
-  specializationChip:
-    "inline-flex items-center px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-wider",
-  specializationMore:
-    "inline-flex items-center px-2 py-1 rounded-full bg-white/5 border border-white/10 text-foreground/60 text-[10px] font-bold",
+  // Single specialization badge next to the name. The full list is revealed in
+  // a tooltip on hover/focus instead of rendering a chip per specialization.
+  specBadgeWrapper: "relative inline-flex group",
+  specBadge:
+    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-wider cursor-default focus:outline-none focus:ring-2 focus:ring-primary/40",
+  specTooltip:
+    "absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:flex group-focus-within:flex flex-wrap gap-1.5 w-max max-w-[260px] p-2.5 rounded-xl bg-surface border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+  specTooltipChip:
+    "inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold normal-case tracking-normal",
   emailRow:
     "flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-foreground/60 mb-3 break-all",
   emailIcon: "text-foreground/40 shrink-0",
@@ -80,10 +85,7 @@ export const CoachProfileHeader = ({
       },
     );
   };
-  // Show up to two specialization chips next to the name; collapse the rest
-  // into a "+N" badge so we don't overflow on long lists.
-  const visibleSpecs = (specializations ?? []).slice(0, 2);
-  const extraSpecCount = Math.max(0, (specializations?.length ?? 0) - visibleSpecs.length);
+  const allSpecs = specializations ?? [];
   const labelFor = (value: string) => {
     const match = SPECIALIZATIONS.find(
       (s) => s.value.toLowerCase() === value.toLowerCase(),
@@ -126,15 +128,29 @@ export const CoachProfileHeader = ({
         <div className={styles.infoWrapper}>
           <div className={styles.nameRow}>
             <h1 className={styles.name}>{name}</h1>
-            {/* Specialization indicator(s) sit right next to the name so
-                the visitor immediately knows the coach's focus area. */}
-            {visibleSpecs.map((spec) => (
-              <span key={spec} className={styles.specializationChip}>
-                {labelFor(spec)}
+            {/* A single specialization badge sits next to the name; hovering
+                (or focusing) it reveals every specialization in a tooltip so
+                the name row stays compact regardless of list length. */}
+            {allSpecs.length > 0 && (
+              <span
+                className={styles.specBadgeWrapper}
+                tabIndex={0}
+                aria-label={`${t('specializations')}: ${allSpecs
+                  .map(labelFor)
+                  .join(', ')}`}
+              >
+                <span className={styles.specBadge}>
+                  <Tag size={11} />
+                  {t('specializations')} · {allSpecs.length}
+                </span>
+                <span className={styles.specTooltip} role="tooltip">
+                  {allSpecs.map((spec) => (
+                    <span key={spec} className={styles.specTooltipChip}>
+                      {labelFor(spec)}
+                    </span>
+                  ))}
+                </span>
               </span>
-            ))}
-            {extraSpecCount > 0 && (
-              <span className={styles.specializationMore}>+{extraSpecCount}</span>
             )}
           </div>
 

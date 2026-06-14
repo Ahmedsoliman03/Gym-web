@@ -54,8 +54,12 @@ const ChatSocketContext = createContext<ChatSocketContextValue | null>(null);
 const HEARTBEAT_MS = 30_000;
 const STALE_INBOUND_MS = 75_000;
 const TYPING_AUTOCLEAR_MS = 6_000;
-const RECONNECT_BASE_MS = 1_000;
-const RECONNECT_MAX_MS = 30_000;
+// Exponential backoff between reconnect attempts:
+//   delay = min(RECONNECT_BASE_MS * 2^(attempt-1), RECONNECT_MAX_MS)
+// Spaced out so a flaky/offline server isn't hammered with rapid retries.
+// Schedule: 3s → 6s → 12s → 24s → 48s → 60s → 60s …
+const RECONNECT_BASE_MS = 3_000;
+const RECONNECT_MAX_MS = 60_000;
 const RECONNECT_MAX_ATTEMPTS = 10;
 const OUTBOUND_QUEUE_MAX = 50;
 const NO_RETRY_CLOSE_CODES = new Set<number>([4001, 4003, 4401, 4403]);

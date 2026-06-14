@@ -55,6 +55,19 @@ export const ChatWidget = () => {
         if (!isOpen) setSelectedConversationId(null);
     }, [isOpen]);
 
+    // Lock page scrolling while the panel is open so only the chat content
+    // (message list / conversation list) scrolls — the page behind stays put.
+    // Inner scroll containers keep working because the lock is on <body>, not
+    // on the panel.
+    useEffect(() => {
+        if (!isOpen) return;
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [isOpen]);
+
     // Honor an externally-requested tab (e.g. from a profile "Chat" button
     // that wants the panel to land on a specific tab). When no tab was
     // requested but there are pending incoming requests, default to Incoming
