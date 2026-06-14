@@ -412,6 +412,12 @@
         "clearFilters": "مسح جميع الفلاتر"
     },
     "Profile": {
+        "tabProfile": "الملف الشخصي",
+        "tabPosts": "المنشورات",
+        "tabSavedPosts": "المنشورات المحفوظة",
+        "tabSavedJobs": "الوظائف المحفوظة",
+        "tabMyJobs": "وظائفي",
+        "tabMyApplications": "طلباتي",
         "bookTour": "حجز جولة",
         "aboutFacility": "عن منشأتنا",
         "activePrograms": "البرامج النشطة",

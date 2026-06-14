@@ -1,4 +1,4 @@
-import { Bookmark, Briefcase, FileText, Inbox, Settings } from 'lucide-react';
+import { Bookmark, Briefcase, FileText, Settings } from 'lucide-react';
 import type { AccountLink, NavEntry, NavItem, UserType } from './types';
 
 type Translate = (key: string) => string;
@@ -61,21 +61,28 @@ export function buildNavEntries(
  * Secondary account links for signed-in users — rendered both in the desktop
  * avatar dropdown and the mobile "More" section, so they live in one place.
  * (Profile and Logout are handled separately by each surface.)
+ *
+ * The "my stuff" items deep-link into the profile page's tabs (the canonical
+ * home for a user's content) rather than standalone routes — keep these in
+ * sync with `tabsForUserType` in features/profile/components/profile-tabs.tsx.
+ * Chat Requests intentionally lives only in the chat widget, not here.
  */
 export function buildAccountLinks(t: Translate, userType: UserType): AccountLink[] {
   return [
-    { href: '/chat/requests', label: t('chatRequests'), icon: Inbox },
-    { href: '/my-posts', label: t('myPosts'), icon: FileText },
-    { href: '/saved-posts', label: t('savedPosts'), icon: Bookmark },
+    // Posts is author-only (clients can't publish posts).
+    ...(userType === 'coach' || userType === 'gym'
+      ? [{ href: '/profile?tab=posts', label: t('myPosts'), icon: FileText }]
+      : []),
+    { href: '/profile?tab=saved-posts', label: t('savedPosts'), icon: Bookmark },
     // My Jobs is gym-only (only gyms author job posts).
     ...(userType === 'gym'
-      ? [{ href: '/my-jobs', label: t('myJobs'), icon: Briefcase }]
+      ? [{ href: '/profile?tab=my-jobs', label: t('myJobs'), icon: Briefcase }]
       : []),
     // My Applications is coach-only (only coaches apply to jobs).
     ...(userType === 'coach'
-      ? [{ href: '/my-applications', label: t('myApplications'), icon: FileText }]
+      ? [{ href: '/profile?tab=my-applications', label: t('myApplications'), icon: FileText }]
       : []),
-    { href: '/saved-jobs', label: t('savedJobs'), icon: Bookmark },
+    { href: '/profile?tab=saved-jobs', label: t('savedJobs'), icon: Bookmark },
     { href: '/settings', label: t('settings'), icon: Settings },
   ];
 }

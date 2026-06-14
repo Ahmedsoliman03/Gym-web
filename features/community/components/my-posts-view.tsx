@@ -8,6 +8,7 @@ import { CommunityPostCard } from './community-post-card';
 
 const styles = {
   page: 'pt-20 sm:pt-24 pb-12 px-3 sm:px-6 md:px-12',
+  embedded: 'pb-4',
   inner: 'max-w-2xl mx-auto',
   feedList: 'flex flex-col gap-4 sm:gap-6',
   loading: 'flex items-center justify-center py-12 text-foreground/40',
@@ -17,20 +18,24 @@ const styles = {
     'p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center',
 };
 
-export function MyPostsView() {
+/** `embedded` renders the list without the full-page chrome (top padding +
+ *  PageHeader) so it can sit inside the profile page's tabbed layout. */
+export function MyPostsView({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('Community');
   const { data, isLoading, isError } = useMyPosts();
 
   const posts = data ?? [];
 
   return (
-    <div className={styles.page}>
-      <PageHeader
-        title={t('myPostsTitle')}
-        highlight={t('myPostsHighlight')}
-        description={t('myPostsDescription')}
-        showDivider
-      />
+    <div className={embedded ? styles.embedded : styles.page}>
+      {!embedded && (
+        <PageHeader
+          title={t('myPostsTitle')}
+          highlight={t('myPostsHighlight')}
+          description={t('myPostsDescription')}
+          showDivider
+        />
+      )}
 
       <div className={styles.inner}>
         {isLoading ? (

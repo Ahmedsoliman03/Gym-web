@@ -137,28 +137,59 @@ export const useDeleteJobMutation = () => {
     });
 };
 
-export const closeJob = async (jobId: string): Promise<Job> => {
-    const { data } = await api.post<Job>(`/api/jobs/${jobId}/close`);
-    return data;
+export const closeJob = async (jobId: string): Promise<void> => {
+    // The close endpoint replies 200 but may send an empty (or partial) body.
+    // `transformResponse: identity` stops Axios from trying to JSON-parse it,
+    // which otherwise surfaced a false "close failed" error on a successful
+    // request. We don't use the body — the optimistic patch + refetch below
+    // own the cache update.
+    await api.post(`/api/jobs/${jobId}/close`, undefined, {
+        transformResponse: (data) => data,
+    });
 };
+
+/** Mark a job closed in-place, preserving every other field (counts, gym,
+ *  etc.). Closing must never wipe `applicationsCount` / `savesCount` /
+ *  `sharesCount`, so we patch rather than replace with the server payload. */
+const applyJobClosedTransition = (job: Job, jobId: string, closedAt: string): Job =>
+    job.id === jobId ? { ...job, status: 'closed', closedAt } : job;
 
 export const useCloseJobMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: closeJob,
-        onSuccess: (updated) => {
-            // Replace the job in every cached list with the updated payload so
-            // its `status: 'closed'` propagates instantly.
-            (['jobs', ['jobs', 'mine']] as const).forEach((key) => {
-                queryClient.setQueriesData<Job[] | undefined>(
-                    { queryKey: Array.isArray(key) ? key : [key] },
-                    (curr) =>
-                        curr
-                            ? curr.map((j) => (j.id === updated.id ? updated : j))
-                            : curr,
-                );
+        // Optimistically flip the job to closed everywhere it's cached, keeping
+        // its counts intact. Snapshot first so we can roll back on failure.
+        onMutate: async (jobId) => {
+            await queryClient.cancelQueries({ queryKey: ['jobs'] });
+            const previous = queryClient.getQueriesData<Job[] | Job | undefined>({
+                queryKey: ['jobs'],
             });
-            queryClient.setQueryData(['jobs', updated.id], updated);
+            const closedAt = new Date().toISOString();
+
+            queryClient.setQueriesData<Job[] | undefined>(
+                { queryKey: ['jobs'] },
+                (curr) =>
+                    Array.isArray(curr)
+                        ? curr.map((j) => applyJobClosedTransition(j, jobId, closedAt))
+                        : curr,
+            );
+            queryClient.setQueryData<Job | undefined>(['jobs', jobId], (curr) =>
+                curr ? applyJobClosedTransition(curr, jobId, closedAt) : curr,
+            );
+
+            return { previous };
+        },
+        onError: (_err, _jobId, ctx) => {
+            ctx?.previous?.forEach(([key, data]) => {
+                queryClient.setQueryData(key, data);
+            });
+        },
+        onSettled: (_data, _err, jobId) => {
+            // Resync this job (and lists) with the server's authoritative copy —
+            // which keeps the counts correct after the optimistic patch.
+            queryClient.invalidateQueries({ queryKey: ['jobs'] });
+            queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
         },
     });
 };
@@ -289,20 +320,35 @@ export const applyForJob = async (input: ApplyJobInput): Promise<void> => {
     });
 };
 
-/** Flip `isApplied` to true on the matching job inside any cached list. */
+/** Flip `isApplied` to true and bump `applicationsCount` on the matching job.
+ *  Guarded on `isApplied` so re-runs (or a server refetch racing the optimistic
+ *  patch) can't double-count the same application. */
 const applyJobAppliedTransition = (job: Job, jobId: string): Job =>
-    job.id === jobId ? { ...job, isApplied: true } : job;
+    job.id === jobId && !job.isApplied
+        ? {
+              ...job,
+              isApplied: true,
+              applicationsCount: (job.applicationsCount ?? 0) + 1,
+          }
+        : job;
 
 export const useApplyForJobMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: applyForJob,
-        onSuccess: (_data, vars) => {
+        // Optimistic: swap the Apply button to "Already applied" AND increment
+        // the applicant count everywhere the job is rendered, before the request
+        // resolves. Snapshot first so we can roll back if the apply fails.
+        onMutate: async (vars) => {
+            await queryClient.cancelQueries({ queryKey: ['jobs'] });
+            const previous = queryClient.getQueriesData<Job[] | Job | undefined>({
+                queryKey: ['jobs'],
+            });
+
             // Patch every cached list view (feed, mine, saved, and any future
-            // list under the ['jobs'] root) so the Apply button swaps to the
-            // "Already applied" pill everywhere the same job is rendered.
-            // The ['jobs'] prefix also matches the single-Job detail query
-            // (['jobs', id]), so guard against non-array entries before mapping.
+            // list under the ['jobs'] root). The ['jobs'] prefix also matches
+            // the single-Job detail query (['jobs', id]), so guard against
+            // non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
@@ -312,8 +358,22 @@ export const useApplyForJobMutation = () => {
             );
             queryClient.setQueryData<Job | undefined>(
                 ['jobs', vars.jobId],
-                (curr) => (curr ? { ...curr, isApplied: true } : curr),
+                (curr) => (curr ? applyJobAppliedTransition(curr, vars.jobId) : curr),
             );
+
+            return { previous };
+        },
+        onError: (_err, _vars, ctx) => {
+            // Restore every snapshotted cache entry on failure.
+            ctx?.previous?.forEach(([key, data]) => {
+                queryClient.setQueryData(key, data);
+            });
+        },
+        onSettled: () => {
+            // Resync with the server's authoritative counts, and refresh the
+            // coach's own applications list so the new application shows up.
+            queryClient.invalidateQueries({ queryKey: ['jobs'] });
+            queryClient.invalidateQueries({ queryKey: ['applications'] });
         },
     });
 };

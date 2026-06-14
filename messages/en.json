@@ -411,6 +411,12 @@
         "clearFilters": "Clear All Filters"
     },
     "Profile": {
+        "tabProfile": "Profile",
+        "tabPosts": "Posts",
+        "tabSavedPosts": "Saved Posts",
+        "tabSavedJobs": "Saved Jobs",
+        "tabMyJobs": "My Jobs",
+        "tabMyApplications": "My Applications",
         "bookTour": "Book a Tour",
         "aboutFacility": "About our facility",
         "activePrograms": "Active Programs",

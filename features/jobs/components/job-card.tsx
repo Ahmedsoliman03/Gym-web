@@ -345,27 +345,26 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                 )}
 
                 {/* Public stats row — visible to every viewer (owner and
-                    non-owner). Always renders the three counters so social
-                    proof is consistent across roles. */}
-                {!isClosed && (
-                    <div className={styles.statsRow}>
-                        <div className={styles.statChip}>
-                            <Users size={14} />
-                            <span>{t('applicationsLabel')}</span>
-                            <span className={styles.statNum}>{applicationsCount}</span>
-                        </div>
-                        <div className={styles.statChip}>
-                            <Bookmark size={14} />
-                            <span>{t('savesLabel')}</span>
-                            <span className={styles.statNum}>{savesCount}</span>
-                        </div>
-                        <div className={styles.statChip}>
-                            <Share2 size={14} />
-                            <span>{t('sharesLabel')}</span>
-                            <span className={styles.statNum}>{sharesCount}</span>
-                        </div>
+                    non-owner), open or closed. The counters stay up after a job
+                    is closed so the gym keeps seeing its applications / saves /
+                    shares totals. */}
+                <div className={styles.statsRow}>
+                    <div className={styles.statChip}>
+                        <Users size={14} />
+                        <span>{t('applicationsLabel')}</span>
+                        <span className={styles.statNum}>{applicationsCount}</span>
                     </div>
-                )}
+                    <div className={styles.statChip}>
+                        <Bookmark size={14} />
+                        <span>{t('savesLabel')}</span>
+                        <span className={styles.statNum}>{savesCount}</span>
+                    </div>
+                    <div className={styles.statChip}>
+                        <Share2 size={14} />
+                        <span>{t('sharesLabel')}</span>
+                        <span className={styles.statNum}>{sharesCount}</span>
+                    </div>
+                </div>
 
                 {/* Footer actions */}
                 {isClosed ? (

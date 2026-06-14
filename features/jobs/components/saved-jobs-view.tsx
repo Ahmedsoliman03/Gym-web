@@ -7,25 +7,31 @@ import { JobsList } from './jobs-list';
 
 const styles = {
   page: 'pt-20 sm:pt-24 pb-12 px-3 sm:px-6 md:px-12',
+  embedded: 'pb-4',
   inner: 'max-w-4xl mx-auto mt-8 sm:mt-12',
+  innerEmbedded: 'max-w-4xl mx-auto',
 };
 
-export function SavedJobsView() {
+/** `embedded` renders the list without the full-page chrome (top padding +
+ *  PageHeader) so it can sit inside the profile page's tabbed layout. */
+export function SavedJobsView({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('Jobs');
   const { data: jobs, isLoading, isError } = useSavedJobs();
 
   return (
-    <div className={styles.page}>
-      <PageHeader
-        title={t('savedJobsTitle')}
-        highlight={t('savedJobsHighlight')}
-        description={t('savedJobsDescription')}
-        statsCount={jobs?.length?.toString() ?? '0'}
-        statsLabel={t('savedJobsStatsLabel')}
-        showDivider
-      />
+    <div className={embedded ? styles.embedded : styles.page}>
+      {!embedded && (
+        <PageHeader
+          title={t('savedJobsTitle')}
+          highlight={t('savedJobsHighlight')}
+          description={t('savedJobsDescription')}
+          statsCount={jobs?.length?.toString() ?? '0'}
+          statsLabel={t('savedJobsStatsLabel')}
+          showDivider
+        />
+      )}
 
-      <div className={styles.inner}>
+      <div className={embedded ? styles.innerEmbedded : styles.inner}>
         <JobsList
           jobs={jobs}
           isLoading={isLoading}

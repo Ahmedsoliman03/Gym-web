@@ -1,10 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
 import type { CoachProfileViewModel, GymProfileViewModel } from "@/features/profile/types";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
 import { ClientProfileView } from "@/features/profile/components/client-profile-view";
+import { ProfileTabs } from "@/features/profile/components/profile-tabs";
 import { GLoader } from "@/components/ui/g-loader";
 
 const styles = {
@@ -128,7 +130,11 @@ export default function ProfilePage() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        {renderProfile()}
+        <Suspense fallback={null}>
+          <ProfileTabs userType={profile.userType}>
+            {renderProfile()}
+          </ProfileTabs>
+        </Suspense>
       </div>
     </main>
   );
