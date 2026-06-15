@@ -38,7 +38,14 @@ const subtitleKey: Record<WidgetTab, string> = {
 
 export const ChatWidget = () => {
     const t = useTranslations('Chat');
-    const { isOpen, setIsOpen, requestedTab, clearRequestedTab } = useChat();
+    const {
+        isOpen,
+        setIsOpen,
+        requestedTab,
+        clearRequestedTab,
+        requestedConversationId,
+        clearRequestedConversation,
+    } = useChat();
     const locale = useLocale();
     const isRtl = locale === 'ar';
     const [tab, setTab] = useState<WidgetTab>('conversations');
@@ -87,6 +94,15 @@ export const ChatWidget = () => {
         // they manually switch tabs.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, requestedTab]);
+
+    // Open straight into a specific conversation when one was requested (e.g.
+    // from a chat notification). Runs after the open handler has set state.
+    useEffect(() => {
+        if (!isOpen || !requestedConversationId) return;
+        setTab('conversations');
+        setSelectedConversationId(requestedConversationId);
+        clearRequestedConversation();
+    }, [isOpen, requestedConversationId, clearRequestedConversation]);
 
     // Close when clicking outside the panel. The mobile overlay handles this
     // case via its onClick, but on desktop (sm:hidden) there's no element

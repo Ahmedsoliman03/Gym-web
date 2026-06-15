@@ -12,6 +12,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { chatKeys } from '../services/chat.service';
+import {
+    applyNotificationNew,
+    applyNotificationRead,
+    applyNotificationDeleted,
+    applyNotificationsCleared,
+} from '@/features/notification/services/notification.service';
 import { playNewMessageSound } from '../utils/notification-sound';
 import { getWsTicket } from '@/features/auth/services/auth.service';
 import { useProfileQuery } from '@/features/profile/services/profile.service';
@@ -430,6 +436,18 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     break;
                 case 'presence.update':
                     applyPresenceUpdate(payload.userId, payload.status);
+                    break;
+                case 'notification.new':
+                    applyNotificationNew(qc, payload.notification, payload.unreadCount);
+                    break;
+                case 'notification.read':
+                    applyNotificationRead(qc, payload.notificationId, payload.unreadCount);
+                    break;
+                case 'notification.deleted':
+                    applyNotificationDeleted(qc, payload.notificationId, payload.unreadCount);
+                    break;
+                case 'notification.clear':
+                    applyNotificationsCleared(qc);
                     break;
                 default:
                     break;

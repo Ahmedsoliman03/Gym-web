@@ -754,13 +754,11 @@
     "Notifications": {
         "title": "Notifications",
         "noNotifications": "No new notifications",
-        "viewPrevious": "View Previous",
-        "chatTitle": "New Message",
-        "chatDesc": "Sarah sent you a message: \"Hey, are we still on for today?\"",
-        "coachApplyTitle": "New Coach Application",
-        "coachApplyDesc": "Ahmed submitted an application to join your gym.",
-        "time5m": "5m ago",
-        "time1h": "1h ago"
+        "loading": "Loading…",
+        "markAllRead": "Mark all as read",
+        "clearAll": "Clear all",
+        "delete": "Delete",
+        "close": "Close"
     },
     "About": {
         "title": "About",

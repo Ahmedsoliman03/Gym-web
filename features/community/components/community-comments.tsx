@@ -380,8 +380,20 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
     try {
       await createMutation.mutateAsync({ postId, body: trimmed });
       setDraft('');
-    } catch {
-      toast.error(t('commentFailed'));
+    } catch (err) {
+      // A rejection here is one of two things: the optimistic `onMutate` threw
+      // (in which case `api.post` was never sent — no request in the network
+      // tab), or the backend rejected the request. Log the real error and, when
+      // the server returned a message, surface it instead of the generic copy.
+      console.error('Failed to create comment', err);
+      const serverMessage =
+        typeof err === 'object' && err !== null
+          ? (err as { response?: { data?: { message?: string; detail?: string } } })
+              .response?.data
+          : undefined;
+      toast.error(
+        serverMessage?.message || serverMessage?.detail || t('commentFailed'),
+      );
     }
   };
 

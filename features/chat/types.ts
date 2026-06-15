@@ -3,6 +3,8 @@
 // channel documented in postman/README.md (`ws://.../ws/chat/`) so the
 // future socket client and the REST layer share one source of truth.
 
+import type { AppNotification } from '@/features/notification/types';
+
 export type PresenceStatus = 'online' | 'offline' | 'busy';
 
 /** Who is allowed to start a chat with this user without an approval step.
@@ -131,7 +133,7 @@ export type ChatServerEvent =
     | { type: 'message.new';        conversationId: string; message: ChatMessage }
     | { type: 'typing.update';      conversationId: string; userId: string; isTyping: boolean }
     | { type: 'presence.update';    userId: string; status: PresenceStatus }
-    | { type: 'notification.new';     notification: unknown; unreadCount: number }
+    | { type: 'notification.new';     notification: AppNotification; unreadCount: number }
     | { type: 'notification.read';    notificationId: string; unreadCount: number }
     | { type: 'notification.deleted'; notificationId: string; unreadCount: number }
     | { type: 'notification.clear';   unreadCount: number };
