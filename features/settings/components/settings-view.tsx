@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Lock, MessageSquare } from 'lucide-react';
+import { Bell, Lock, MessageSquare, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { SettingsAccordion } from './settings-accordion';
 import { ChangePasswordSection } from './change-password-section';
 import { ChatSettingsSection } from './chat-settings-section';
 import { NotificationsSection } from './notifications-section';
+import { BlockedUsersSection } from './blocked-users-section';
 
 const styles = {
     page: 'pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen',
@@ -17,7 +18,7 @@ const styles = {
     accordionGroup: 'flex flex-col gap-4',
 };
 
-type Panel = 'password' | 'chat' | 'notifications' | null;
+type Panel = 'password' | 'chat' | 'notifications' | 'blocked' | null;
 
 export function SettingsView() {
     const t = useTranslations('Settings');
@@ -59,6 +60,16 @@ export function SettingsView() {
                         onToggle={() => toggle('notifications')}
                     >
                         <NotificationsSection />
+                    </SettingsAccordion>
+
+                    <SettingsAccordion
+                        icon={<UserX size={18} />}
+                        title={t('blockedUsersTitle')}
+                        subtitle={t('blockedUsersSubtitle')}
+                        open={open === 'blocked'}
+                        onToggle={() => toggle('blocked')}
+                    >
+                        <BlockedUsersSection />
                     </SettingsAccordion>
                 </div>
             </div>

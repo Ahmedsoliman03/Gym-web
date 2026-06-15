@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
-import { Mail, MessageSquare, Settings, Loader2, Tag } from "lucide-react";
+import { Mail, MessageSquare, Settings, Loader2, Tag, UserX } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { useStartChatMutation } from "@/features/chat/services/chat.service";
+import { useChatSocket } from "@/features/chat/socket/chat-socket-provider";
+import { useBlockUserMutation } from "@/features/settings/services/blocks.service";
 import toast from "react-hot-toast";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
@@ -20,13 +23,21 @@ const styles = {
   avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
   avatarInner: "w-full h-full rounded-full overflow-hidden relative",
   avatarImage: "object-cover",
-  statusBadge: "absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface",
+  statusBadge: (status: 'online' | 'busy' | 'offline') =>
+    `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-surface ${
+      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    }`,
   infoWrapper: "flex-1 text-center md:text-left",
   titleAndTier: "flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2",
   nameRow: "flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2",
   name: "text-4xl font-bold text-foreground",
   tier: "bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30 uppercase",
   title: "text-foreground/40 font-bold",
+  presencePill: "inline-flex items-center justify-center md:justify-start gap-2 mb-3 text-xs font-black uppercase tracking-wider text-foreground/55",
+  presenceDot: (status: 'online' | 'busy' | 'offline') =>
+    `h-2.5 w-2.5 rounded-full ${
+      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    }`,
   // Single specialization badge next to the name. The full list is revealed in
   // a tooltip on hover/focus instead of rendering a chip per specialization.
   specBadgeWrapper: "relative inline-flex group",
@@ -45,7 +56,8 @@ const styles = {
   statLabel: "text-xs text-foreground/40 uppercase",
   actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
   primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
-  secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+  secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+  dangerBtn: "flex-1 md:w-44 bg-red-500/10 hover:bg-red-500/15 text-red-300 font-bold py-3 px-6 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
 };
 
 export const CoachProfileHeader = ({
@@ -59,11 +71,26 @@ export const CoachProfileHeader = ({
   promocode,
   specializations,
   email,
+  status = 'offline',
 }: CoachProfileHeaderProps) => {
   const t = useTranslations("Profile");
   const tChat = useTranslations("Chat");
   const tRoot = useTranslations();
+  const router = useRouter();
   const startChat = useStartChatMutation();
+  const blockUser = useBlockUserMutation();
+  const {
+    status: socketStatus,
+    presenceByUser,
+    watchPresence,
+  } = useChatSocket();
+  const liveStatus = coachUserId ? (presenceByUser[coachUserId] ?? status) : status;
+
+  useEffect(() => {
+    if (isOwner || !coachUserId) return;
+    watchPresence([coachUserId]);
+    return () => watchPresence([]);
+  }, [coachUserId, isOwner, socketStatus, watchPresence]);
 
   const handleStartChat = () => {
     if (!coachUserId) return;
@@ -85,14 +112,27 @@ export const CoachProfileHeader = ({
       },
     );
   };
+
+  const handleBlockUser = () => {
+    if (!coachUserId) return;
+    if (!window.confirm(t('blockConfirm', { name }))) return;
+    blockUser.mutate(coachUserId, {
+      onSuccess: () => {
+        toast.success(t('blockSuccess'));
+        router.replace('/settings');
+      },
+      onError: () => toast.error(t('blockError')),
+    });
+  };
   const allSpecs = specializations ?? [];
   const labelFor = (value: string) => {
     const match = SPECIALIZATIONS.find(
       (s) => s.value.toLowerCase() === value.toLowerCase(),
     );
+    const label = match?.label as Parameters<typeof tRoot>[0] | undefined;
     return match
-      ? tRoot.has(match.label as any)
-        ? tRoot(match.label as any)
+      ? label && tRoot.has(label)
+        ? tRoot(label)
         : match.fallback
       : value;
   };
@@ -121,7 +161,7 @@ export const CoachProfileHeader = ({
             authorUserType="coach"
             stories={stories}
           />
-          {!isOwner && <div className={styles.statusBadge} />}
+          {!isOwner && <div className={styles.statusBadge(liveStatus)} />}
         </div>
 
         {/* Info */}
@@ -163,6 +203,13 @@ export const CoachProfileHeader = ({
             </div>
           )}
 
+          {!isOwner && (
+            <div className={styles.presencePill}>
+              <span className={styles.presenceDot(liveStatus)} />
+              {t(`status_${liveStatus}`)}
+            </div>
+          )}
+
           <div className={styles.statsGrid}>
             {stats.map((stat, index) => (
               <div key={index} className={styles.statItem}>
@@ -186,18 +233,32 @@ export const CoachProfileHeader = ({
           )}
           
            {!isOwner ?
-          <button
-            className={styles.primaryBtn}
-            onClick={handleStartChat}
-            disabled={startChat.isPending || !coachUserId}
-          >
-            {startChat.isPending ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <MessageSquare size={18} />
-            )}
-            {t('chat')}
-          </button>
+          <>
+            <button
+              className={styles.primaryBtn}
+              onClick={handleStartChat}
+              disabled={startChat.isPending || !coachUserId}
+            >
+              {startChat.isPending ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <MessageSquare size={18} />
+              )}
+              {t('chat')}
+            </button>
+            <button
+              className={styles.dangerBtn}
+              onClick={handleBlockUser}
+              disabled={blockUser.isPending || !coachUserId}
+            >
+              {blockUser.isPending ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <UserX size={18} />
+              )}
+              {t('block')}
+            </button>
+          </>
          :
             <Link href="/profile/edit" className={styles.secondaryBtn}>
               <Settings size={18} />

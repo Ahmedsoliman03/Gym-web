@@ -1,22 +1,27 @@
 "use client";
 
-import type { GymProfileViewModel } from "../types";
-import { MapPin, Users, MessageSquare, Settings, Mail, Loader2 } from "lucide-react";
+import type { GymProfileViewModel, ProfilePlan } from "../types";
+import { MapPin, Users, MessageSquare, Settings, Mail, Loader2, UserX } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { Plans } from "@/components/shared/membership-plans";
 import { EmptySection } from "@/components/shared/empty-section";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { useStartChatMutation } from "@/features/chat/services/chat.service";
+import { useChatSocket } from "@/features/chat/socket/chat-socket-provider";
+import { useBlockUserMutation } from "@/features/settings/services/blocks.service";
+import { usePlanGetStartedMutation } from "../services/profile.service";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { Story } from "@/features/stories/types";
 import { ProfilePosts } from "./profile-posts";
 import { PromocodeChip } from "./promocode-chip";
+import type { PresenceStatus } from "@/features/chat/types";
+import { SocialMediaLinks } from "./social-media-links";
 
 const styles = {
   container: "space-y-8",
@@ -27,15 +32,24 @@ const styles = {
   avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
   avatarInner: "w-full h-full rounded-full overflow-hidden relative",
   avatarImage: "object-cover",
-  statusBadge: "absolute bottom-2 right-2 w-6 h-6 bg-primary rounded-full border-4 border-surface",
+  statusBadge: (status: PresenceStatus) =>
+    `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-surface ${
+      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    }`,
   infoWrapper: "flex-1 text-center md:text-left",
   title: "text-4xl font-bold mb-2",
+  presencePill: "inline-flex items-center justify-center md:justify-start gap-2 mb-3 text-xs font-black uppercase tracking-wider text-foreground/55",
+  presenceDot: (status: PresenceStatus) =>
+    `h-2.5 w-2.5 rounded-full ${
+      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    }`,
   statsList: "flex flex-wrap justify-center md:justify-start gap-4 text-foreground/60 text-sm",
   statItem: "flex items-center gap-1",
   ratingStar: "text-yellow-500",
   actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
   primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
   secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+  dangerBtn: "flex-1 md:w-44 bg-red-500/10 hover:bg-red-500/15 text-red-300 font-bold py-3 px-6 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed",
   card: "bg-surface p-8 rounded-3xl border border-white/5",
   sectionTitle: "text-xl font-bold mb-4 text-primary uppercase",
   description: "text-foreground/70 leading-relaxed",
@@ -82,8 +96,23 @@ export const GymProfileView = ({
   const t = useTranslations("Profile");
   const tChat = useTranslations("Chat");
   const t_root = useTranslations();
+  const router = useRouter();
   const plansRef = useRef<HTMLDivElement>(null);
   const startChat = useStartChatMutation();
+  const blockUser = useBlockUserMutation();
+  const planGetStarted = usePlanGetStartedMutation();
+  const {
+    status: socketStatus,
+    presenceByUser,
+    watchPresence,
+  } = useChatSocket();
+  const liveStatus = data.userId ? (presenceByUser[data.userId] ?? data.status ?? 'offline') : (data.status ?? 'offline');
+
+  useEffect(() => {
+    if (isOwner || !data.userId) return;
+    watchPresence([data.userId]);
+    return () => watchPresence([]);
+  }, [data.userId, isOwner, socketStatus, watchPresence]);
 
   const handleStartChat = () => {
     if (!data.userId) return;
@@ -106,6 +135,48 @@ export const GymProfileView = ({
     );
   };
 
+  const handleBlockUser = () => {
+    if (!data.userId) return;
+    if (!window.confirm(t('blockConfirm', { name: data.name }))) return;
+    blockUser.mutate(data.userId, {
+      onSuccess: () => {
+        toast.success(t('blockSuccess'));
+        router.replace('/settings');
+      },
+      onError: () => toast.error(t('blockError')),
+    });
+  };
+
+  const planMessage = (plan: ProfilePlan) =>
+    t('planInterestMessage', {
+      plan: plan.name,
+      duration: plan.duration,
+      price: plan.salePrice || plan.price,
+    });
+
+  const handlePlanGetStarted = (plan: ProfilePlan) => {
+    if (!plan.id) return;
+    planGetStarted.mutate(
+      {
+        ownerType: 'gym',
+        planId: plan.id,
+        profileId,
+        message: planMessage(plan),
+      },
+      {
+        onSuccess: (result) => {
+          if (result.status === 'request_pending') {
+            toast.success(tChat('requestSentToast'));
+            triggerChatOpen('outgoing');
+          } else {
+            triggerChatOpen('conversations', result.conversation.id);
+          }
+        },
+        onError: () => toast.error(t('planInterestError')),
+      },
+    );
+  };
+
   const scrollToPlans = () => {
     plansRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -122,7 +193,9 @@ export const GymProfileView = ({
   // accidentally hide custom programs the gym set up.
   const translatedPrograms = (data.programs ?? []).map((program) => {
     const match = SPECIALIZATIONS.find((s) => s.value === program);
-    return match ? t_root(match.label as any) : program;
+    if (!match) return program;
+    const label = match.label as Parameters<typeof t_root>[0];
+    return t_root.has(label) ? t_root(label) : match.fallback;
   });
 
   return (
@@ -149,7 +222,7 @@ export const GymProfileView = ({
             authorUserType="gym"
             stories={stories}
           />
-          {!isOwner && <div className={styles.statusBadge} />}
+          {!isOwner && <div className={styles.statusBadge(liveStatus)} />}
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>
@@ -166,6 +239,12 @@ export const GymProfileView = ({
               <span>{email}</span>
             </div>
           )}
+          {!isOwner && (
+            <div className={styles.presencePill}>
+              <span className={styles.presenceDot(liveStatus)} />
+              {t(`status_${liveStatus}`)}
+            </div>
+          )}
           <div className={styles.statsList}>
             <span className={styles.statItem}><MapPin size={16} /> {data.location}</span>
             <span className={styles.statItem}><Users size={16} /> {data.memberCount} {t('members')}</span>
@@ -176,18 +255,32 @@ export const GymProfileView = ({
               has no one to chat with on their own page. Mirrors the coach
               profile header, which already hides chat for the owner. */}
           {!isOwner && (
-            <button
-              className={styles.primaryBtn}
-              onClick={handleStartChat}
-              disabled={startChat.isPending || !data.userId}
-            >
-              {startChat.isPending ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <MessageSquare size={18} />
-              )}
-              {t('chat')}
-            </button>
+            <>
+              <button
+                className={styles.primaryBtn}
+                onClick={handleStartChat}
+                disabled={startChat.isPending || !data.userId}
+              >
+                {startChat.isPending ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <MessageSquare size={18} />
+                )}
+                {t('chat')}
+              </button>
+              <button
+                className={styles.dangerBtn}
+                onClick={handleBlockUser}
+                disabled={blockUser.isPending || !data.userId}
+              >
+                {blockUser.isPending ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <UserX size={18} />
+                )}
+                {t('block')}
+              </button>
+            </>
           )}
           {isOwner && (
             <Link href="/profile/edit" className={styles.secondaryBtn}>
@@ -217,6 +310,8 @@ export const GymProfileView = ({
             />
           )}
         </div>
+
+        <SocialMediaLinks links={data.socialMedia} isOwner={isOwner} />
 
         {/* Slider of Gym Images */}
         <TransformationGallery
@@ -260,8 +355,13 @@ export const GymProfileView = ({
         </div>
       </div>
 
-      <Plans ref={plansRef} plans={data.plans} isOwner={isOwner} />
+      <Plans
+        ref={plansRef}
+        plans={data.plans}
+        isOwner={isOwner}
+        onGetStarted={handlePlanGetStarted}
+        pendingPlanId={planGetStarted.variables?.planId ?? null}
+      />
     </div>
   );
 };
-

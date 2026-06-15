@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    MessageSquare,
     Heart,
     MessageCircle,
     Reply,
@@ -15,7 +14,6 @@ import type { AppNotification, NotificationType } from "../types";
 import { formatRelativeTimeLong } from "@/utils/format";
 
 const TYPE_ICON: Record<NotificationType, LucideIcon> = {
-    chat_message: MessageSquare,
     post_vote: Heart,
     post_comment: MessageCircle,
     comment_reply: Reply,
@@ -24,7 +22,6 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
 
 // All notification types share the primary (green) accent for a consistent look.
 const TYPE_ACCENT: Record<NotificationType, string> = {
-    chat_message: "bg-primary/20 text-primary",
     post_vote: "bg-primary/20 text-primary",
     post_comment: "bg-primary/20 text-primary",
     comment_reply: "bg-primary/20 text-primary",

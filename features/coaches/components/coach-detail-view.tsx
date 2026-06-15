@@ -52,6 +52,7 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
     type: "coach",
     name: coach.fullName || "",
     image: coach.photo || "/images/profile/marcus.png",
+    status: coach.status,
     description: coach.description || "",
     stats: [
       {
@@ -75,6 +76,7 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
       specializations: coach.specialization ?? [],
     },
     plans: coach.plans ?? [],
+    socialMedia: coach.socialMedia ?? [],
     // Specialization-next-to-name indicator is intentionally left blank on
     // the visitor-facing detail page; that chip is owner-profile-only.
   };

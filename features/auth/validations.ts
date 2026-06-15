@@ -1,19 +1,21 @@
 import * as Yup from 'yup';
 import { getPhoneSchema, getEmailSchema } from '@/utils/validations';
 
-const getPasswordSchema = (t: any) => Yup.string()
+type Translator = (key: string, values?: Record<string, string | number>) => string;
+
+const getPasswordSchema = (t: Translator) => Yup.string()
     .min(8, t('Validation.min', { field: t('Auth.password'), min: 8 }))
     .matches(/[A-Z]/, t('Validation.passwordCapital'))
     .matches(/[0-9]/, t('Validation.passwordNumber'))
     .matches(/[!@#$%^&*(),.?":{}|<>]/, t('Validation.passwordSpecial'))
     .required(t('Validation.required', { field: t('Auth.password') }));
 
-export const getLoginSchema = (t: any) => Yup.object().shape({
+export const getLoginSchema = (t: Translator) => Yup.object().shape({
     email: getEmailSchema(t),
     password: getPasswordSchema(t),
 });
 
-export const getRequestAccessSchema = (t: any) => Yup.object().shape({
+export const getRequestAccessSchema = (t: Translator) => Yup.object().shape({
     name: Yup.string().when('type', {
         is: 'coach',
         then: (schema) => schema.required(t('Validation.required', { field: t('Auth.legalFullName') })),
@@ -109,11 +111,11 @@ export const getRequestAccessSchema = (t: any) => Yup.object().shape({
     }),
 });
 
-export const getOtpSchema = (t: any) => Yup.object().shape({
+export const getOtpSchema = (t: Translator) => Yup.object().shape({
     code: Yup.string().length(6, t('Validation.min', { field: t('Validation.code'), min: 6 })).required(t('Validation.required', { field: t('Validation.code') })),
 });
 
-export const getRegisterSchema = (t: any) => Yup.object().shape({
+export const getRegisterSchema = (t: Translator) => Yup.object().shape({
     firstName: Yup.string().required(t('Validation.required', { field: t('Validation.firstName') })),
     lastName: Yup.string().required(t('Validation.required', { field: t('Validation.lastName') })),
     email: getEmailSchema(t),
@@ -124,7 +126,14 @@ export const getRegisterSchema = (t: any) => Yup.object().shape({
         .required(t('Validation.required', { field: t('Validation.confirmPassword') })),
 });
 
-export const getActivateProfileSchema = (t: any) => Yup.object().shape({
+export const getGoogleSignupCompleteSchema = (t: Translator) => Yup.object().shape({
+    fullName: Yup.string().required(t('Validation.required', { field: t('Auth.fullName') })),
+    phone: getPhoneSchema(t),
+    city: Yup.string().required(t('Validation.required', { field: t('Location.city') })),
+    area: Yup.string().required(t('Validation.required', { field: t('Location.area') })),
+});
+
+export const getActivateProfileSchema = (t: Translator) => Yup.object().shape({
     // email: getEmailSchema(t),
     inviteCode: Yup.string().length(8, t('Validation.min', { field: t('Auth.inviteCode'), min: 8 })).required(t('Validation.required', { field: t('Auth.inviteCode') })),
     password: getPasswordSchema(t),

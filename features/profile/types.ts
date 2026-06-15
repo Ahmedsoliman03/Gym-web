@@ -1,3 +1,5 @@
+import type { PresenceStatus } from '@/features/chat/types';
+
 export interface Certification {
     id: string;
     file: string;
@@ -16,8 +18,14 @@ export interface ProfilePlan {
     price: string;
     salePrice?: string;
     features: string[];
+    getStartedCount?: number;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface SocialMediaLink {
+    platform: string;
+    url: string;
 }
 
 export interface CoachTransformation {
@@ -35,6 +43,7 @@ export interface ClientProfileData {
     type: 'client';
     name: string;
     photo: string | null;
+    editCount?: number;
 }
 
 export interface CoachProfileData {
@@ -50,11 +59,13 @@ export interface CoachProfileData {
      *  `specializations` — kept here so the view layer can fall back. */
     specialization?: string[];
     description?: string;
+    socialMedia?: SocialMediaLink[];
     profileImage?: string | null;
     photo: string | null;
     certifications?: Certification[];
     plans?: ProfilePlan[];
     transformations?: CoachTransformation[];
+    editCount?: number;
     /** Referral promocode the backend assigns to the coach. Rendered as a
      *  copy chip on the owner's own profile only. */
     promoCode?: string;
@@ -78,10 +89,12 @@ export interface GymProfileData {
     mainPhoto?: string | null;
     photo: string | null;
     specializations?: string[];
+    socialMedia?: SocialMediaLink[];
     images?: GalleryImage[];
     plans?: ProfilePlan[];
     createdAt?: string;
     updatedAt?: string;
+    editCount?: number;
     /** Referral promocode the backend assigns to the gym. */
     promoCode?: string;
 }
@@ -154,6 +167,7 @@ export interface CoachEditValues {
     certifications?: EditableImage[];
     plans?: ProfilePlan[];
     transformations?: EditableTransformation[];
+    socialMedia?: SocialMediaLink[];
 }
 
 export interface GymEditValues {
@@ -163,6 +177,7 @@ export interface GymEditValues {
     specializations?: string[];
     gymImages?: EditableImage[];
     plans?: ProfilePlan[];
+    socialMedia?: SocialMediaLink[];
 }
 
 export type EditProfileValues =
@@ -185,6 +200,8 @@ export interface ProfileViewBase {
     image: string;
     banner?: string;
     location?: string;
+    status?: PresenceStatus;
+    socialMedia?: SocialMediaLink[];
 }
 
 export interface CoachProfileViewModel extends ProfileViewBase {
@@ -269,6 +286,7 @@ export interface CoachProfileHeaderProps {
     specializations?: string[];
     /** Owner-only email address surfaced under the name. */
     email?: string;
+    status?: PresenceStatus;
 }
 
 export interface TransformationItem {

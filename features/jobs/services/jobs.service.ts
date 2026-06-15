@@ -66,7 +66,7 @@ export const useJob = (jobId: string | null) =>
         enabled: !!jobId,
     });
 
-// ─── Create / edit / delete / close ───────────────────────────────────────────
+// ─── Create / edit / delete / close / reopen ─────────────────────────────────
 
 export const createJob = async (input: CreateJobInput): Promise<Job> => {
     // Per postman README: the create-job endpoint accepts `title`, `content`,
@@ -154,6 +154,9 @@ export const closeJob = async (jobId: string): Promise<void> => {
 const applyJobClosedTransition = (job: Job, jobId: string, closedAt: string): Job =>
     job.id === jobId ? { ...job, status: 'closed', closedAt } : job;
 
+const applyJobReopenedTransition = (job: Job, jobId: string): Job =>
+    job.id === jobId ? { ...job, status: 'open', closedAt: null } : job;
+
 export const useCloseJobMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -188,6 +191,47 @@ export const useCloseJobMutation = () => {
         onSettled: (_data, _err, jobId) => {
             // Resync this job (and lists) with the server's authoritative copy —
             // which keeps the counts correct after the optimistic patch.
+            queryClient.invalidateQueries({ queryKey: ['jobs'] });
+            queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
+        },
+    });
+};
+
+export const reopenJob = async (jobId: string): Promise<void> => {
+    await api.post(`/api/jobs/${jobId}/reopen`, undefined, {
+        transformResponse: (data) => data,
+    });
+};
+
+export const useReopenJobMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: reopenJob,
+        onMutate: async (jobId) => {
+            await queryClient.cancelQueries({ queryKey: ['jobs'] });
+            const previous = queryClient.getQueriesData<Job[] | Job | undefined>({
+                queryKey: ['jobs'],
+            });
+
+            queryClient.setQueriesData<Job[] | undefined>(
+                { queryKey: ['jobs'] },
+                (curr) =>
+                    Array.isArray(curr)
+                        ? curr.map((j) => applyJobReopenedTransition(j, jobId))
+                        : curr,
+            );
+            queryClient.setQueryData<Job | undefined>(['jobs', jobId], (curr) =>
+                curr ? applyJobReopenedTransition(curr, jobId) : curr,
+            );
+
+            return { previous };
+        },
+        onError: (_err, _jobId, ctx) => {
+            ctx?.previous?.forEach(([key, data]) => {
+                queryClient.setQueryData(key, data);
+            });
+        },
+        onSettled: (_data, _err, jobId) => {
             queryClient.invalidateQueries({ queryKey: ['jobs'] });
             queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
         },

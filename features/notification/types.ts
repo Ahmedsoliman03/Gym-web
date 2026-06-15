@@ -8,7 +8,6 @@
  *  may introduce new kinds, so consumers must handle an unknown `type`
  *  gracefully (fall back to a generic icon). */
 export type NotificationType =
-    | 'chat_message'
     | 'post_vote'
     | 'post_comment'
     | 'comment_reply'
@@ -28,16 +27,13 @@ export interface NotificationActor {
 }
 
 /** Deep-link payload. Which keys are present depends on `type` — e.g. a
- *  `post_comment` carries `postId` + `commentId`, a `chat_message` carries
- *  `conversationId` + `messageId`. All optional. */
+ *  `post_comment` carries `postId` + `commentId`. All optional. */
 export interface NotificationData {
     postId?: string;
     commentId?: string;
     replyId?: string;
     jobId?: string;
     applicationId?: string;
-    conversationId?: string;
-    messageId?: string;
     /** Present on `post_vote` / `comment_*_vote` notifications. */
     vote?: 'up' | 'down';
 }

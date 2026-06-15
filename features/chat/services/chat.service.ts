@@ -111,8 +111,11 @@ export const useChatRequests = (box: ChatRequestBox) => {
 };
 
 export const approveChatRequest = async (id: string): Promise<ChatConversation> => {
-    const { data } = await api.post<ChatConversation>(`/api/chat/requests/${id}/approve`);
-    return data;
+    const { data } = await api.post<{
+        request: ChatRequest;
+        conversation: ChatConversation;
+    }>(`/api/chat/requests/${id}/approve`);
+    return data.conversation;
 };
 
 export const useApproveChatRequestMutation = () => {
@@ -140,6 +143,20 @@ export const useRejectChatRequestMutation = () => {
         mutationFn: rejectChatRequest,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: chatKeys.requests('incoming') });
+        },
+    });
+};
+
+export const cancelChatRequest = async (id: string): Promise<void> => {
+    await api.post(`/api/chat/requests/${id}/cancel`);
+};
+
+export const useCancelChatRequestMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: cancelChatRequest,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: chatKeys.requests('outgoing') });
         },
     });
 };
@@ -207,6 +224,134 @@ export const useMarkConversationReadMutation = () => {
             }
         },
         onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
+        },
+    });
+};
+
+// ── Message editing/deletion ─────────────────────────────────────────────────
+
+const replaceMessageInList = (
+    messages: ChatMessage[] | undefined,
+    messageId: string,
+    patch: Partial<ChatMessage>,
+) => messages?.map((m) => (m.id === messageId ? { ...m, ...patch } : m));
+
+const replaceLastMessage = (
+    conversations: ChatConversation[] | undefined,
+    messageId: string,
+    patch: Partial<ChatMessage>,
+) =>
+    conversations?.map((conversation) =>
+        conversation.lastMessage?.id === messageId
+            ? {
+                  ...conversation,
+                  lastMessage: {
+                      ...conversation.lastMessage,
+                      ...patch,
+                  },
+              }
+            : conversation,
+    );
+
+export interface UpdateChatMessageInput {
+    conversationId: string;
+    messageId: string;
+    body: string;
+}
+
+export const updateChatMessage = async ({
+    messageId,
+    body,
+}: UpdateChatMessageInput): Promise<ChatMessage> => {
+    const { data } = await api.patch<ChatMessage>(`/api/chat/messages/${messageId}`, { body });
+    return data;
+};
+
+export const useUpdateChatMessageMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: updateChatMessage,
+        onMutate: async ({ conversationId, messageId, body }) => {
+            await queryClient.cancelQueries({ queryKey: chatKeys.messages(conversationId) });
+            await queryClient.cancelQueries({ queryKey: chatKeys.conversations });
+
+            const previousMessages = queryClient.getQueryData<ChatMessage[]>(
+                chatKeys.messages(conversationId),
+            );
+            const previousConversations = queryClient.getQueryData<ChatConversation[]>(
+                chatKeys.conversations,
+            );
+            const patch = { body, updatedAt: new Date().toISOString() };
+
+            queryClient.setQueryData<ChatMessage[] | undefined>(
+                chatKeys.messages(conversationId),
+                (curr) => replaceMessageInList(curr, messageId, patch),
+            );
+            queryClient.setQueryData<ChatConversation[] | undefined>(
+                chatKeys.conversations,
+                (curr) => replaceLastMessage(curr, messageId, patch),
+            );
+
+            return { previousMessages, previousConversations, conversationId };
+        },
+        onSuccess: (message, vars) => {
+            queryClient.setQueryData<ChatMessage[] | undefined>(
+                chatKeys.messages(vars.conversationId),
+                (curr) => replaceMessageInList(curr, vars.messageId, message),
+            );
+            queryClient.setQueryData<ChatConversation[] | undefined>(
+                chatKeys.conversations,
+                (curr) => replaceLastMessage(curr, vars.messageId, message),
+            );
+        },
+        onError: (_err, _vars, ctx) => {
+            if (!ctx) return;
+            queryClient.setQueryData(chatKeys.messages(ctx.conversationId), ctx.previousMessages);
+            queryClient.setQueryData(chatKeys.conversations, ctx.previousConversations);
+        },
+        onSettled: (_data, _err, vars) => {
+            if (!vars) return;
+            queryClient.invalidateQueries({ queryKey: chatKeys.messages(vars.conversationId) });
+            queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
+        },
+    });
+};
+
+export interface DeleteChatMessageInput {
+    conversationId: string;
+    messageId: string;
+}
+
+export const deleteChatMessage = async ({
+    messageId,
+}: DeleteChatMessageInput): Promise<void> => {
+    await api.delete(`/api/chat/messages/${messageId}`);
+};
+
+export const useDeleteChatMessageMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: deleteChatMessage,
+        onMutate: async ({ conversationId, messageId }) => {
+            await queryClient.cancelQueries({ queryKey: chatKeys.messages(conversationId) });
+            const previous = queryClient.getQueryData<ChatMessage[]>(
+                chatKeys.messages(conversationId),
+            );
+            queryClient.setQueryData<ChatMessage[] | undefined>(
+                chatKeys.messages(conversationId),
+                (curr) => curr?.filter((m) => m.id !== messageId),
+            );
+            return { previous, conversationId };
+        },
+        onError: (_err, _vars, ctx) => {
+            if (ctx?.previous) {
+                queryClient.setQueryData(chatKeys.messages(ctx.conversationId), ctx.previous);
+            }
+        },
+        onSettled: (_data, _err, vars) => {
+            if (!vars) return;
+            queryClient.invalidateQueries({ queryKey: chatKeys.messages(vars.conversationId) });
             queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
         },
     });

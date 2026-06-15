@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 
@@ -14,8 +14,8 @@ import { settingsStyles as s } from './styles';
 
 type PrefKey = keyof NotificationPreferences;
 
-// `chat_message` is intentionally omitted — chat is surfaced in the chat
-// widget, not the notifications flow, so it isn't shown as a toggle here.
+// Chat messages are surfaced in the chat widget, not the notifications flow,
+// so they are not shown as a toggle here.
 const ROW_KEYS: PrefKey[] = [
     'post_vote',
     'post_comment',
@@ -28,29 +28,33 @@ export function NotificationsSection() {
     const { data, isLoading, isError } = useNotificationSettings();
     const updateMutation = useUpdateNotificationSettingsMutation();
 
-    // Draft state so toggles can be flipped freely and committed via Save.
-    const [draft, setDraft] = useState<NotificationPreferences | null>(
-        data?.preferences ?? null,
+    const [overrides, setOverrides] = useState<Partial<NotificationPreferences>>({});
+
+    const draft = useMemo(
+        () => (data ? { ...data.preferences, ...overrides } : null),
+        [data, overrides],
     );
 
-    useEffect(() => {
-        if (data) setDraft(data.preferences);
-    }, [data]);
-
-    if (isLoading || !draft) return <GLoaderSection minHeight={160} />;
-    if (isError || !data) {
+    if (isLoading) return <GLoaderSection minHeight={160} />;
+    if (isError || !data || !draft) {
         return <div className={s.rowDesc}>{t('notificationsLoadError')}</div>;
     }
 
     const dirty = ROW_KEYS.some((k) => draft[k] !== data.preferences[k]);
 
     const toggle = (key: PrefKey) =>
-        setDraft({ ...draft, [key]: !draft[key] });
+        setOverrides((current) => ({
+            ...current,
+            [key]: !draft[key],
+        }));
 
     const handleSave = () => {
         if (!dirty) return;
         updateMutation.mutate(draft, {
-            onSuccess: () => toast.success(t('notificationsUpdateSuccess')),
+            onSuccess: () => {
+                setOverrides({});
+                toast.success(t('notificationsUpdateSuccess'));
+            },
             onError: () => toast.error(t('notificationsUpdateError')),
         });
     };

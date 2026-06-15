@@ -13,6 +13,42 @@ export interface RegisterRequest {
     area?: string;
 }
 
+export interface GoogleAuthRequest {
+    code: string;
+    redirectUri?: string;
+}
+
+export interface GoogleProfile {
+    email: string;
+    fullName: string;
+    picture: string;
+}
+
+export interface AuthUser {
+    id: string;
+    email: string;
+    phone: string;
+    fullName: string;
+    userType: 'client' | 'coach' | 'gym' | 'admin';
+}
+
+export type GoogleAuthResponse =
+    | {
+          status: 'authenticated';
+          user: AuthUser;
+      }
+    | {
+          status: 'signup_required';
+          googleProfile: GoogleProfile;
+      };
+
+export interface GoogleSignupCompleteRequest {
+    fullName?: string;
+    phone: string;
+    city: string;
+    area: string;
+}
+
 export interface ActivateRequest {
     inviteCode: string;
     password: string;
@@ -42,7 +78,7 @@ export interface RequestAccessRequest {
     invitationPromocode?: string;
     gymLicense?: File | null;
     gymPhoto?: File | null;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface VerifyOTPRequest {
@@ -57,7 +93,7 @@ export interface VerifyOTPRequest {
 export interface AuthResponse {
     message?: string;
     token?: string;
-    user?: any;
+    user?: AuthUser;
 }
 
 // ─── Component Props Interfaces ──────────────────────────────────────────────

@@ -11,6 +11,8 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { GoogleAuthButton } from './google-auth-button';
+import { normalizeAuthNextPath } from '../utils/next-path';
 
 const styles = {
     container: "space-y-6",
@@ -25,6 +27,10 @@ const styles = {
     typingEffect: "animate-typing border-e-4 border-primary pe-1 overflow-hidden whitespace-nowrap",
     subtitle: "text-foreground/60 text-[13px]",
     form: "space-y-4",
+    socialButton: "w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-[#111827] border border-white/10 rounded-xl hover:bg-white/5 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold",
+    dividerWrapper: "relative py-1 flex items-center gap-4",
+    dividerLine: "flex-1 h-[1px] bg-white/5",
+    dividerText: "text-[10px] font-black text-foreground/30 uppercase",
     fieldWrapper: "space-y-1",
     label: "text-xs font-semibold uppercase text-foreground/50 px-1",
     inputWrapper: "relative",
@@ -92,6 +98,17 @@ export default function LoginForm() {
                 }
             `}</style>
 
+            <GoogleAuthButton
+                className={styles.socialButton}
+                label={t('Auth.continueWithGoogle')}
+            />
+
+            <div className={styles.dividerWrapper}>
+                <div className={styles.dividerLine} />
+                <span className={styles.dividerText}>{t('Auth.orWithEmail')}</span>
+                <div className={styles.dividerLine} />
+            </div>
+
             <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={validationSchema}
@@ -100,13 +117,9 @@ export default function LoginForm() {
                         await login(values);
                         toast.success(t('Auth.loginSuccess') || 'Logged in successfully!');
 
-                        const rawNext = searchParams.get('next');
-                        const safeNext =
-                            rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//')
-                                ? rawNext.replace(/^\/(en|ar)(?=\/|$)/, '') || '/'
-                                : '/';
-                        router.push(safeNext as any);
-                    } catch (error: any) {
+                        const safeNext = normalizeAuthNextPath(searchParams.get('next'));
+                        router.push(safeNext as never);
+                    } catch (error) {
                         toastApiError(error, t('Auth.loginFailed'));
                     }
                 }}

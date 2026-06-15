@@ -2,14 +2,18 @@
 
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { CoachProfileHeader } from "./coach-profile-header";
 import { CoachPhilosophy } from "./coach-philosophy";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { CoachCredentials } from "./coach-credentials";
 import { Plans } from "@/components/shared/membership-plans";
-import type { CoachProfileViewModel } from "../types";
+import type { CoachProfileViewModel, ProfilePlan } from "../types";
 import type { Story } from "@/features/stories/types";
+import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
+import { usePlanGetStartedMutation } from "../services/profile.service";
 import { ProfilePosts } from "./profile-posts";
+import { SocialMediaLinks } from "./social-media-links";
 
 const styles = {
   container: "space-y-8",
@@ -37,10 +41,42 @@ export const CoachProfileView = ({
   email?: string;
 }) => {
   const t = useTranslations("Profile");
+  const tChat = useTranslations("Chat");
   const plansRef = useRef<HTMLDivElement>(null);
+  const planGetStarted = usePlanGetStartedMutation();
 
   const scrollToPlans = () => {
     plansRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const planMessage = (plan: ProfilePlan) =>
+    t('planInterestMessage', {
+      plan: plan.name,
+      duration: plan.duration,
+      price: plan.salePrice || plan.price,
+    });
+
+  const handlePlanGetStarted = (plan: ProfilePlan) => {
+    if (!plan.id) return;
+    planGetStarted.mutate(
+      {
+        ownerType: 'coach',
+        planId: plan.id,
+        profileId,
+        message: planMessage(plan),
+      },
+      {
+        onSuccess: (result) => {
+          if (result.status === 'request_pending') {
+            toast.success(tChat('requestSentToast'));
+            triggerChatOpen('outgoing');
+          } else {
+            triggerChatOpen('conversations', result.conversation.id);
+          }
+        },
+        onError: () => toast.error(t('planInterestError')),
+      },
+    );
   };
 
   return (
@@ -54,7 +90,7 @@ export const CoachProfileView = ({
         coachUserId={data.userId}
         stories={stories}
         promocode={promocode}
-    
+        status={data.status}
         specializations={isOwner ? data.specializations : undefined}
         email={isOwner ? email : undefined}
       />
@@ -70,6 +106,7 @@ export const CoachProfileView = ({
           isOwner={isOwner}
           emptyVisitorMessage={t('noTransformationsYet')}
         />
+        <SocialMediaLinks links={data.socialMedia} isOwner={isOwner} />
       </div>
       {/* Recent posts — placed after the philosophy + transformations cards
           so the visitor reads the coach's pitch before browsing posts. */}
@@ -93,7 +130,13 @@ export const CoachProfileView = ({
         isOwner={isOwner}
         emptyVisitorMessage={t('noCertificationsYet')}
       />
-      <Plans ref={plansRef} plans={data.plans} isOwner={isOwner} />
+      <Plans
+        ref={plansRef}
+        plans={data.plans}
+        isOwner={isOwner}
+        onGetStarted={handlePlanGetStarted}
+        pendingPlanId={planGetStarted.variables?.planId ?? null}
+      />
 
 
       <div className={styles.gridWrapper}>

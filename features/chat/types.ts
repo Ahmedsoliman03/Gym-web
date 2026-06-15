@@ -70,6 +70,7 @@ export interface ChatMessage {
      *  unique constraint in apps/chat/models.py:196). */
     clientMessageId: string;
     createdAt: string;
+    updatedAt: string;
 }
 
 export interface ChatConversation {
@@ -91,6 +92,7 @@ export interface ChatRequest {
     /** Recipient. On `?box=incoming`, this is you; on `?box=outgoing`, this
      *  is the person you asked. */
     toUser: ChatUser;
+    initialMessage: string;
     status: ChatRequestStatus;
     /** Conversation id, populated once the request is approved. */
     conversation: string | null;
@@ -108,6 +110,7 @@ export type StartChatResult =
 
 export interface StartChatRequest {
     userId: string;
+    initialMessage?: string;
 }
 
 export interface ConversationMessagesQuery {
@@ -125,12 +128,15 @@ export type ChatClientEvent =
     | { type: 'typing.start';      conversationId: string }
     | { type: 'typing.stop';       conversationId: string }
     | { type: 'presence.set';      status: PresenceStatus }
+    | { type: 'presence.watch';    userIds: string[] }
     | { type: 'presence.heartbeat' };
 
 /** Server-pushed event over the same `/ws/chat/` socket. Notification events
  *  ride this channel too — see features/notification for their consumers. */
 export type ChatServerEvent =
     | { type: 'message.new';        conversationId: string; message: ChatMessage }
+    | { type: 'message.updated';    conversationId: string; message: ChatMessage }
+    | { type: 'message.deleted';    conversationId: string; messageId: string }
     | { type: 'typing.update';      conversationId: string; userId: string; isTyping: boolean }
     | { type: 'presence.update';    userId: string; status: PresenceStatus }
     | { type: 'notification.new';     notification: AppNotification; unreadCount: number }

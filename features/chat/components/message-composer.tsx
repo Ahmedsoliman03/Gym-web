@@ -234,6 +234,7 @@ export const MessageComposer = ({
             if (!me) return false;
 
             const clientMessageId = newClientMessageId();
+            const now = new Date().toISOString();
 
             // Optimistic insert. The socket provider's `applyMessageNew` will
             // reconcile this same entry by `clientMessageId` when the server
@@ -245,7 +246,8 @@ export const MessageComposer = ({
                 body,
                 attachment: null,
                 clientMessageId,
-                createdAt: new Date().toISOString(),
+                createdAt: now,
+                updatedAt: now,
             };
 
             queryClient.setQueryData<ChatMessage[]>(

@@ -1,7 +1,9 @@
 import type { Story } from '@/features/stories/types';
+import type { PresenceStatus } from '@/features/chat/types';
 import type {
     CoachTransformation,
     ProfilePlan,
+    SocialMediaLink,
 } from '@/features/profile/types';
 
 export interface Coach {
@@ -42,6 +44,8 @@ export interface CoachDetail {
     plans?: ProfilePlan[];
     transformations?: CoachTransformation[];
     stories?: Story[];
+    status?: PresenceStatus;
+    socialMedia?: SocialMediaLink[];
 }
 
 export interface CoachDetailViewProps {
