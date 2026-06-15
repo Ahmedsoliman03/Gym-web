@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Eye, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { formatViewedAt } from '@/utils/format';
 import { useStoryViewers } from '../services/stories.service';
 import type { StoryViewerUser } from '../types';
 
@@ -41,20 +42,6 @@ const styles = {
  * from `next-intl` so the month name follows whichever language the user is
  * currently browsing in.
  */
-function formatViewedAt(value: string | undefined, locale: string) {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    const bcp47 = locale === 'ar' ? 'ar-EG' : 'en-US';
-    return date.toLocaleString(bcp47, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    });
-}
-
 /**
  * Build the public profile href for a viewer. Coaches and gyms each have a
  * detail page keyed by `profileId`; clients have none, so return `null` and

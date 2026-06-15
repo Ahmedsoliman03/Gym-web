@@ -843,9 +843,12 @@ export const useCreateCommentMutation = () => {
                 'comments',
                 vars.postId,
             ]);
+            // Prepend so the new comment shows at the top immediately — matching
+            // the server's newest-first order after a refetch (previously it was
+            // appended to the end and only jumped to the top on reload).
             queryClient.setQueryData<CommunityComment[] | undefined>(
                 ['community', 'comments', vars.postId],
-                (curr) => (curr ? [...curr, optimistic] : [optimistic]),
+                (curr) => (curr ? [optimistic, ...curr] : [optimistic]),
             );
             adjustPostCommentsCount(queryClient, vars.postId, 1);
 

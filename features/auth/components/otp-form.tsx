@@ -11,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
+import { formatCountdown } from '@/utils/format';
 import { LiveValidate } from '@/components/shared/live-validate';
 
 const styles = {
@@ -60,12 +61,6 @@ export default function OtpForm() {
 
         return () => clearInterval(timer);
     }, [timeLeft]);
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    };
 
     const handleResend = async () => {
         setIsResending(true);
@@ -179,7 +174,7 @@ export default function OtpForm() {
                                 </p>
                             ) : (
                                 <p className={styles.timerText}>
-                                    {t('Auth.timeRemaining', { time: formatTime(timeLeft) })}
+                                    {t('Auth.timeRemaining', { time: formatCountdown(timeLeft) })}
                                 </p>
                             )}
                             <button

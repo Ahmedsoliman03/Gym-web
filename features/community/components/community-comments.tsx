@@ -14,6 +14,7 @@ import {
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/routing';
+import { formatRelativeTime } from '@/utils/format';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import {
@@ -50,7 +51,9 @@ const styles = {
   commentBubble:
     'flex-1 bg-white/5 rounded-2xl px-4 py-2.5 group/comment',
   authorRow: 'flex items-center justify-between gap-2 mb-0.5',
+  authorLeft: 'flex items-center gap-2 min-w-0',
   authorName: 'text-xs font-bold text-foreground',
+  time: 'text-[10px] text-foreground/40 font-medium whitespace-nowrap',
   body: 'text-sm text-foreground/80 whitespace-pre-wrap break-words',
   actionRow: 'flex items-center gap-3 mt-1.5 text-[11px] font-bold uppercase tracking-wider text-foreground/40',
   voteBtn: 'flex items-center gap-1 hover:text-primary transition-colors',
@@ -152,7 +155,7 @@ function CommentRow({
     try {
       await replyMutation.mutateAsync({ commentId: comment.id, body: trimmed });
       setReplyDraft('');
-      setReplyOpen(false);
+      // Keep the replies list open so the user sees their new reply appear.
     } catch {
       // Mutation error stays on the mutation; the user can retry.
     }
@@ -190,13 +193,20 @@ function CommentRow({
         <div className="flex-1">
           <div className={styles.commentBubble}>
             <div className={styles.authorRow}>
-              {authorHref ? (
-                <Link href={authorHref} className={styles.authorNameLink}>
-                  {comment.author.fullName}
-                </Link>
-              ) : (
-                <span className={styles.authorName}>{comment.author.fullName}</span>
-              )}
+              <div className={styles.authorLeft}>
+                {authorHref ? (
+                  <Link href={authorHref} className={styles.authorNameLink}>
+                    {comment.author.fullName}
+                  </Link>
+                ) : (
+                  <span className={styles.authorName}>{comment.author.fullName}</span>
+                )}
+                {comment.createdAt && (
+                  <span className={styles.time}>
+                    {formatRelativeTime(comment.createdAt)}
+                  </span>
+                )}
+              </div>
               <div className={styles.menuWrap} ref={menuRef}>
                 <button
                   type="button"

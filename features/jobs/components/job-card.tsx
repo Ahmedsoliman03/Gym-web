@@ -12,6 +12,7 @@ import { Link } from '@/i18n/routing';
 import { SharePostModal } from '@/components/shared/share-post-modal';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
+import { formatRelativeTime } from '@/utils/format';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import {
     useCloseJobMutation,
@@ -79,23 +80,6 @@ const styles = {
     dropdownItem: "flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-foreground/70 hover:text-white hover:bg-white/5 transition-colors",
     dropdownItemDanger: "flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-500 hover:text-red-400 hover:bg-white/5 transition-colors",
 };
-
-function formatRelativeTime(iso?: string, justNowLabel = 'Just now') {
-    if (!iso) return '';
-    const date = new Date(iso);
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (Number.isNaN(seconds) || seconds < 0) return '';
-    // Under 30 seconds reads "just now" rather than a bare "0s" / "12s".
-    if (seconds < 30) return justNowLabel;
-    if (seconds < 60) return `${seconds}s`;
-    const m = Math.floor(seconds / 60);
-    if (m < 60) return `${m}m`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h`;
-    const d = Math.floor(h / 24);
-    if (d < 7) return `${d}d`;
-    return date.toLocaleDateString();
-}
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 

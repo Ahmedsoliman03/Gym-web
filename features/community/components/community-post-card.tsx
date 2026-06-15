@@ -16,6 +16,7 @@ import {
   BookmarkCheck,
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { formatRelativeTime } from '@/utils/format';
 import { SharePostModal } from '@/components/shared/share-post-modal';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
@@ -147,21 +148,6 @@ function MediaRegion({
     );
   }
   return <div className={className}>{children}</div>;
-}
-
-function formatRelativeTime(iso?: string) {
-  if (!iso) return '';
-  const date = new Date(iso);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (Number.isNaN(seconds) || seconds < 0) return '';
-  if (seconds < 60) return `${seconds}s`;
-  const m = Math.floor(seconds / 60);
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
-  const d = Math.floor(h / 24);
-  if (d < 7) return `${d}d`;
-  return date.toLocaleDateString();
 }
 
 export function CommunityPostCard({

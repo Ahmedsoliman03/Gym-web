@@ -19,6 +19,7 @@ import {
     applyNotificationsCleared,
 } from '@/features/notification/services/notification.service';
 import { playNewMessageSound } from '../utils/notification-sound';
+import { playNotificationSound } from '@/features/notification/utils/notification-sound';
 import { getWsTicket } from '@/features/auth/services/auth.service';
 import { useProfileQuery } from '@/features/profile/services/profile.service';
 import type { UserProfile } from '@/features/profile/types';
@@ -439,6 +440,12 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     break;
                 case 'notification.new':
                     applyNotificationNew(qc, payload.notification, payload.unreadCount);
+                    // Chat messages already ding via `message.new`; everything
+                    // else (votes, comments, replies, job applications) gets the
+                    // distinct notification chime.
+                    if (payload.notification.type !== 'chat_message') {
+                        playNotificationSound();
+                    }
                     break;
                 case 'notification.read':
                     applyNotificationRead(qc, payload.notificationId, payload.unreadCount);

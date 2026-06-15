@@ -4,6 +4,7 @@ import { forwardRef } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import type { ProfilePlan } from "@/features/profile/types";
+import { formatPriceWithCurrency } from "@/utils/format";
 import { EmptySection } from "./empty-section";
 
 const styles = {
@@ -31,11 +32,6 @@ interface PlansProps {
  *  currency. The check is case-insensitive so "egp", "EGP", "Egp" all skip
  *  re-adding the suffix. Empty strings are returned unchanged so callers can
  *  decide how to handle "no price set". */
-const formatPriceWithCurrency = (value: string | undefined): string => {
-  if (!value) return "";
-  return /egp/i.test(value) ? value : `${value} EGP`;
-};
-
 /** Treat a plan as "renderable" only when it has at least one of the
  *  user-facing fields filled. Empty rows are silently dropped from the view
  *  so a junk row returned by the API (all-empty placeholder) doesn't render

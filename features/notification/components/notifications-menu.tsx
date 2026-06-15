@@ -46,8 +46,16 @@ export const NotificationsMenu = ({
     const menuRef = useRef<HTMLDivElement>(null);
 
     const { data, isLoading } = useNotificationsQuery();
-    const notifications = data?.notifications ?? [];
-    const unreadCount = data?.unreadCount ?? 0;
+    // Chat messages are surfaced in the chat widget, not here — skip them from
+    // the notifications flow entirely. The unread badge is recomputed from the
+    // filtered list so it stays in sync with what's actually shown.
+    const notifications = (data?.notifications ?? []).filter(
+        (n) => n.type !== 'chat_message',
+    );
+    const unreadCount = notifications.reduce(
+        (acc, n) => (n.isRead ? acc : acc + 1),
+        0,
+    );
 
     const markRead = useMarkNotificationReadMutation();
     const markAllRead = useMarkAllNotificationsReadMutation();

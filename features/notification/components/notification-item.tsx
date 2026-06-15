@@ -12,7 +12,7 @@ import {
     type LucideIcon,
 } from "lucide-react";
 import type { AppNotification, NotificationType } from "../types";
-import { formatRelativeTime } from "../utils/format";
+import { formatRelativeTimeLong } from "@/utils/format";
 
 const TYPE_ICON: Record<NotificationType, LucideIcon> = {
     chat_message: MessageSquare,
@@ -22,11 +22,12 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
     job_application: Briefcase,
 };
 
+// All notification types share the primary (green) accent for a consistent look.
 const TYPE_ACCENT: Record<NotificationType, string> = {
-    chat_message: "bg-blue-500/20 text-blue-500",
+    chat_message: "bg-primary/20 text-primary",
     post_vote: "bg-primary/20 text-primary",
-    post_comment: "bg-violet-500/20 text-violet-400",
-    comment_reply: "bg-amber-500/20 text-amber-400",
+    post_comment: "bg-primary/20 text-primary",
+    comment_reply: "bg-primary/20 text-primary",
     job_application: "bg-primary/20 text-primary",
 };
 
@@ -89,14 +90,14 @@ export const NotificationItem = ({
                     )}
                 </div>
                 <span className={styles.typeBadge(accent)}>
-                    <Icon size={11} />
+                    <Icon size={11}  />
                 </span>
             </div>
 
             <div className={styles.content}>
                 <div className={styles.header}>
                     <span className={styles.time}>
-                        {formatRelativeTime(lastActivityAt || createdAt, locale)}
+                        {formatRelativeTimeLong(lastActivityAt || createdAt, locale)}
                     </span>
                 </div>
                 <p className={styles.text}>{text}</p>

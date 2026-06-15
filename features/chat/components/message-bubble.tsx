@@ -2,6 +2,7 @@
 
 import { Check, CheckCheck, Clock } from 'lucide-react';
 import { useLocale } from 'next-intl';
+import { formatClockTime } from '@/utils/format';
 import type { ChatMessage } from '../types';
 
 const styles = {
@@ -44,17 +45,6 @@ const renderBody = (text: string) =>
         ),
     );
 
-const formatTime = (iso: string, locale: string) => {
-    try {
-        return new Intl.DateTimeFormat(locale, {
-            hour: '2-digit',
-            minute: '2-digit',
-        }).format(new Date(iso));
-    } catch {
-        return '';
-    }
-};
-
 export const MessageBubble = ({
     message,
     mine,
@@ -84,7 +74,7 @@ export const MessageBubble = ({
                 )}
                 <div className={styles.meta(mine)}>
                     <span className={styles.time(mine)}>
-                        {formatTime(message.createdAt, locale)}
+                        {formatClockTime(message.createdAt, locale)}
                     </span>
                     {mine &&
                         (sending ? (

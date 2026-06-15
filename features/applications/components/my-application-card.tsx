@@ -6,6 +6,7 @@ import {
     Calendar, CheckCircle2, Clock, Eye, EyeOff,
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { formatRelativeTime } from '@/utils/format';
 import type { JobApplication } from '../types';
 
 const styles = {
@@ -32,22 +33,6 @@ const styles = {
     cvButton:      "flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all text-sm font-bold text-foreground/70 hover:text-foreground active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed",
     viewJobBtn:    "flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-black text-sm hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_20px_rgba(34,197,94,0.2)]",
 };
-
-function formatRelativeTime(iso?: string, justNowLabel = 'Just now') {
-    if (!iso) return '';
-    const date = new Date(iso);
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (Number.isNaN(seconds) || seconds < 0) return '';
-    if (seconds < 30) return justNowLabel;
-    if (seconds < 60) return `${seconds}s`;
-    const m = Math.floor(seconds / 60);
-    if (m < 60) return `${m}m`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h`;
-    const d = Math.floor(h / 24);
-    if (d < 7) return `${d}d`;
-    return date.toLocaleDateString();
-}
 
 export interface MyApplicationCardProps {
     app: JobApplication;
@@ -85,7 +70,7 @@ export function MyApplicationCard({ app }: MyApplicationCardProps) {
                     </Link>
                     <p className={styles.appliedAt}>
                         <Calendar size={11} />
-                        {t('applied')} {formatRelativeTime(app.appliedAt)}
+                        {t('applied')} {formatRelativeTime(app.appliedAt, 'Just now')}
                     </p>
                 </div>
             </div>

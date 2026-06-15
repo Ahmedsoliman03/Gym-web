@@ -10,19 +10,6 @@ export const initials = (name: string) =>
         .join('')
         .toUpperCase();
 
-export const formatWhen = (iso: string, locale: string) => {
-    try {
-        return new Intl.DateTimeFormat(locale, {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        }).format(new Date(iso));
-    } catch {
-        return '';
-    }
-};
-
 /** Pick the participant who is not the current user. Falls back to the first
  *  entry when `meId` is missing or there's only one participant — that lets
  *  the row still render with *some* user instead of crashing. */

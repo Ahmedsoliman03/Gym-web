@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useMarkCvViewedMutation } from '../services/applications.service';
+import { formatRelativeTime } from '@/utils/format';
 import type { JobApplication } from '../types';
 
 // ─── ContactChoiceModal styles ─────────────────────────────────────────────────
@@ -135,22 +136,6 @@ const styles = {
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatRelativeTime(iso?: string, justNowLabel = 'Just now') {
-    if (!iso) return '';
-    const date = new Date(iso);
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (Number.isNaN(seconds) || seconds < 0) return '';
-    if (seconds < 30) return justNowLabel;
-    if (seconds < 60) return `${seconds}s`;
-    const m = Math.floor(seconds / 60);
-    if (m < 60) return `${m}m`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h`;
-    const d = Math.floor(h / 24);
-    if (d < 7) return `${d}d`;
-    return date.toLocaleDateString();
-}
-
 // ─── ApplicationCard ───────────────────────────────────────────────────────────
 
 export interface ApplicationCardProps {
@@ -207,7 +192,7 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
                         </h3>
                         <p className={styles.appliedAt}>
                             <Calendar size={11} />
-                            {t('applied')} {formatRelativeTime(app.appliedAt)}
+                            {t('applied')} {formatRelativeTime(app.appliedAt, 'Just now')}
                         </p>
                     </div>
                 </div>

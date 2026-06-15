@@ -4,7 +4,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useChatSocket } from '../socket/chat-socket-provider';
 import type { ChatConversation } from '../types';
-import { formatWhen, pickOtherUser } from '../utils/format';
+import { pickOtherUser } from '../utils/format';
+import { formatWhen } from '@/utils/format';
 import { ChatRowAvatar } from './chat-row-avatar';
 
 const styles = {

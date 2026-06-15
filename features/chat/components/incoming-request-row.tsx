@@ -8,7 +8,7 @@ import {
     useRejectChatRequestMutation,
 } from '../services/chat.service';
 import type { ChatRequest, ChatRequestOutcome } from '../types';
-import { formatWhen } from '../utils/format';
+import { formatWhen } from '@/utils/format';
 import { getRequestOutcome } from '../utils/request-status';
 import { ChatRowAvatar } from './chat-row-avatar';
 
