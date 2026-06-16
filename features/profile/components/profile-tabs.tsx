@@ -54,10 +54,12 @@ const tabsForUserType = (userType: ProfileUserType): TabDef[] => {
     if (userType !== 'client') {
         base.push({ key: 'posts', labelKey: 'tabPosts', icon: FileText });
     }
-    base.push(
-        { key: 'saved-posts', labelKey: 'tabSavedPosts', icon: Bookmark },
-        { key: 'saved-jobs', labelKey: 'tabSavedJobs', icon: Bookmark },
-    );
+    base.push({ key: 'saved-posts', labelKey: 'tabSavedPosts', icon: Bookmark });
+    // Saved Jobs is for roles that can reach the job board (gyms + coaches);
+    // clients are blocked from /jobs so they can never save one.
+    if (userType !== 'client') {
+        base.push({ key: 'saved-jobs', labelKey: 'tabSavedJobs', icon: Bookmark });
+    }
     if (userType === 'gym') {
         base.push({ key: 'my-jobs', labelKey: 'tabMyJobs', icon: Briefcase });
     }

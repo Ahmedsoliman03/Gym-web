@@ -691,6 +691,9 @@
         "support": "GymSpot",
         "online": "Online",
         "placeholder": "Type your message...",
+        "copy": "Copy",
+        "messageCopied": "Message copied",
+        "deleteMessage": "Delete message",
         "requestsTitle": "Chat Requests",
         "requestsPageSubtitle": "Review and respond to chat invitations.",
         "tabIncoming": "Incoming",
@@ -928,6 +931,9 @@
         "highlight": "Applications",
         "description": "Review and respond to coaches who have applied to your job posts.",
         "allPosts": "All Posts",
+        "allJobs": "All Jobs",
+        "allSpecializations": "All Specializations",
+        "allStatuses": "All Statuses",
         "noApplications": "No applications yet",
         "applied": "Applied",
         "viewCv": "View CV",
@@ -948,6 +954,7 @@
         "filterOpen": "Open Jobs",
         "filterClosed": "Closed Jobs",
         "filterByPost": "Filter by post",
+        "filterByJobTitle": "Filter by job title",
         "filterByStatus": "Filter by status",
         "filterBySpecialization": "Filter by specialization"
     }

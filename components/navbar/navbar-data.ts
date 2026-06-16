@@ -82,7 +82,10 @@ export function buildAccountLinks(t: Translate, userType: UserType): AccountLink
     ...(userType === 'coach'
       ? [{ href: '/profile?tab=my-applications', label: t('myApplications'), icon: FileText }]
       : []),
-    { href: '/profile?tab=saved-jobs', label: t('savedJobs'), icon: Bookmark },
+    // Saved Jobs is hidden for clients — they can't reach /jobs to save any.
+    ...(userType !== 'client'
+      ? [{ href: '/profile?tab=saved-jobs', label: t('savedJobs'), icon: Bookmark }]
+      : []),
     { href: '/settings', label: t('settings'), icon: Settings },
   ];
 }

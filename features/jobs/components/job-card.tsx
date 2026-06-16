@@ -75,6 +75,10 @@ const styles = {
         'px-4 sm:px-6 md:px-8 pb-3 flex flex-wrap items-center gap-2',
     statChip:
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/5 text-foreground/60 font-bold text-[11px] uppercase tracking-wider',
+    // Owner-only clickable variant of the applications chip — routes to the
+    // applications list pre-filtered to this job.
+    statChipLink:
+        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/5 text-foreground/60 font-bold text-[11px] uppercase tracking-wider hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer',
     statNum:
         'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-black tabular-nums leading-none',
     menuWrapper: "relative",
@@ -359,11 +363,25 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                     is closed so the gym keeps seeing its applications / saves /
                     shares totals. */}
                 <div className={styles.statsRow}>
-                    <div className={styles.statChip}>
-                        <Users size={14} />
-                        <span>{t('applicationsLabel')}</span>
-                        <span className={styles.statNum}>{applicationsCount}</span>
-                    </div>
+                    {isMine ? (
+                        // Owner: tapping the applications chip opens their
+                        // applications list filtered to this job.
+                        <Link
+                            href={`/applications?jobId=${job.id}` as any}
+                            className={styles.statChipLink}
+                            aria-label={t('applicationsLabel')}
+                        >
+                            <Users size={14} />
+                            <span>{t('applicationsLabel')}</span>
+                            <span className={styles.statNum}>{applicationsCount}</span>
+                        </Link>
+                    ) : (
+                        <div className={styles.statChip}>
+                            <Users size={14} />
+                            <span>{t('applicationsLabel')}</span>
+                            <span className={styles.statNum}>{applicationsCount}</span>
+                        </div>
+                    )}
                     <div className={styles.statChip}>
                         <Bookmark size={14} />
                         <span>{t('savesLabel')}</span>
