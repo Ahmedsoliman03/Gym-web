@@ -34,6 +34,11 @@ interface CommunityCommentsProps {
   /** Author id of the post these comments belong to. When the viewer matches,
    *  every comment / reply gets a Delete action. */
   postAuthorId?: string;
+  /** Comment id to scroll to and flash (from a post-comment notification). */
+  highlightCommentId?: string;
+  /** Reply id to scroll to and flash (from a comment-reply notification). The
+   *  parent comment's reply thread is auto-opened so the reply is in the DOM. */
+  highlightReplyId?: string;
 }
 
 const styles = {
@@ -89,6 +94,8 @@ function CommentRow({
   currentUserId,
   isPostOwner,
   isReply,
+  highlightCommentId,
+  highlightReplyId,
 }: {
   comment: CommunityComment;
   postId: string;
@@ -97,6 +104,8 @@ function CommentRow({
    *  comment or reply under it. */
   isPostOwner?: boolean;
   isReply?: boolean;
+  highlightCommentId?: string;
+  highlightReplyId?: string;
 }) {
   const t = useTranslations('Community');
   const voteMutation = useVoteCommentMutation();
@@ -104,12 +113,47 @@ function CommentRow({
   const deleteMutation = useDeleteCommentMutation();
   const reportMutation = useReportCommentMutation();
 
+  // This row is the deep-link target when it matches the requested reply id
+  // (reply rows) or the requested comment id (top-level rows, only when no
+  // reply was requested — a reply anchor wins over its parent comment).
+  const isTarget = isReply
+    ? !!highlightReplyId && comment.id === highlightReplyId
+    : !highlightReplyId && !!highlightCommentId && comment.id === highlightCommentId;
+  // This top-level comment owns the reply we need to flash — open its thread
+  // up front so the reply row mounts and can be scrolled to.
+  const containsTargetReply =
+    !isReply &&
+    !!highlightReplyId &&
+    (comment.replies?.some((r) => r.id === highlightReplyId) ?? false);
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyOpen, setReplyOpen] = useState(containsTargetReply);
   const [replyDraft, setReplyDraft] = useState('');
   const [reportOpen, setReportOpen] = useState(false);
   const [votersOpen, setVotersOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const didHighlight = useRef(false);
+
+  // Scroll the targeted comment/reply into view and play a one-shot flash.
+  // Deferred a frame so any just-opened reply thread has laid out first.
+  useEffect(() => {
+    if (!isTarget || didHighlight.current) return;
+    const el = rowRef.current;
+    if (!el) return;
+    didHighlight.current = true;
+    const scrollTimer = setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('comment-highlight');
+    }, 150);
+    const clearTimer = setTimeout(() => {
+      el.classList.remove('comment-highlight');
+    }, 3200);
+    return () => {
+      clearTimeout(scrollTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [isTarget]);
 
   // Close the kebab menu when the user clicks anywhere outside of it.
   useEffect(() => {
@@ -170,7 +214,11 @@ function CommentRow({
 
   return (
     <div>
-      <div className={styles.comment}>
+      <div
+        ref={rowRef}
+        id={isReply ? `reply-${comment.id}` : `comment-${comment.id}`}
+        className={styles.comment}
+      >
         {authorHref ? (
           <Link href={authorHref} className={styles.avatarLink}>
             {photo ? (
@@ -308,6 +356,8 @@ function CommentRow({
                       currentUserId={currentUserId}
                       isPostOwner={isPostOwner}
                       isReply
+                      highlightCommentId={highlightCommentId}
+                      highlightReplyId={highlightReplyId}
                     />
                   ))}
                 </div>
@@ -363,7 +413,12 @@ function CommentRow({
 
 const COMMENTS_PAGE_SIZE = 6;
 
-export function CommunityComments({ postId, postAuthorId }: CommunityCommentsProps) {
+export function CommunityComments({
+  postId,
+  postAuthorId,
+  highlightCommentId,
+  highlightReplyId,
+}: CommunityCommentsProps) {
   const t = useTranslations('Community');
   const { profile } = useProfileUser();
   const { data: comments, isLoading } = useComments(postId);
@@ -375,6 +430,18 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
 
   const isPostOwner =
     !!profile?.id && !!postAuthorId && profile.id === postAuthorId;
+
+  // If the deep-link target sits past the current "page" of comments, reveal
+  // enough comments so its row mounts (and can then scroll itself into view).
+  useEffect(() => {
+    if (!comments || (!highlightCommentId && !highlightReplyId)) return;
+    const idx = comments.findIndex((c) =>
+      highlightReplyId
+        ? c.replies?.some((r) => r.id === highlightReplyId) ?? false
+        : c.id === highlightCommentId,
+    );
+    if (idx >= 0) setVisibleCount((n) => Math.max(n, idx + 1));
+  }, [comments, highlightCommentId, highlightReplyId]);
 
   const visibleComments = comments?.slice(0, visibleCount) ?? [];
   const hasMore = (comments?.length ?? 0) > visibleCount;
@@ -456,6 +523,8 @@ export function CommunityComments({ postId, postAuthorId }: CommunityCommentsPro
               postId={postId}
               currentUserId={profile?.id}
               isPostOwner={isPostOwner}
+              highlightCommentId={highlightCommentId}
+              highlightReplyId={highlightReplyId}
             />
           ))}
           {hasMore && (

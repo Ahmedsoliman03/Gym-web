@@ -48,6 +48,10 @@ interface CommunityPostCardProps {
    * profile "Posts of {owner}" strip so each preview opens its full page.
    */
   href?: string;
+  /** Comment id to scroll to and flash (from a post-comment notification). */
+  highlightCommentId?: string;
+  /** Reply id to scroll to and flash (from a comment-reply notification). */
+  highlightReplyId?: string;
 }
 
 const styles = {
@@ -155,6 +159,8 @@ export function CommunityPostCard({
   defaultCommentsOpen = false,
   onDeleted,
   href,
+  highlightCommentId,
+  highlightReplyId,
 }: CommunityPostCardProps) {
   const t = useTranslations('Community');
   const locale = useLocale();
@@ -167,7 +173,11 @@ export function CommunityPostCard({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [commentsOpen, setCommentsOpen] = useState(defaultCommentsOpen);
+  // A comment/reply deep-link always needs the comments section open so the
+  // target row exists in the DOM to scroll to.
+  const [commentsOpen, setCommentsOpen] = useState(
+    defaultCommentsOpen || !!highlightCommentId || !!highlightReplyId,
+  );
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -475,7 +485,12 @@ export function CommunityPostCard({
       </div>
 
       {commentsOpen && (
-        <CommunityComments postId={post.id} postAuthorId={post.author?.id} />
+        <CommunityComments
+          postId={post.id}
+          postAuthorId={post.author?.id}
+          highlightCommentId={highlightCommentId}
+          highlightReplyId={highlightReplyId}
+        />
       )}
 
       <SharePostModal

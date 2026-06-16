@@ -149,7 +149,7 @@ export const GymProfileView = ({
             authorUserType="gym"
             stories={stories}
           />
-          {!isOwner && <div className={styles.statusBadge} />}
+          {/* {!isOwner && <div className={styles.statusBadge} />} */}
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>

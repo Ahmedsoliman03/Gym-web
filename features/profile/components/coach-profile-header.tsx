@@ -121,7 +121,7 @@ export const CoachProfileHeader = ({
             authorUserType="coach"
             stories={stories}
           />
-          {!isOwner && <div className={styles.statusBadge} />}
+          {/* {!isOwner && <div className={styles.statusBadge} />} */}
         </div>
 
         {/* Info */}

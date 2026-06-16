@@ -659,6 +659,9 @@
         "support": " GymSpot",
         "online": "متصل الآن",
         "placeholder": "اكتب رسالتك...",
+        "copy": "نسخ",
+        "messageCopied": "تم نسخ الرسالة",
+        "deleteMessage": "حذف الرسالة",
         "requestsTitle": "طلبات الدردشة",
         "requestsPageSubtitle": "راجع طلبات الدردشة واستجب لها.",
         "tabIncoming": "الواردة",
@@ -873,6 +876,9 @@
         "title": "طلبات التوظيف",
         "description": "استعرض ورد على المدربين الذين تقدموا لمنشوراتك الوظيفية.",
         "allPosts": "جميع المنشورات",
+        "allJobs": "كل الوظائف",
+        "allSpecializations": "كل التخصصات",
+        "allStatuses": "كل الحالات",
         "noApplications": "لا توجد طلبات بعد",
         "applied": "تقدم",
         "viewCv": "عرض السيرة الذاتية",
@@ -893,6 +899,7 @@
         "filterOpen": "الوظائف المفتوحة",
         "filterClosed": "الوظائف المغلقة",
         "filterByPost": "تصفية حسب الوظيفة",
+        "filterByJobTitle": "تصفية حسب عنوان الوظيفة",
         "filterByStatus": "تصفية حسب الحالة",
         "filterBySpecialization": "تصفية حسب التخصص"
     }

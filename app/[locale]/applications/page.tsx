@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { User } from 'lucide-react';
 import { SPECIALIZATIONS } from '@/constants/specializations';
 import { ApplicationCard } from '@/features/applications/components/application-card';
@@ -14,7 +15,7 @@ const styles = {
     page: "pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen",
     inner: "max-w-5xl mx-auto",
     pageHeader: "mb-12",
-    filterRow: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 sm:mb-8",
+    filterRow: "grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 sm:mb-8",
     loaderWrap: "flex items-center justify-center py-24 text-primary",
     emptyState: "text-center py-16 sm:py-24 text-foreground/30",
     emptyIcon: "mx-auto mb-4 opacity-20",
@@ -26,10 +27,46 @@ type StatusFilter = 'all' | 'open' | 'closed';
 
 export default function ApplicationsPage() {
     const t = useTranslations('Applications');
+    const [titleFilter, setTitleFilter] = useState<string>('all');
     const [specFilter, setSpecFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
     const { data: applications = [], isLoading } = useMyJobsApplications();
+
+    // A job-application notification deep-links here as `?jobId=<id>`. Once the
+    // applications load, resolve that id to its job title and pre-select the
+    // title filter so the gym lands straight on the relevant applications.
+    const searchParams = useSearchParams();
+    const jobIdParam = searchParams.get('jobId');
+    const autoFilteredJobIdRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!jobIdParam || applications.length === 0) return;
+        if (autoFilteredJobIdRef.current === jobIdParam) return;
+        const match = applications.find((app) => app.job?.id === jobIdParam);
+        if (match?.job?.title) {
+            setTitleFilter(match.job.title);
+            autoFilteredJobIdRef.current = jobIdParam;
+        }
+    }, [jobIdParam, applications]);
+
+    // Distinct job titles present in the incoming applications, each with its
+    // applicant count, for the "filter by job title" select.
+    const titleOptions = useMemo(() => {
+        const counts = new Map<string, number>();
+        applications.forEach((app) => {
+            const title = app.job?.title;
+            if (title) counts.set(title, (counts.get(title) ?? 0) + 1);
+        });
+        const opts = [
+            { value: 'all', label: `${t('allJobs')} (${applications.length})` },
+        ];
+        Array.from(counts.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .forEach(([title, count]) =>
+                opts.push({ value: title, label: `${title} (${count})` }),
+            );
+        return opts;
+    }, [applications, t]);
 
     // Build the specialization options from the disciplines that actually
     // appear in the incoming applications — no point offering "Yoga" if no
@@ -42,7 +79,7 @@ export default function ApplicationsPage() {
             });
         });
         const opts = [
-            { value: 'all', label: `${t('allPosts')} (${applications.length})` },
+            { value: 'all', label: `${t('allSpecializations')} (${applications.length})` },
         ];
         SPECIALIZATIONS.forEach((spec) => {
             const count = counts.get(spec.value);
@@ -58,13 +95,15 @@ export default function ApplicationsPage() {
     const closedCount = applications.length - openCount;
 
     const statusOptions = [
-        { value: 'all', label: `${t('filterAll')} (${applications.length})` },
+        { value: 'all', label: `${t('allStatuses')} (${applications.length})` },
         { value: 'open', label: `${t('filterOpen')} (${openCount})` },
         { value: 'closed', label: `${t('filterClosed')} (${closedCount})` },
     ];
 
     const filtered = useMemo(() => {
         return applications.filter((app) => {
+            const matchesTitle =
+                titleFilter === 'all' || app.job?.title === titleFilter;
             const matchesSpec =
                 specFilter === 'all' ||
                 (app.job?.specialization ?? []).includes(specFilter);
@@ -73,9 +112,9 @@ export default function ApplicationsPage() {
                 (statusFilter === 'open'
                     ? app.job?.status === 'open'
                     : app.job?.status !== 'open');
-            return matchesSpec && matchesStatus;
+            return matchesTitle && matchesSpec && matchesStatus;
         });
-    }, [applications, specFilter, statusFilter]);
+    }, [applications, titleFilter, specFilter, statusFilter]);
 
     return (
         <div className={styles.page}>
@@ -88,6 +127,12 @@ export default function ApplicationsPage() {
                 />
 
                 <div className={styles.filterRow}>
+                    <CustomSelect
+                        value={titleFilter}
+                        onChange={setTitleFilter}
+                        options={titleOptions}
+                        placeholder={t('filterByJobTitle')}
+                    />
                     <CustomSelect
                         value={specFilter}
                         onChange={setSpecFilter}

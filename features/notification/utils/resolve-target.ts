@@ -15,10 +15,26 @@ export type NotificationTarget =
     | { href: string }
     | null;
 
+/** Build a `/community/<postId>` href, appending `commentId` / `replyId` as
+ *  query params when present so the detail page can scroll to (and flash) the
+ *  exact comment or reply the notification referred to. */
+const postHref = (
+    postId: string,
+    commentId?: string,
+    replyId?: string,
+): NotificationTarget => {
+    const params = new URLSearchParams();
+    if (commentId) params.set("commentId", commentId);
+    if (replyId) params.set("replyId", replyId);
+    const qs = params.toString();
+    return { href: `/community/${postId}${qs ? `?${qs}` : ""}` };
+};
+
 /** Fallback for the community-post notifications: when the payload didn't
- *  populate `data.postId`, parse the post id out of the backend `link`
- *  (`/community/posts/<id>...`) and re-map it onto this app's `/community/<id>`
- *  route. Without this an empty `data` made the click a silent no-op. */
+ *  populate `data.postId`, parse the post id (and any comment/reply anchor)
+ *  out of the backend `link` (`/community/posts/<id>?commentId=<id>`) and
+ *  re-map it onto this app's `/community/<id>` route. Without this an empty
+ *  `data` made the click a silent no-op. */
 const postHrefFromLink = (link?: string): NotificationTarget => {
     if (!link) return null;
     try {
@@ -26,7 +42,11 @@ const postHrefFromLink = (link?: string): NotificationTarget => {
         const url = new URL(link, "http://x");
         const seg = url.pathname.split("/").filter(Boolean);
         if (seg[0] === "community" && seg[1] === "posts" && seg[2]) {
-            return { href: `/community/${seg[2]}` };
+            return postHref(
+                seg[2],
+                url.searchParams.get("commentId") ?? undefined,
+                url.searchParams.get("replyId") ?? undefined,
+            );
         }
     } catch {
         /* malformed link — fall through to null */
@@ -42,14 +62,29 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
             return data.conversationId ? { chatConversationId: data.conversationId } : null;
 
         case "post_vote":
-        case "post_comment":
-        case "comment_reply":
-            // Route to the post detail page only — no commentId deep-link.
+            // A vote has no comment anchor — land on the post itself.
             if (!data.postId) return postHrefFromLink(link);
-            return { href: `/community/${data.postId}` };
+            return postHref(data.postId);
+
+        case "post_comment":
+            // Anchor to the commented-on comment so the page scrolls to it.
+            if (!data.postId) return postHrefFromLink(link);
+            return postHref(data.postId, data.commentId);
+
+        case "comment_reply":
+            // Anchor to the reply (with its parent comment so the thread opens).
+            if (!data.postId) return postHrefFromLink(link);
+            return postHref(data.postId, data.commentId, data.replyId);
 
         case "job_application":
-            return { href: data.jobId ? `/jobs/${data.jobId}` : "/applications" };
+            // The recipient is the gym: land on their applications list,
+            // pre-filtered to the job that was applied to. The page resolves
+            // `jobId` → its title and selects the job-title filter.
+            return {
+                href: data.jobId
+                    ? `/applications?jobId=${data.jobId}`
+                    : "/applications",
+            };
 
         default:
             return null;

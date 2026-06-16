@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { GLoaderSection } from '@/components/ui/g-loader';
 import { usePost } from '../services/community.service';
@@ -27,6 +28,11 @@ const styles = {
 export function CommunityPostDetailView({ postId }: CommunityPostDetailViewProps) {
   const t = useTranslations('Community');
   const router = useRouter();
+  // Deep-link anchors from a post-comment / comment-reply notification: the
+  // detail page scrolls to and flashes the matching comment or reply.
+  const searchParams = useSearchParams();
+  const highlightCommentId = searchParams.get('commentId') ?? undefined;
+  const highlightReplyId = searchParams.get('replyId') ?? undefined;
   const { data: post, isLoading, isError, error } = usePost(postId);
 
   const isNotFound =
@@ -51,6 +57,8 @@ export function CommunityPostDetailView({ postId }: CommunityPostDetailViewProps
           <CommunityPostCard
             post={post}
             defaultCommentsOpen
+            highlightCommentId={highlightCommentId}
+            highlightReplyId={highlightReplyId}
             onDeleted={() => router.push('/community')}
           />
         ) : null}
