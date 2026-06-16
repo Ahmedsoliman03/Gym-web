@@ -1,17 +1,14 @@
 import type { AppNotification } from "../types";
 
 /** Where a notification should take the user when clicked.
- *  - `{ chatConversationId }` → open the chat side-widget on that conversation
- *    (chat has no standalone route; it lives in the overlay panel).
  *  - `{ href }` → a real in-app path to push through the locale-aware router.
  *  - `null` → nothing actionable.
  *
  *  The backend's `notification.link` uses its own URL scheme
- *  (`/community/posts/<id>`, `/chat/conversations/<id>`) that does NOT match
- *  this app's routes (`/community/<id>`, no chat route). So we derive the
- *  target from `type` + `data` instead of trusting `link`. */
+ *  (`/community/posts/<id>`) that does NOT match this app's routes
+ *  (`/community/<id>`). So we derive the target from `type` + `data`
+ *  instead of trusting `link`. */
 export type NotificationTarget =
-    | { chatConversationId: string }
     | { href: string }
     | null;
 
@@ -58,9 +55,6 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
     const { type, data, link } = notification;
 
     switch (type) {
-        case "chat_message":
-            return data.conversationId ? { chatConversationId: data.conversationId } : null;
-
         case "post_vote":
             // A vote has no comment anchor — land on the post itself.
             if (!data.postId) return postHrefFromLink(link);
@@ -77,6 +71,7 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
             return postHref(data.postId, data.commentId, data.replyId);
 
         case "job_application":
+            return { href: "/applications" };
             // The recipient is the gym: land on their applications list,
             // pre-filtered to the job that was applied to. The page resolves
             // `jobId` → its title and selects the job-title filter.

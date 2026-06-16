@@ -79,6 +79,7 @@ export default function ProfilePage() {
           },
           plans: coachProfile.plans ?? [],
           specializations: specs,
+          socialMedia: coachProfile.socialMedia ?? [],
         };
         return (
           <CoachProfileView
@@ -109,6 +110,7 @@ export default function ProfilePage() {
           images: (gymProfile.images ?? []).map((g) => g.image),
           programs: gymProfile.specializations ?? [],
           plans: gymProfile.plans ?? [],
+          socialMedia: gymProfile.socialMedia ?? [],
         };
         return (
           <GymProfileView

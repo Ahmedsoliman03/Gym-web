@@ -2,7 +2,7 @@
 
 import { forwardRef } from "react";
 import { useTranslations } from "next-intl";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import type { ProfilePlan } from "@/features/profile/types";
 import { formatPriceWithCurrency } from "@/utils/format";
 import { EmptySection } from "./empty-section";
@@ -21,11 +21,14 @@ const styles = {
   oldPrice: "text-foreground/30 line-through text-sm",
   currentPrice: "text-2xl font-black text-foreground",
   buyBtn: "w-full mt-4 bg-white/5 hover:bg-primary hover:text-primary-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all py-3 rounded-xl font-bold text-sm",
+  interestCount: "mt-4 rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-black uppercase tracking-wider text-primary",
 };
 
 interface PlansProps {
   plans?: ProfilePlan[];
   isOwner?: boolean;
+  onGetStarted?: (plan: ProfilePlan) => void;
+  pendingPlanId?: string | null;
 }
 
 /** Append " EGP" to a price string when the API didn't already include the
@@ -43,7 +46,12 @@ const isPlanRenderable = (p: ProfilePlan): boolean =>
   !!p.salePrice?.trim() ||
   (Array.isArray(p.features) && p.features.some((f) => !!f?.trim()));
 
-export const Plans = forwardRef<HTMLDivElement, PlansProps>(({ plans, isOwner }, ref) => {
+export const Plans = forwardRef<HTMLDivElement, PlansProps>(({
+  plans,
+  isOwner,
+  onGetStarted,
+  pendingPlanId,
+}, ref) => {
   const t = useTranslations("Profile");
 
   const visible = (plans ?? []).filter(isPlanRenderable);
@@ -60,37 +68,55 @@ export const Plans = forwardRef<HTMLDivElement, PlansProps>(({ plans, isOwner },
         />
       ) : (
         <div className={styles.plansGrid}>
-          {visible.map((plan, idx) => (
-            <div key={idx} className={styles.planCard}>
-              <div className={styles.planHeader}>
-                <h3 className={styles.planName}>{plan.name}</h3>
-                <span className={styles.planDuration}>{plan.duration}</span>
-              </div>
+          {visible.map((plan, idx) => {
+            const pending = pendingPlanId === plan.id;
 
-              <div className={styles.planFeatures}>
-                {plan.features.map((feature, fIdx) => (
-                  <div key={fIdx} className={styles.featureItem}>
-                    <Check size={14} className="text-primary" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className={styles.planPricing}>
-                {plan.salePrice && (
-                  <div className={styles.oldPrice}>
-                    {formatPriceWithCurrency(plan.price)}
-                  </div>
-                )}
-                <div className={styles.currentPrice}>
-                  {formatPriceWithCurrency(plan.salePrice || plan.price)}
+            return (
+              <div key={plan.id ?? idx} className={styles.planCard}>
+                <div className={styles.planHeader}>
+                  <h3 className={styles.planName}>{plan.name}</h3>
+                  <span className={styles.planDuration}>{plan.duration}</span>
                 </div>
-                <button className={styles.buyBtn}>
-                  {t('getStarted')}
-                </button>
+
+                <div className={styles.planFeatures}>
+                  {plan.features.map((feature, fIdx) => (
+                    <div key={fIdx} className={styles.featureItem}>
+                      <Check size={14} className="text-primary" />
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className={styles.planPricing}>
+                  {plan.salePrice && (
+                    <div className={styles.oldPrice}>
+                      {formatPriceWithCurrency(plan.price)}
+                    </div>
+                  )}
+                  <div className={styles.currentPrice}>
+                    {formatPriceWithCurrency(plan.salePrice || plan.price)}
+                  </div>
+                  {isOwner ? (
+                    <div className={styles.interestCount}>
+                      {t('getStartedCount', { count: plan.getStartedCount ?? 0 })}
+                    </div>
+                  ) : (
+                    <button
+                      className={styles.buyBtn}
+                      disabled={!plan.id || !onGetStarted || pending}
+                      onClick={() => onGetStarted?.(plan)}
+                    >
+                      {pending ? (
+                        <Loader2 size={16} className="mx-auto animate-spin" />
+                      ) : (
+                        t('getStarted')
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

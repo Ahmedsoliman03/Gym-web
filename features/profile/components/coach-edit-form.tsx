@@ -15,6 +15,7 @@ import {
   validatePlans,
   type PlanErrors,
 } from "@/components/shared/plans-editor";
+import { SocialMediaEditor, hasIncompleteSocialLinks } from "./social-media-editor";
 import type {
   CoachEditFormProps,
   EditableImage,
@@ -62,6 +63,8 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
 
   const inner = profile.profile;
   const initialPhoto = inner?.photo ?? inner?.profileImage ?? null;
+  const translateSpecializationLabel = (label: string) =>
+    t_root(label as Parameters<typeof t_root>[0]);
 
   // Coach editable state. Server-hosted images come back as `{id, file}` —
   // we wrap them in `{id, url}` so the GalleryEditor can show + delete them,
@@ -74,6 +77,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       id: c.id,
       url: c.file,
     })),
+    socialMedia: inner?.socialMedia ?? [],
     plans: (inner?.plans ?? []) as ProfilePlan[],
     transformations: (inner?.transformations ?? []).map<TransformationItem>((tr) => ({
       id: tr.id,
@@ -123,6 +127,10 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       setPlanErrors(errors);
       return;
     }
+    if (hasIncompleteSocialLinks(formData.socialMedia)) {
+      toast.error(t('completeSocialLinks'));
+      return;
+    }
     setPlanErrors({});
     const payload = buildEditProfileFormData({
       role: 'coach',
@@ -132,6 +140,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
         philosophyDesc: formData.philosophyDesc,
         specializations: formData.specializations,
         certifications: formData.certifications,
+        socialMedia: formData.socialMedia,
         plans: sanitized,
         transformations: formData.transformations.map((tr) => ({
           id: tr.id,
@@ -231,6 +240,11 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
           onChange={(next) => setFormData((prev) => ({ ...prev, transformations: next }))}
         />
 
+        <SocialMediaEditor
+          links={formData.socialMedia}
+          onChange={(next) => setFormData((prev) => ({ ...prev, socialMedia: next }))}
+        />
+
         <PlansEditor
           plans={formData.plans}
           errors={planErrors}
@@ -279,7 +293,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
                             onClick={() => togglePendingSpec(s.value)}
                             className={styles.menuItem(pendingSpecs.includes(s.value))}
                           >
-                            {t_root(s.label as any)}
+                            {translateSpecializationLabel(s.label)}
                           </button>
                         ))}
                       </div>

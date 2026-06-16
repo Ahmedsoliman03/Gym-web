@@ -2,7 +2,7 @@
 
 import {
     Bookmark, BookmarkCheck, Share2, Zap, Briefcase, Building2, Banknote, Users,
-    MoreVertical, Edit2, Trash2, Power,
+    MoreVertical, Edit2, Trash2, Power, RotateCcw,
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
@@ -17,6 +17,7 @@ import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import {
     useCloseJobMutation,
     useDeleteJobMutation,
+    useReopenJobMutation,
     useSaveJobMutation,
     useShareJobMutation,
 } from '../services/jobs.service';
@@ -67,6 +68,7 @@ const styles = {
     closedNotice: "mx-4 sm:mx-6 md:mx-8 mb-4 sm:mb-6 md:mb-8 flex flex-col items-center justify-center gap-1 py-4 px-6 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-black text-sm uppercase tracking-wider text-center",
     closedNoticeRow: "flex items-center justify-center gap-2",
     closedOnDate: "text-[11px] font-bold tracking-wider text-red-400/70 normal-case",
+    reopenButton: "mt-3 inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-4 py-2 text-xs font-black uppercase tracking-wider text-primary hover:bg-primary/25 transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
     countPill:
         'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none',
     statsRow:
@@ -95,12 +97,14 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
     const saveMutation = useSaveJobMutation();
     const shareMutation = useShareJobMutation();
     const closeMutation = useCloseJobMutation();
+    const reopenMutation = useReopenJobMutation();
     const deleteMutation = useDeleteJobMutation();
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [closeOpen, setCloseOpen] = useState(false);
+    const [reopenOpen, setReopenOpen] = useState(false);
     const [contentExpanded, setContentExpanded] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -157,6 +161,16 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                 setCloseOpen(false);
             },
             onError: () => toast.error(t('closeFailed')),
+        });
+    };
+
+    const confirmReopen = () => {
+        reopenMutation.mutate(job.id, {
+            onSuccess: () => {
+                toast.success(t('reopenSuccess'));
+                setReopenOpen(false);
+            },
+            onError: () => toast.error(t('reopenFailed')),
         });
     };
 
@@ -256,6 +270,18 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                                         >
                                             <Power size={16} />
                                             {t('closePost')}
+                                        </button>
+                                    )}
+                                    {isClosed && (
+                                        <button
+                                            onClick={() => {
+                                                setMenuOpen(false);
+                                                setReopenOpen(true);
+                                            }}
+                                            className={styles.dropdownItem}
+                                        >
+                                            <RotateCcw size={16} />
+                                            {t('reopenPost')}
                                         </button>
                                     )}
                                     <button
@@ -387,6 +413,17 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                                 })}
                             </span>
                         )}
+                        {isMine && (
+                            <button
+                                type="button"
+                                className={styles.reopenButton}
+                                disabled={reopenMutation.isPending}
+                                onClick={() => setReopenOpen(true)}
+                            >
+                                <RotateCcw size={16} />
+                                <span>{t('reopenPost')}</span>
+                            </button>
+                        )}
                     </div>
                 ) : isMine ? (
                     // Owner view: only Share — counts are in the stats row above.
@@ -456,6 +493,20 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                 isSubmitting={closeMutation.isPending}
                 onCancel={() => setCloseOpen(false)}
                 onConfirm={confirmClose}
+            />
+
+            {/* Reopen confirmation */}
+            <ConfirmDialog
+                isOpen={reopenOpen}
+                title={t('reopenConfirmTitle')}
+                body={t('reopenConfirmBody')}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('reopenPost')}
+                submittingLabel={t('reopening')}
+                tone="primary"
+                isSubmitting={reopenMutation.isPending}
+                onCancel={() => setReopenOpen(false)}
+                onConfirm={confirmReopen}
             />
 
             {/* Delete confirmation */}

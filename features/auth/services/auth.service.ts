@@ -6,6 +6,9 @@ import {
     RequestAccessRequest,
     VerifyOTPRequest,
     ActivateRequest,
+    GoogleAuthRequest,
+    GoogleAuthResponse,
+    GoogleSignupCompleteRequest,
 } from '../types';
 
 const syncAuthenticatedUser = (
@@ -43,6 +46,34 @@ export const useRegisterMutation = () => {
             const { data } = await api.post('/api/auth/register', values);
             return data;
         }
+    });
+};
+
+export const useGoogleAuthMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (values: GoogleAuthRequest): Promise<GoogleAuthResponse> => {
+            const { data } = await api.post<GoogleAuthResponse>('/api/auth/google', values);
+            return data;
+        },
+        onSuccess: (data) => {
+            if (data.status === 'authenticated') {
+                syncAuthenticatedUser(queryClient, data.user);
+            }
+        },
+    });
+};
+
+export const useGoogleSignupCompleteMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (values: GoogleSignupCompleteRequest) => {
+            const { data } = await api.post('/api/auth/google/complete', values);
+            return data;
+        },
+        onSuccess: (data) => {
+            syncAuthenticatedUser(queryClient, data.user);
+        },
     });
 };
 

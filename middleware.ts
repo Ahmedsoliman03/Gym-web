@@ -31,7 +31,8 @@ export default function middleware(request: NextRequest) {
         '/register',
         '/verify-otp',
         '/request-access',
-        '/activate'
+        '/activate',
+        '/complete-google-signup',
     ];
 
     const isAuthPath = authPaths.some(path =>
@@ -125,4 +126,3 @@ export const config = {
     // Matcher including the locales and all paths
     matcher: ['/', '/(ar|en)/:path*', '/((?!_next/static|_next/image|favicon.ico|api).*)']
 };
-

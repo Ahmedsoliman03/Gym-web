@@ -4,12 +4,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import {
     chatKeys,
     useConversationMessages,
     useConversations,
+    useDeleteChatMessageMutation,
     useMarkConversationReadMutation,
+    useUpdateChatMessageMutation,
 } from '../services/chat.service';
 import { useChatSocket } from '../socket/chat-socket-provider';
 import { pickOtherUser } from '../utils/format';
@@ -35,6 +38,8 @@ const styles = {
     body: 'flex-1 overflow-y-auto p-4 space-y-2',
 };
 
+const MESSAGE_DELETE_WINDOW_MS = 15 * 60 * 1000;
+
 export const ConversationThread = ({
     conversationId,
     onBack,
@@ -49,6 +54,8 @@ export const ConversationThread = ({
     const queryClient = useQueryClient();
     const messagesQuery = useConversationMessages(conversationId);
     const markRead = useMarkConversationReadMutation();
+    const deleteMessage = useDeleteChatMessageMutation();
+    const updateMessage = useUpdateChatMessageMutation();
     const { clearUnread, setActiveConversation, typingByConversation, presenceByUser } =
         useChatSocket();
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -175,6 +182,18 @@ export const ConversationThread = ({
                                 mine &&
                                 otherLastReadMs >=
                                     new Date(m.createdAt).getTime();
+                            const canDelete =
+                                mine &&
+                                !m.id.startsWith('tmp:') &&
+                                Date.now() - new Date(m.createdAt).getTime() <=
+                                    MESSAGE_DELETE_WINDOW_MS;
+                            const canEdit = canDelete && m.body.trim().length > 0;
+                            const deleting =
+                                deleteMessage.isPending &&
+                                deleteMessage.variables?.messageId === m.id;
+                            const editing =
+                                updateMessage.isPending &&
+                                updateMessage.variables?.messageId === m.id;
                             return (
                                 <MessageBubble
                                     // Prefer clientMessageId so the optimistic
@@ -184,6 +203,44 @@ export const ConversationThread = ({
                                     message={m}
                                     mine={mine}
                                     read={read}
+                                    canDelete={canDelete}
+                                    canEdit={canEdit}
+                                    deleting={deleting}
+                                    editing={editing}
+                                    deleteLabel={t('deleteMessage')}
+                                    editLabel={t('editMessage')}
+                                    saveEditLabel={t('saveEditMessage')}
+                                    cancelEditLabel={t('cancelEditMessage')}
+                                    editedLabel={t('editedMessage')}
+                                    onDelete={() =>
+                                        deleteMessage.mutate(
+                                            {
+                                                conversationId,
+                                                messageId: m.id,
+                                            },
+                                            {
+                                                onSuccess: () =>
+                                                    toast.success(t('deleteMessageSuccessToast')),
+                                                onError: () =>
+                                                    toast.error(t('deleteMessageErrorToast')),
+                                            },
+                                        )
+                                    }
+                                    onEdit={(body) =>
+                                        updateMessage.mutate(
+                                            {
+                                                conversationId,
+                                                messageId: m.id,
+                                                body,
+                                            },
+                                            {
+                                                onSuccess: () =>
+                                                    toast.success(t('editMessageSuccessToast')),
+                                                onError: () =>
+                                                    toast.error(t('editMessageErrorToast')),
+                                            },
+                                        )
+                                    }
                                 />
                             );
                         })}

@@ -33,7 +33,14 @@ api.interceptors.response.use(
             const locale = localeMatch ? localeMatch[1] : 'en';
             // Strip the locale prefix to compare against the auth paths
             const pathWithoutLocale = window.location.pathname.replace(/^\/(en|ar)/, '') || '/';
-            const authPaths = ['/login', '/register', '/verify-otp', '/request-access', '/activate'];
+            const authPaths = [
+                '/login',
+                '/register',
+                '/verify-otp',
+                '/request-access',
+                '/activate',
+                '/complete-google-signup',
+            ];
             // Don't redirect if the user is already on any auth page (avoids loops
             // and lets the auth flow handle its own 401s)
             const isOnAuthPage = authPaths.some(

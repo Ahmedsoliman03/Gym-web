@@ -51,11 +51,13 @@ export function GymDetailView({ id }: GymDetailViewProps) {
     name: gym.gymName || "",
     location: gym.location || "",
     memberCount: gym.memberCount != null ? gym.memberCount.toString() : "",
+    status: gym.status,
     description: gym.description || "",
     image: gym.mainPhoto || gym.photo || "/images/profile/gym-logo.png",
     images: (gym.images ?? []).map((g) => g.image),
     programs: gym.specializations ?? [],
     plans: gym.plans ?? [],
+    socialMedia: gym.socialMedia ?? [],
   };
 
   return (

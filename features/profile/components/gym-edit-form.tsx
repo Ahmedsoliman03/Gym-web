@@ -12,6 +12,7 @@ import {
   validatePlans,
   type PlanErrors,
 } from "@/components/shared/plans-editor";
+import { SocialMediaEditor, hasIncompleteSocialLinks } from "./social-media-editor";
 import { CustomMultiSelect } from "@/components/shared/custom-multi-select";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import { formStyles as styles } from "@/components/shared/form-styles";
@@ -43,6 +44,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
       id: g.id,
       url: g.image,
     })),
+    socialMedia: inner?.socialMedia ?? [],
     plans: (inner?.plans ?? []) as ProfilePlan[],
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -76,6 +78,10 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
       setPlanErrors(errors);
       return;
     }
+    if (hasIncompleteSocialLinks(formData.socialMedia)) {
+      toast.error(t('completeSocialLinks'));
+      return;
+    }
     setPlanErrors({});
     const payload = buildEditProfileFormData({
       role: 'gym',
@@ -85,6 +91,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
         description: formData.description,
         specializations: formData.specializations,
         gymImages: formData.gymImages,
+        socialMedia: formData.socialMedia,
         plans: sanitized,
       },
     });
@@ -178,6 +185,11 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
         <GalleryEditor
           images={formData.gymImages}
           onChange={(next) => setFormData((prev) => ({ ...prev, gymImages: next }))}
+        />
+
+        <SocialMediaEditor
+          links={formData.socialMedia}
+          onChange={(next) => setFormData((prev) => ({ ...prev, socialMedia: next }))}
         />
 
         <PlansEditor

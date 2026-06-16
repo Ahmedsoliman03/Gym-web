@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
-import type { EditProfileValues, UserProfile } from '../types';
+import { chatKeys } from '@/features/chat/services/chat.service';
+import type { ChatConversation, ChatRequest } from '@/features/chat/types';
+import type { EditProfileValues, ProfilePlan, SocialMediaLink, UserProfile } from '../types';
 
 
 
@@ -10,11 +12,47 @@ export const getProfile = async (): Promise<UserProfile> => {
 };
 
 export const updateProfile = async (payload: FormData): Promise<UserProfile> => {
-    const { data } = await api.patch('/api/me', payload, {
+    const { data } = await api.patch('/api/me/profile', payload, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
     });
+    return data;
+};
+
+export type PlanOwnerType = 'coach' | 'gym';
+
+export interface PlanGetStartedInput {
+    ownerType: PlanOwnerType;
+    planId: string;
+    message?: string;
+    profileId?: string;
+}
+
+export type PlanGetStartedResult =
+    | {
+          status: 'conversation';
+          conversation: ChatConversation;
+          plan: ProfilePlan;
+          interest: { id: string; wasCreated: boolean; createdAt: string };
+      }
+    | {
+          status: 'request_pending';
+          request: ChatRequest;
+          plan: ProfilePlan;
+          interest: { id: string; wasCreated: boolean; createdAt: string };
+      };
+
+export const getStartedWithPlan = async ({
+    ownerType,
+    planId,
+    message,
+}: PlanGetStartedInput): Promise<PlanGetStartedResult> => {
+    const endpoint =
+        ownerType === 'coach'
+            ? `/api/coaches/plans/${planId}/get-started`
+            : `/api/gyms/plans/${planId}/get-started`;
+    const { data } = await api.post<PlanGetStartedResult>(endpoint, { message });
     return data;
 };
 
@@ -47,6 +85,14 @@ const splitDurationLabel = (raw: string): { value: string; unit: string } => {
     return { value: match[1], unit: match[2].trim() };
 };
 
+const sanitizeSocialMedia = (links: SocialMediaLink[] = []): SocialMediaLink[] =>
+    links
+        .map((link) => ({
+            platform: link.platform.trim(),
+            url: link.url.trim(),
+        }))
+        .filter((link) => link.platform.length > 0 && link.url.length > 0);
+
 export const buildEditProfileFormData = (input: EditProfileValues): FormData => {
     const fd = new FormData();
 
@@ -65,6 +111,9 @@ export const buildEditProfileFormData = (input: EditProfileValues): FormData => 
         if (v.philosophyDesc !== undefined)  fd.append('philosophyDesc', v.philosophyDesc);
         if (v.specializations !== undefined) {
             fd.append('specializations', JSON.stringify(v.specializations));
+        }
+        if (v.socialMedia !== undefined) {
+            fd.append('socialMedia', JSON.stringify(sanitizeSocialMedia(v.socialMedia)));
         }
 
         if (v.certifications !== undefined) {
@@ -115,6 +164,9 @@ export const buildEditProfileFormData = (input: EditProfileValues): FormData => 
     if (v.specializations !== undefined) {
         fd.append('specializations', JSON.stringify(v.specializations));
     }
+    if (v.socialMedia !== undefined) {
+        fd.append('socialMedia', JSON.stringify(sanitizeSocialMedia(v.socialMedia)));
+    }
 
     if (v.gymImages !== undefined) {
         const keep = v.gymImages.filter((g) => !!g.id).map((g) => g.id!);
@@ -138,6 +190,27 @@ export const useUpdateProfileMutation = () => {
             queryClient.setQueryData(['session'], data);
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             queryClient.invalidateQueries({ queryKey: ['session'] });
+        },
+    });
+};
+
+export const usePlanGetStartedMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: getStartedWithPlan,
+        onSuccess: (result, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            queryClient.invalidateQueries({ queryKey: ['session'] });
+            if (variables.profileId) {
+                queryClient.invalidateQueries({
+                    queryKey: [variables.ownerType === 'coach' ? 'coaches' : 'gyms', variables.profileId],
+                });
+            }
+            if (result.status === 'conversation') {
+                queryClient.refetchQueries({ queryKey: chatKeys.conversations });
+            } else {
+                queryClient.refetchQueries({ queryKey: chatKeys.requests('outgoing') });
+            }
         },
     });
 };

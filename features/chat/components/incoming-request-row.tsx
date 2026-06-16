@@ -18,6 +18,7 @@ const styles = {
     rowInfo: 'flex-1 min-w-0',
     rowName: 'text-sm font-bold truncate',
     rowMeta: 'text-[11px] text-foreground/50 truncate',
+    rowMessage: 'mt-1 line-clamp-2 text-xs text-foreground/70',
     rowActions: 'flex items-center gap-1.5 shrink-0',
     approveBtn:
         'p-2 rounded-full bg-primary text-primary-foreground hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed',
@@ -67,6 +68,9 @@ export const IncomingRequestRow = ({ request }: { request: ChatRequest }) => {
                         ? `${t('wantsToChat')} · ${formatWhen(request.createdAt, locale)}`
                         : `${formatWhen(request.createdAt, locale)}`}
                 </div>
+                {pending && request.initialMessage && (
+                    <div className={styles.rowMessage}>{request.initialMessage}</div>
+                )}
             </div>
             <div className={styles.rowActions}>
                 {pending ? (

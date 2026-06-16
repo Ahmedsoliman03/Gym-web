@@ -1,5 +1,6 @@
 import type { Story } from '@/features/stories/types';
-import type { GalleryImage, ProfilePlan } from '@/features/profile/types';
+import type { PresenceStatus } from '@/features/chat/types';
+import type { GalleryImage, ProfilePlan, SocialMediaLink } from '@/features/profile/types';
 
 export interface Gym {
     id: string;
@@ -32,6 +33,8 @@ export interface GymDetail {
     plans?: ProfilePlan[];
     /** Per postman README: gym detail responses include the gym's active stories. */
     stories?: Story[];
+    status?: PresenceStatus;
+    socialMedia?: SocialMediaLink[];
 }
 
 export interface GymCardProps {

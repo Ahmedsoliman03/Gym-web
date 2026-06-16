@@ -39,6 +39,7 @@ export interface ChatSocketActions {
     startTyping: (conversationId: string) => void;
     stopTyping: (conversationId: string) => void;
     setPresence: (status: PresenceStatus) => void;
+    watchPresence: (userIds: string[]) => void;
 }
 
 export interface ChatSocketContextValue extends ChatSocketActions {
@@ -212,6 +213,36 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 // Audible alert for the incoming message (gym boxing-bell).
                 playNewMessageSound();
             }
+        },
+        [qc],
+    );
+
+    const applyMessageDeleted = useCallback(
+        (conversationId: string, messageId: string) => {
+            qc.setQueryData<ChatMessage[] | undefined>(
+                chatKeys.messages(conversationId),
+                (prev) => prev?.filter((m) => m.id !== messageId),
+            );
+            qc.invalidateQueries({ queryKey: chatKeys.conversations });
+        },
+        [qc],
+    );
+
+    const applyMessageUpdated = useCallback(
+        (conversationId: string, message: ChatMessage) => {
+            qc.setQueryData<ChatMessage[] | undefined>(
+                chatKeys.messages(conversationId),
+                (prev) => prev?.map((m) => (m.id === message.id ? message : m)),
+            );
+            qc.setQueryData<ChatConversation[] | undefined>(
+                chatKeys.conversations,
+                (prev) =>
+                    prev?.map((conversation) =>
+                        conversation.lastMessage?.id === message.id
+                            ? { ...conversation, lastMessage: message }
+                            : conversation,
+                    ),
+            );
         },
         [qc],
     );
@@ -432,6 +463,12 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 case 'message.new':
                     applyMessageNew(payload.conversationId, payload.message);
                     break;
+                case 'message.updated':
+                    applyMessageUpdated(payload.conversationId, payload.message);
+                    break;
+                case 'message.deleted':
+                    applyMessageDeleted(payload.conversationId, payload.messageId);
+                    break;
                 case 'typing.update':
                     applyTypingUpdate(payload.conversationId, payload.userId, payload.isTyping);
                     break;
@@ -440,12 +477,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     break;
                 case 'notification.new':
                     applyNotificationNew(qc, payload.notification, payload.unreadCount);
-                    // Chat messages already ding via `message.new`; everything
-                    // else (votes, comments, replies, job applications) gets the
-                    // distinct notification chime.
-                    if (payload.notification.type !== 'chat_message') {
-                        playNotificationSound();
-                    }
+                    playNotificationSound();
                     break;
                 case 'notification.read':
                     applyNotificationRead(qc, payload.notificationId, payload.unreadCount);
@@ -487,7 +519,14 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             if (wsRef.current !== ws) return;
             log('error event');
         });
-    }, [applyMessageNew, applyPresenceUpdate, applyTypingUpdate, qc]);
+    }, [
+        applyMessageDeleted,
+        applyMessageNew,
+        applyMessageUpdated,
+        applyPresenceUpdate,
+        applyTypingUpdate,
+        qc,
+    ]);
 
     const scheduleReconnect = useCallback(() => {
         if (!isLoggedInRef.current) return;
@@ -610,6 +649,11 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         [send],
     );
 
+    const watchPresence = useCallback(
+        (userIds: string[]) => send({ type: 'presence.watch', userIds }),
+        [send],
+    );
+
     return (
         <ChatSocketContext.Provider
             value={{
@@ -626,6 +670,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 startTyping,
                 stopTyping,
                 setPresence,
+                watchPresence,
             }}
         >
             {children}
