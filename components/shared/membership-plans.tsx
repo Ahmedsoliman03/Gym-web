@@ -97,9 +97,7 @@ export const Plans = forwardRef<HTMLDivElement, PlansProps>(({
                     {formatPriceWithCurrency(plan.salePrice || plan.price)}
                   </div>
                   {isOwner ? (
-                    <div className={styles.interestCount}>
-                      {t('getStartedCount', { count: plan.getStartedCount ?? 0 })}
-                    </div>
+                null
                   ) : (
                     <button
                       className={styles.buyBtn}

@@ -207,6 +207,7 @@ export const ConversationThread = ({
                                     canEdit={canEdit}
                                     deleting={deleting}
                                     editing={editing}
+                                    copyLabel={t('copy')}
                                     deleteLabel={t('deleteMessage')}
                                     editLabel={t('editMessage')}
                                     saveEditLabel={t('saveEditMessage')}

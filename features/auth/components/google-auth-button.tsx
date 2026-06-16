@@ -3,7 +3,7 @@
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { SpinnerIos20Regular } from '@fluentui/react-icons';
 import { toastApiError } from '@/utils/toast-api-error';
@@ -128,10 +128,15 @@ export function GoogleAuthButton({
     const searchParams = useSearchParams();
     const googleAuth = useGoogleAuthMutation();
     const [loading, setLoading] = useState(false);
+    // Set once the popup returns (with a code or an error) so the window-focus
+    // safety net below knows the flow is being handled and shouldn't clear the
+    // spinner out from under it.
+    const codeReceivedRef = useRef(false);
 
     const safeNext = normalizeAuthNextPath(searchParams.get('next'));
 
     const handleGoogleCode = async (response: GoogleCodeResponse) => {
+        codeReceivedRef.current = true;
         if (response.error || !response.code) {
             toast.error(t('Auth.googleFailed'));
             setLoading(false);
@@ -167,6 +172,7 @@ export function GoogleAuthButton({
         }
 
         setLoading(true);
+        codeReceivedRef.current = false;
         try {
             await loadGoogleScript();
             const client = window.google?.accounts?.oauth2?.initCodeClient({
@@ -181,6 +187,18 @@ export function GoogleAuthButton({
             });
             if (!client) throw new Error('google_unavailable');
             client.requestCode();
+
+            // Safety net: Google's `error_callback` doesn't reliably fire when
+            // the user dismisses the popup, which would leave the button
+            // spinning forever. The window regains focus when the popup closes —
+            // if no auth code arrived by then, stop the spinner.
+            const onWindowFocus = () => {
+                window.removeEventListener('focus', onWindowFocus);
+                setTimeout(() => {
+                    if (!codeReceivedRef.current) setLoading(false);
+                }, 400);
+            };
+            window.addEventListener('focus', onWindowFocus);
         } catch {
             setLoading(false);
             toast.error(t('Auth.googleFailed'));

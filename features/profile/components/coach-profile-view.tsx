@@ -135,7 +135,7 @@ export const CoachProfileView = ({
         plans={data.plans}
         isOwner={isOwner}
         onGetStarted={handlePlanGetStarted}
-        pendingPlanId={planGetStarted.variables?.planId ?? null}
+        pendingPlanId={planGetStarted.isPending ? (planGetStarted.variables?.planId ?? null) : null}
       />
 
 

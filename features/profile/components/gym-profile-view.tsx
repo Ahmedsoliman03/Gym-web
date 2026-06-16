@@ -8,7 +8,8 @@ import { Link, useRouter } from "@/i18n/routing";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { Plans } from "@/components/shared/membership-plans";
 import { EmptySection } from "@/components/shared/empty-section";
-import { useEffect, useRef } from "react";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { useStartChatMutation } from "@/features/chat/services/chat.service";
@@ -135,13 +136,15 @@ export const GymProfileView = ({
     );
   };
 
-  const handleBlockUser = () => {
+  const [blockOpen, setBlockOpen] = useState(false);
+
+  const confirmBlock = () => {
     if (!data.userId) return;
-    if (!window.confirm(t('blockConfirm', { name: data.name }))) return;
     blockUser.mutate(data.userId, {
       onSuccess: () => {
         toast.success(t('blockSuccess'));
-        router.replace('/settings');
+        setBlockOpen(false);
+        router.replace('/settings?section=blocked');
       },
       onError: () => toast.error(t('blockError')),
     });
@@ -222,7 +225,7 @@ export const GymProfileView = ({
             authorUserType="gym"
             stories={stories}
           />
-          {!isOwner && <div className={styles.statusBadge(liveStatus)} />}
+          {/* {!isOwner && <div className={styles.statusBadge(liveStatus)} />} */}
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>
@@ -270,7 +273,7 @@ export const GymProfileView = ({
               </button>
               <button
                 className={styles.dangerBtn}
-                onClick={handleBlockUser}
+                onClick={() => setBlockOpen(true)}
                 disabled={blockUser.isPending || !data.userId}
               >
                 {blockUser.isPending ? (
@@ -360,7 +363,20 @@ export const GymProfileView = ({
         plans={data.plans}
         isOwner={isOwner}
         onGetStarted={handlePlanGetStarted}
-        pendingPlanId={planGetStarted.variables?.planId ?? null}
+        pendingPlanId={planGetStarted.isPending ? (planGetStarted.variables?.planId ?? null) : null}
+      />
+
+      <ConfirmDialog
+        isOpen={blockOpen}
+        title={t('blockTitle', { name: data.name })}
+        body={t('blockConfirm')}
+        cancelLabel={t('blockCancel')}
+        confirmLabel={t('block')}
+        submittingLabel={t('blocking')}
+        tone="danger"
+        isSubmitting={blockUser.isPending}
+        onCancel={() => setBlockOpen(false)}
+        onConfirm={confirmBlock}
       />
     </div>
   );

@@ -30,7 +30,6 @@ const styles = {
     socialWrapper: "flex gap-3",
     socialButton: "flex-1 flex items-center justify-center gap-2.5 py-2.5 px-4 bg-[#111827] border border-white/10 rounded-xl hover:bg-white/5 transition-all group cursor-pointer",
     socialIcon: "w-5 h-5",
-    socialIconApple: "w-5 h-5 fill-white",
     socialText: "text-white text-sm font-bold",
     dividerWrapper: "relative py-2 flex items-center gap-4",
     dividerLine: "flex-1 h-[1px] bg-white/5",
@@ -108,12 +107,7 @@ export default function RegisterForm() {
                     className={styles.socialButton}
                     label={t('Auth.continueWithGoogle')}
                 />
-                <button className={styles.socialButton}>
-                    <svg viewBox="0 0 24 24" className={styles.socialIconApple}>
-                        <path d="M17.05 20.28c-.96.95-2.04 1.9-3.4 1.9-1.31 0-1.72-.82-3.26-.82-1.54 0-2.02.8-3.26.82-1.31.02-2.41-.98-3.37-1.9-1.98-1.91-3.41-5.38-3.41-8.5 0-4.94 3.11-7.56 6.07-7.56 1.48 0 2.76.92 3.7.92.93 0 2.45-1.07 4.13-1.07 1.48 0 2.89.73 3.79 1.91-3.15 1.5-2.65 6.09.52 7.42-1.02 2.37-2.3 4.95-4.77 7.82zm-3.08-16.14c.73-1.12 1.23-2.68 1.23-4.14 0-.21-.02-.42-.06-.62-1.41.06-3.1 1.01-4.04 2.14-.85.99-1.56 2.58-1.56 4.01 0 .23.03.46.06.63 1.54-.03 3.01-.9 3.86-1.57z" />
-                    </svg>
-                    <span className={styles.socialText}>{t('Auth.apple')}</span>
-                </button>
+              
             </div>
 
             <div className={styles.dividerWrapper}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Mail, MessageSquare, Settings, Loader2, Tag, UserX } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,6 +12,7 @@ import { useBlockUserMutation } from "@/features/settings/services/blocks.servic
 import toast from "react-hot-toast";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import type { CoachProfileHeaderProps } from "../types";
 import { PromocodeChip } from "./promocode-chip";
 
@@ -113,13 +114,15 @@ export const CoachProfileHeader = ({
     );
   };
 
-  const handleBlockUser = () => {
+  const [blockOpen, setBlockOpen] = useState(false);
+
+  const confirmBlock = () => {
     if (!coachUserId) return;
-    if (!window.confirm(t('blockConfirm', { name }))) return;
     blockUser.mutate(coachUserId, {
       onSuccess: () => {
         toast.success(t('blockSuccess'));
-        router.replace('/settings');
+        setBlockOpen(false);
+        router.replace('/settings?section=blocked');
       },
       onError: () => toast.error(t('blockError')),
     });
@@ -161,7 +164,7 @@ export const CoachProfileHeader = ({
             authorUserType="coach"
             stories={stories}
           />
-          {!isOwner && <div className={styles.statusBadge(liveStatus)} />}
+          {/* {!isOwner && <div className={styles.statusBadge(liveStatus)} />} */}
         </div>
 
         {/* Info */}
@@ -248,7 +251,7 @@ export const CoachProfileHeader = ({
             </button>
             <button
               className={styles.dangerBtn}
-              onClick={handleBlockUser}
+              onClick={() => setBlockOpen(true)}
               disabled={blockUser.isPending || !coachUserId}
             >
               {blockUser.isPending ? (
@@ -267,6 +270,19 @@ export const CoachProfileHeader = ({
 }
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={blockOpen}
+        title={t('blockTitle', { name })}
+        body={t('blockConfirm')}
+        cancelLabel={t('blockCancel')}
+        confirmLabel={t('block')}
+        submittingLabel={t('blocking')}
+        tone="danger"
+        isSubmitting={blockUser.isPending}
+        onCancel={() => setBlockOpen(false)}
+        onConfirm={confirmBlock}
+      />
     </div>
   );
 };

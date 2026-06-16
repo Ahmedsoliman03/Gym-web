@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Bell, Lock, MessageSquare, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -20,9 +21,17 @@ const styles = {
 
 type Panel = 'password' | 'chat' | 'notifications' | 'blocked' | null;
 
+const PANELS = ['password', 'chat', 'notifications', 'blocked'] as const;
+
 export function SettingsView() {
     const t = useTranslations('Settings');
-    const [open, setOpen] = useState<Panel>(null);
+    // Allow deep-linking a panel open via `?section=` (e.g. blocking a user
+    // redirects to `/settings?section=blocked` with the Blocked Users panel
+    // already expanded).
+    const searchParams = useSearchParams();
+    const initialPanel: Panel =
+        PANELS.find((p) => p === searchParams.get('section')) ?? null;
+    const [open, setOpen] = useState<Panel>(initialPanel);
 
     const toggle = (panel: Exclude<Panel, null>) =>
         setOpen((curr) => (curr === panel ? null : panel));
