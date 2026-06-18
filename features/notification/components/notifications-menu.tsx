@@ -42,9 +42,10 @@ export const NotificationsMenu = ({
     const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(10);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    const { data, isLoading } = useNotificationsQuery();
+    const { data, isLoading } = useNotificationsQuery(100);
     const notifications = data?.notifications ?? [];
     const unreadCount = data?.unreadCount ?? 0;
 
@@ -63,6 +64,12 @@ export const NotificationsMenu = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        if (!isOpen) {
+            setVisibleCount(10);
+        }
+    }, [isOpen]);
+
     const handleItemClick = (notification: AppNotification) => {
         if (!notification.isRead) markRead.mutate(notification.id);
         setIsOpen(false);
@@ -73,6 +80,9 @@ export const NotificationsMenu = ({
         if (!target) return;
         router.push(target.href);
     };
+
+    const visibleNotifications = notifications.slice(0, visibleCount);
+    const hasMore = notifications.length > visibleCount;
 
     return (
         <div className={styles.container} ref={menuRef}>
@@ -133,7 +143,7 @@ export const NotificationsMenu = ({
                             </div>
                         ) : (
                             <div className="flex flex-col">
-                                {notifications.map((notif) => (
+                                {visibleNotifications.map((notif) => (
                                     <NotificationItem
                                         key={notif.id}
                                         notification={notif}
@@ -143,6 +153,14 @@ export const NotificationsMenu = ({
                                         deleteLabel={t('delete')}
                                     />
                                 ))}
+                                {hasMore && (
+                                    <button
+                                        onClick={() => setVisibleCount((prev) => prev + 10)}
+                                        className="py-3 text-center text-xs font-bold text-primary hover:bg-white/5 border-t border-white/5 transition-colors cursor-pointer w-full"
+                                    >
+                                        {t('seeMore')}
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

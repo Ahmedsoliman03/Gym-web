@@ -696,6 +696,8 @@
         "placeholder": "Type your message...",
         "copy": "Copy",
         "messageCopied": "Message copied",
+        "callNumber": "Call {number}",
+        "whatsapp": "WhatsApp",
         "deleteMessage": "Delete message",
         "requestsTitle": "Chat Requests",
         "requestsPageSubtitle": "Review and respond to chat invitations.",
@@ -819,7 +821,8 @@
         "markAllRead": "Mark all as read",
         "clearAll": "Clear all",
         "delete": "Delete",
-        "close": "Close"
+        "close": "Close",
+        "seeMore": "See more"
     },
     "About": {
         "title": "About",

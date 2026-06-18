@@ -697,6 +697,8 @@
         "placeholder": "اكتب رسالتك...",
         "copy": "نسخ",
         "messageCopied": "تم نسخ الرسالة",
+        "callNumber": "اتصال بـ {number}",
+        "whatsapp": "واتساب",
         "deleteMessage": "حذف الرسالة",
         "requestsTitle": "طلبات الدردشة",
         "requestsPageSubtitle": "راجع طلبات الدردشة واستجب لها.",
@@ -820,7 +822,8 @@
         "markAllRead": "تعليم الكل كمقروء",
         "clearAll": "مسح الكل",
         "delete": "حذف",
-        "close": "إغلاق"
+        "close": "إغلاق",
+        "seeMore": "عرض المزيد"
     },
     "About": {
         "title": "عن",

@@ -5,9 +5,7 @@ import type { AppNotification, NotificationListResponse } from '../types';
 // ── Query keys ────────────────────────────────────────────────────────────────
 export const notificationKeys = {
     all: ['notifications'] as const,
-    // Partial key matching every paginated list (any `limit`). Deliberately
-    // narrower than `all` so cache patches never touch the settings query at
-    // ['notifications', 'settings'].
+
     lists: ['notifications', 'list'] as const,
     list: (limit: number) => ['notifications', 'list', limit] as const,
 };
@@ -16,9 +14,7 @@ const DEFAULT_LIMIT = 50;
 
 // ── List ──────────────────────────────────────────────────────────────────────
 
-/** Raw wire shape: the list lives under `results` (not `notifications`) and the
- *  count under `unreadCount`. Normalized to `NotificationListResponse` here so
- *  the rest of the app — and the socket cache patchers — speak one shape. */
+
 interface NotificationListWire {
     unreadCount?: number;
     results?: AppNotification[];
@@ -43,7 +39,7 @@ export const useNotificationsQuery = (limit = DEFAULT_LIMIT) =>
 // ── Cache helpers ─────────────────────────────────────────────────────────────
 // All cache mutations funnel through these so the REST mutations and the
 // realtime socket events (chat-socket-provider) stay consistent. They patch
-// every cached list page (keyed by limit) via a partial-key match.
+// every cached list page (keyed by limit) via a partial-key match. 
 
 type ListUpdater = (prev: NotificationListResponse) => NotificationListResponse;
 
