@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { UserProfile } from "../types";
 import * as Yup from "yup";
 import { getPhoneSchema, getFullNameSchema } from "@/utils/validations";
+import { WeightProgress } from "./WeightProgress";
 
 const styles = {
   container: "max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500",
@@ -182,6 +183,9 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
           <h1 className={styles.name}>{fullName || data.fullName}</h1>
         </div>
       </div>
+
+      {/* Weight Progress Dashboard */}
+      <WeightProgress />
 
       {/* Profile Details Edit Form */}
       <div className={styles.card}>

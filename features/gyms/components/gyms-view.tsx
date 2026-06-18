@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useGyms } from '../services/gyms.service';
 import { useAutoLocationFilter } from '@/hooks/use-auto-location-filter';
 import { StoriesBar } from '@/features/stories/components/stories-bar';
+import { GymCardSkeleton } from '@/components/ui/skeletons/gym-card-skeleton';
 
 const styles = {
   container: "min-h-screen bg-background text-foreground font-sans selection:bg-primary/30",
@@ -40,7 +41,7 @@ export function GymsView() {
         tLoc('locationDetected') || 'Location detected: Showing gyms near you!',
     });
 
-  const { data: gymsData } = useGyms();
+  const { data: gymsData, isLoading } = useGyms();
 
   const gyms = useMemo(() => {
     return gymsData || [];
@@ -94,13 +95,13 @@ export function GymsView() {
             </span>
           </div>
 
-          <div className={styles.grid}>
-            {filteredGyms.map((gym, idx) => (
-              <GymCard key={gym.id} gym={gym} index={idx} />
-            ))}
-          </div>
-
-          {filteredGyms.length === 0 && (
+          {isLoading ? (
+            <div className={styles.grid}>
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <GymCardSkeleton key={idx} />
+              ))}
+            </div>
+          ) : filteredGyms.length === 0 ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyIconWrapper}>
                 <SearchX size={48} className={styles.emptyIcon} />
@@ -118,6 +119,12 @@ export function GymsView() {
               >
                 {t('clearFilters')}
               </button>
+            </div>
+          ) : (
+            <div className={styles.grid}>
+              {filteredGyms.map((gym, idx) => (
+                <GymCard key={gym.id} gym={gym} index={idx} />
+              ))}
             </div>
           )}
         </div>

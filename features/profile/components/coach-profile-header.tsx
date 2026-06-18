@@ -25,8 +25,7 @@ const styles = {
   avatarInner: "w-full h-full rounded-full overflow-hidden relative",
   avatarImage: "object-cover",
   statusBadge: (status: 'online' | 'busy' | 'offline') =>
-    `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-surface ${
-      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-surface ${status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
     }`,
   infoWrapper: "flex-1 text-center md:text-left",
   titleAndTier: "flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2",
@@ -36,8 +35,7 @@ const styles = {
   title: "text-foreground/40 font-bold",
   presencePill: "inline-flex items-center justify-center md:justify-start gap-2 mb-3 text-xs font-black uppercase tracking-wider text-foreground/55",
   presenceDot: (status: 'online' | 'busy' | 'offline') =>
-    `h-2.5 w-2.5 rounded-full ${
-      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    `h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
     }`,
   // Single specialization badge next to the name. The full list is revealed in
   // a tooltip on hover/focus instead of rendering a chip per specialization.
@@ -216,7 +214,9 @@ export const CoachProfileHeader = ({
           <div className={styles.statsGrid}>
             {stats.map((stat, index) => (
               <div key={index} className={styles.statItem}>
-                <span className={styles.statValue}>{stat.value}</span>
+                <span className={styles.statValue}>
+                  {stat.value}
+                </span>
                 <span className={styles.statLabel}>
                   {t.has(stat.label.toLowerCase()) ? t(stat.label.toLowerCase()) : stat.label}
                 </span>
@@ -226,48 +226,48 @@ export const CoachProfileHeader = ({
         </div>
 
         {/* Actions */}
-        
+
         <div className={styles.actionsWrapper}>
-             {/* Owner-only referral promocode chip with copy button. */}
+          {/* Owner-only referral promocode chip with copy button. */}
           {isOwner && promocode && (
             <div className="mt-2 mb-3 flex justify-center md:justify-start">
               <PromocodeChip code={promocode} />
             </div>
           )}
-          
-           {!isOwner ?
-          <>
-            <button
-              className={styles.primaryBtn}
-              onClick={handleStartChat}
-              disabled={startChat.isPending || !coachUserId}
-            >
-              {startChat.isPending ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <MessageSquare size={18} />
-              )}
-              {t('chat')}
-            </button>
-            <button
-              className={styles.dangerBtn}
-              onClick={() => setBlockOpen(true)}
-              disabled={blockUser.isPending || !coachUserId}
-            >
-              {blockUser.isPending ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <UserX size={18} />
-              )}
-              {t('block')}
-            </button>
-          </>
-         :
+
+          {!isOwner ?
+            <>
+              <button
+                className={styles.primaryBtn}
+                onClick={handleStartChat}
+                disabled={startChat.isPending || !coachUserId}
+              >
+                {startChat.isPending ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <MessageSquare size={18} />
+                )}
+                {t('chat')}
+              </button>
+              <button
+                className={styles.dangerBtn}
+                onClick={() => setBlockOpen(true)}
+                disabled={blockUser.isPending || !coachUserId}
+              >
+                {blockUser.isPending ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <UserX size={18} />
+                )}
+                {t('block')}
+              </button>
+            </>
+            :
             <Link href="/profile/edit" className={styles.secondaryBtn}>
               <Settings size={18} />
               {t('editProfile')}
             </Link>
-}
+          }
         </div>
       </div>
 

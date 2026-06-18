@@ -699,6 +699,15 @@
         "messageCopied": "تم نسخ الرسالة",
         "callNumber": "اتصال بـ {number}",
         "whatsapp": "واتساب",
+        "reply_client_1": "هل توجد عروض؟ 🏷️",
+        "reply_client_2": "ما هي مواعيد العمل؟ 🕒",
+        "reply_client_3": "مهتم بالتدريب المباشر! 💪",
+        "reply_coach_1": "إليك سيرتي الذاتية. 📄",
+        "reply_coach_2": "دعنا ننسق مكالمة. 📞",
+        "reply_coach_3": "مهتم بالتعاون المشترك! 🤝",
+        "reply_gym_1": "هل أنت متاح للمقابلة؟ 💼",
+        "reply_gym_2": "دعنا ننسق زيارة. 🏫",
+        "reply_gym_3": "مرحباً بك في منشأتنا! 🏋️",
         "deleteMessage": "حذف الرسالة",
         "requestsTitle": "طلبات الدردشة",
         "requestsPageSubtitle": "راجع طلبات الدردشة واستجب لها.",
@@ -958,10 +967,13 @@
         "statusClosed": "مغلقة",
         "filterAll": "الكل",
         "filterOpen": "الوظائف المفتوحة",
-        "filterClosed": "الوظائف المغلقة",
-        "filterByPost": "تصفية حسب الوظيفة",
-        "filterByJobTitle": "تصفية حسب عنوان الوظيفة",
         "filterByStatus": "تصفية حسب الحالة",
         "filterBySpecialization": "تصفية حسب التخصص"
+    },
+    "WeightProgress": {
+        "currentWeight": "آخر قراءة للوزن",
+        "targetWeight": "الهدف: {weight} كجم",
+        "unit": "كجم",
+        "weightValue": "{weight} كجم"
     }
 }

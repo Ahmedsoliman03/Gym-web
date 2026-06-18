@@ -66,7 +66,7 @@ export default function ProfilePage() {
                 coachProfile.numberOfClients != null
                   ? String(coachProfile.numberOfClients)
                   : "—",
-            },
+            }
           ],
           transformations: (coachProfile.transformations ?? []).map((tr) => ({
             clientName: tr.clientName,

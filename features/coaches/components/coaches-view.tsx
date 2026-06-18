@@ -10,6 +10,7 @@ import { CoachesHero } from './coaches-hero';
 import { CoachesFilter } from './coaches-filter';
 import { CoachCard } from './coach-card';
 import { StoriesBar } from '@/features/stories/components/stories-bar';
+import { CoachCardSkeleton } from '@/components/ui/skeletons/coach-card-skeleton';
 
 const styles = {
   container: "min-h-screen bg-background text-foreground font-sans selection:bg-primary/30",
@@ -43,7 +44,7 @@ export function CoachesView() {
         tLoc('locationDetected') || 'Location detected: Showing coaches near you!',
     });
 
-  const { data: coachesData } = useCoaches();
+  const { data: coachesData, isLoading } = useCoaches();
 
   const coaches = useMemo(() => {
     return coachesData || [];
@@ -125,13 +126,13 @@ export function CoachesView() {
               </span>
             </div>
 
-            <div className={styles.grid}>
-              {filteredCoaches.map((coach, idx) => (
-                <CoachCard key={coach.id} coach={coach} index={idx} />
-              ))}
-            </div>
-
-            {filteredCoaches.length === 0 && (
+            {isLoading ? (
+              <div className={styles.grid}>
+                {Array.from({ length: 8 }).map((_, idx) => (
+                  <CoachCardSkeleton key={idx} />
+                ))}
+              </div>
+            ) : filteredCoaches.length === 0 ? (
               <div className={styles.emptyState}>
                 <div className={styles.emptyIconWrapper}>
                   <span className={styles.emptyIcon}>
@@ -152,6 +153,12 @@ export function CoachesView() {
                 >
                   {t('clearFilters')}
                 </button>
+              </div>
+            ) : (
+              <div className={styles.grid}>
+                {filteredCoaches.map((coach, idx) => (
+                  <CoachCard key={coach.id} coach={coach} index={idx} />
+                ))}
               </div>
             )}
           </section>

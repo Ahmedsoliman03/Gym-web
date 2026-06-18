@@ -129,6 +129,12 @@ export const MessageComposer = ({
     const queryClient = useQueryClient();
     const { profile } = useProfileUser();
     const { sendMessage, startTyping, stopTyping, status } = useChatSocket();
+    const userType = profile?.userType || 'client';
+    const quickReplies = [
+        t(`reply_${userType}_1`),
+        t(`reply_${userType}_2`),
+        t(`reply_${userType}_3`),
+    ];
     const [value, setValue] = useState('');
     const [showEmoji, setShowEmoji] = useState(false);
     const [showAttach, setShowAttach] = useState(false);
@@ -324,6 +330,21 @@ export const MessageComposer = ({
             )}
             {showSocketStatusHint && (
                 <div className={styles.statusHint}>{t('socketDisconnected')}</div>
+            )}
+            {profile && (
+                <div className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto border-t border-white/5 bg-surface/30 scrollbar-none">
+                    {quickReplies.map((reply, idx) => (
+                        <button
+                            key={idx}
+                            type="button"
+                            onClick={() => sendBody(reply)}
+                            disabled={status !== 'open'}
+                            className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-foreground/80 hover:text-foreground border border-white/5 hover:border-primary/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {reply}
+                        </button>
+                    ))}
+                </div>
             )}
             <div className={styles.wrap}>
                 <div className="relative shrink-0">

@@ -698,6 +698,15 @@
         "messageCopied": "Message copied",
         "callNumber": "Call {number}",
         "whatsapp": "WhatsApp",
+        "reply_client_1": "Do you have packages? 🏷️",
+        "reply_client_2": "When is the gym open? 🕒",
+        "reply_client_3": "Interested in coaching! 💪",
+        "reply_coach_1": "Here is my CV. 📄",
+        "reply_coach_2": "Let's schedule a call. 📞",
+        "reply_coach_3": "Interested in collaborating! 🤝",
+        "reply_gym_1": "Are you available for an interview? 💼",
+        "reply_gym_2": "Let's schedule a visit. 🏫",
+        "reply_gym_3": "Welcome to our facility! 🏋️",
         "deleteMessage": "Delete message",
         "requestsTitle": "Chat Requests",
         "requestsPageSubtitle": "Review and respond to chat invitations.",
@@ -958,10 +967,13 @@
         "statusClosed": "Closed",
         "filterAll": "All",
         "filterOpen": "Open Jobs",
-        "filterClosed": "Closed Jobs",
-        "filterByPost": "Filter by post",
-        "filterByJobTitle": "Filter by job title",
         "filterByStatus": "Filter by status",
         "filterBySpecialization": "Filter by specialization"
+    },
+    "WeightProgress": {
+        "currentWeight": "Current Weight",
+        "targetWeight": "Target: {weight} kg",
+        "unit": "kg",
+        "weightValue": "{weight} kg"
     }
 }
