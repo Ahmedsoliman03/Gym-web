@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, CheckCheck, Clock, Copy, Loader2, Pencil, Phone, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { formatClockTime } from '@/utils/format';
@@ -121,6 +121,15 @@ export const MessageBubble = ({
     const [isEditing, setIsEditing] = useState(false);
     const [draft, setDraft] = useState(message.body);
     const phoneNumbers = message.body ? extractPhoneNumbers(message.body) : [];
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (isEditing && textareaRef.current) {
+            const length = textareaRef.current.value.length;
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(length, length);
+        }
+    }, [isEditing]);
 
     // Optimistic messages keep a `tmp:` id until the server echo arrives.
     const sending = message.id.startsWith('tmp:');
@@ -165,10 +174,10 @@ export const MessageBubble = ({
             <div className={styles.bubble(mine)}>
                 {isEditing ? (
                     <textarea
+                        ref={textareaRef}
                         rows={3}
                         value={draft}
                         className={styles.editInput}
-                        autoFocus
                         disabled={editing}
                         onChange={(e) => setDraft(e.target.value)}
                         onKeyDown={(e) => {

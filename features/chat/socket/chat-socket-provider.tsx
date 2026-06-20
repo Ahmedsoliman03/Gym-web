@@ -380,7 +380,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        const url = `${baseUrl}?ticket=${encodeURIComponent(ticket)}`;
+        const url = `${baseUrl}?ticket=${encodeURIComponent(ticket)}&ngrok-skip-browser-warning=true`;
         let ws: WebSocket;
         try {
             ws = new WebSocket(url);
