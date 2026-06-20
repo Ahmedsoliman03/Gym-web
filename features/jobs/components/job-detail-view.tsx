@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RotateCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Link, useRouter } from '@/i18n/routing';
@@ -24,13 +24,15 @@ const styles = {
   state: 'flex items-center justify-center py-32 text-foreground/40',
   error:
     'p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center',
+  retryBtn:
+    'mt-3 mx-auto flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-black font-black text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer',
 };
 
 export function JobDetailView({ jobId }: JobDetailViewProps) {
   const t = useTranslations('Jobs');
   const router = useRouter();
   const [applyingJob, setApplyingJob] = useState<Job | null>(null);
-  const { data: job, isLoading, isError } = useJob(jobId);
+  const { data: job, isLoading, isError, refetch, isFetching } = useJob(jobId);
 
   return (
     <div className={styles.page}>
@@ -43,7 +45,18 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
         {isLoading ? (
           <GLoaderSection minHeight={320} />
         ) : isError || !job ? (
-          <div className={styles.error}>{t('feedFailed')}</div>
+          <div>
+            <div className={styles.error}>{t('feedFailed')}</div>
+            <button
+              type="button"
+              className={styles.retryBtn}
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              <RotateCw size={14} className={isFetching ? 'animate-spin' : ''} />
+              {t('retry')}
+            </button>
+          </div>
         ) : (
           <JobCard
             job={job}

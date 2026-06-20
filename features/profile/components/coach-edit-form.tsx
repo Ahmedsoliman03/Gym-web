@@ -6,6 +6,10 @@ import { Camera, Save, X, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useRouter } from "@/i18n/routing";
+import {
+  useUnsavedChangesWarning,
+  serializeFormState,
+} from "@/hooks/use-unsaved-changes-warning";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import { formStyles as styles } from "@/components/shared/form-styles";
 import { TransformationEditor } from "./transformation-editor";
@@ -91,6 +95,14 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   // Plan-row validation errors, set after a failed save attempt and cleared
   // whenever the user touches the plans list again.
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
+
+  // Warn before leaving with unsaved edits. Snapshot the pristine state once,
+  // then compare on every render (photo file change counts as dirty too).
+  const initialSnapshotRef = useRef(serializeFormState(formData));
+  const isDirty =
+    photoFile !== null ||
+    serializeFormState(formData) !== initialSnapshotRef.current;
+  useUnsavedChangesWarning(isDirty);
 
   const handleInputChange = (
     field: 'name' | 'philosophyDesc',

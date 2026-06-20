@@ -5,6 +5,7 @@ import { Bell, X, CheckCheck, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { NotificationItem } from "./notification-item";
+import { NotificationItemSkeleton } from "@/components/ui/skeletons/notification-item-skeleton";
 import { resolveNotificationTarget } from "../utils/resolve-target";
 import type { AppNotification } from "../types";
 import {
@@ -135,7 +136,11 @@ export const NotificationsMenu = ({
 
                     <div className={styles.listWrapper}>
                         {isLoading ? (
-                            <div className={styles.emptyState}>{t('loading')}</div>
+                            <div className="flex flex-col">
+                                {Array.from({ length: 5 }).map((_, idx) => (
+                                    <NotificationItemSkeleton key={idx} />
+                                ))}
+                            </div>
                         ) : notifications.length === 0 ? (
                             <div className={styles.emptyState}>
                                 <Bell size={28} className="text-foreground/20" />

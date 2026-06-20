@@ -6,6 +6,10 @@ import { Camera, Save } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useRouter } from "@/i18n/routing";
+import {
+  useUnsavedChangesWarning,
+  serializeFormState,
+} from "@/hooks/use-unsaved-changes-warning";
 import { formStyles as styles } from "@/components/shared/form-styles";
 import type { ClientEditFormProps } from "../types";
 import {
@@ -26,6 +30,13 @@ export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
+
+  // Warn before leaving with unsaved edits.
+  const initialSnapshotRef = useRef(serializeFormState(formData));
+  const isDirty =
+    photoFile !== null ||
+    serializeFormState(formData) !== initialSnapshotRef.current;
+  useUnsavedChangesWarning(isDirty);
 
   const handleInputChange = (field: 'fullName' | 'phone', value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

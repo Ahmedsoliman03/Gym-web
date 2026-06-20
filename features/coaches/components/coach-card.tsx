@@ -2,7 +2,6 @@
 
 import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { COMMON_COACH_IMAGE } from '@/constants/coaches';
 import { SPECIALIZATIONS } from '@/constants/specializations';
 import { Link } from '@/i18n/routing';
 import { Coach } from '../types';
@@ -40,7 +39,7 @@ export function CoachCard({ coach, index }: { coach: Coach, index: number }) {
             <div className={styles.avatarInner}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={coach.photo || COMMON_COACH_IMAGE}
+                src={coach.photo ?? "/default-coach.webp"}
                 alt={coach.fullName}
                 className={styles.avatarImg}
               />

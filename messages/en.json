@@ -25,6 +25,9 @@
         "password": "Password",
         "passwordPlaceholder": "........",
         "passwordHint": "Must be at least 8 characters long.",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "inviteCodeLabel": "Invite Code",
         "createAccount": "Create Account",
         "alreadyHaveAccount": "Already have an account? Sign in",
         "backToLogin": "Back to Register",
@@ -203,6 +206,7 @@
     },
     "Jobs": {
         "title": "Elite Career",
+        "tag": "Career Paths",
         "highlight": "Feed",
         "openOpportunities": "Professional Roles Available",
         "description": "Brief headline or note...",
@@ -297,6 +301,7 @@
         "cancel": "Cancel",
         "feedEmpty": "No open jobs yet. Check back later.",
         "feedFailed": "Couldn't load jobs. Please try again.",
+        "retry": "Try Again",
         "postMenu": "Job options",
         "role": {
             "coach": "Coach",
@@ -398,6 +403,7 @@
         "cancel": "Cancel",
         "feedEmpty": "No posts yet. Be the first to share.",
         "feedFailed": "Couldn't load the community feed. Please try again.",
+        "retry": "Try Again",
         "savedTitle": "Saved",
         "savedHighlight": "Posts",
         "savedDescription": "All the community posts you've saved, in one place.",
@@ -426,7 +432,9 @@
         "partnerFacilities": "Partner Facilities",
         "showingGyms": "Showing {count} Gyms",
         "noGymsFound": "No gyms found matching your search.",
-        "clearFilters": "Clear All Filters"
+        "clearFilters": "Clear All Filters",
+        "loadFailed": "Failed to load gym.",
+        "retry": "Try Again"
     },
     "Profile": {
         "tabProfile": "Profile",

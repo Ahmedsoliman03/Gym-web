@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { TrendingDown, TrendingUp, Target, Award, Sparkles } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
+import { CustomSelect } from '@/components/ui/custom-select';
+
 import { WeightLog, GoalMode } from './types';
 import { ClearConfirmModal } from './clear-confirm-modal';
 import { CelebrationBanner } from './celebration-banner';
@@ -384,14 +386,16 @@ export function WeightProgress() {
                     <span className="text-xs text-foreground/40">{isRtl ? 'كجم' : 'kg'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <select
+                    <CustomSelect
                       value={tempGoalMode}
-                      onChange={(e) => setTempGoalMode(e.target.value as GoalMode)}
-                      className="bg-[#161B2B] border border-white/5 rounded-xl px-2.5 py-1 text-xs text-white outline-none cursor-pointer focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold"
-                    >
-                      <option value="lose" className="bg-[#161B2B] text-white">{isRtl ? 'تنشيف / خسارة' : 'Cutting (Lose)'}</option>
-                      <option value="gain" className="bg-[#161B2B] text-white">{isRtl ? 'تضخيم / زيادة' : 'Bulking (Gain)'}</option>
-                    </select>
+                      onChange={(v) => setTempGoalMode(v as GoalMode)}
+                      options={[
+                        { value: 'lose', label: isRtl ? 'تنشيف / خسارة' : 'Cutting (Lose)' },
+                        { value: 'gain', label: isRtl ? 'تضخيم / زيادة' : 'Bulking (Gain)' },
+                      ]}
+                      placeholder={isRtl ? 'اختر الهدف' : 'Select goal'}
+                      className="flex-1 min-w-[150px]"
+                    />
                     <button
                       type="button"
                       onClick={() => handleSaveGoal(tempGoalMode)}

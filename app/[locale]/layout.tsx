@@ -15,10 +15,51 @@ const almarai = Almarai({
     variable: '--font-almarai',
 });
 
-export const metadata: Metadata = {
-    title: "GymSpot",
-    description: "GymSpot"
-};
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const OG_IMAGE = '/images/Gymspot-logo.png';
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+    const { locale } = await params;
+    const isAr = locale === 'ar';
+
+    const title = 'GymSpot';
+    const description = isAr
+        ? 'منصة GymSpot — تواصل مع نخبة المدربين والصالات الرياضية واكتشف الفرص الوظيفية.'
+        : 'GymSpot — connect with elite coaches and gyms, and discover fitness career opportunities.';
+
+    return {
+        metadataBase: new URL(SITE_URL),
+        title: { default: title, template: `%s | ${title}` },
+        description,
+        applicationName: title,
+        openGraph: {
+            type: 'website',
+            siteName: title,
+            title,
+            description,
+            url: `/${locale}`,
+            locale: isAr ? 'ar_AR' : 'en_US',
+            images: [
+                {
+                    url: OG_IMAGE,
+                    width: 2000,
+                    height: 2000,
+                    alt: title,
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: [OG_IMAGE],
+        },
+    };
+}
 
 import { Navbar } from '@/components/navbar';
 import { ChatWidget } from '@/features/chat/components/chat-widget';

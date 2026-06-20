@@ -6,6 +6,10 @@ import { Camera, Save } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useRouter } from "@/i18n/routing";
+import {
+  useUnsavedChangesWarning,
+  serializeFormState,
+} from "@/hooks/use-unsaved-changes-warning";
 import { GalleryEditor } from "./gallery-editor";
 import {
   PlansEditor,
@@ -52,6 +56,13 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
   // Plan-row validation errors, set after a failed save attempt and cleared
   // whenever the user touches the plans list again.
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
+
+  // Warn before leaving with unsaved edits.
+  const initialSnapshotRef = useRef(serializeFormState(formData));
+  const isDirty =
+    photoFile !== null ||
+    serializeFormState(formData) !== initialSnapshotRef.current;
+  useUnsavedChangesWarning(isDirty);
 
   const handleInputChange = (field: 'name' | 'description', value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

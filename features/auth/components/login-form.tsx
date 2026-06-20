@@ -128,7 +128,7 @@ export default function LoginForm() {
                     <Form className={styles.form}>
                         <LiveValidate />
                         <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
+                            <label htmlFor="login-email" className={styles.label}>
                                 {t('Auth.email')}
                             </label>
                             <div className={styles.inputWrapper}>
@@ -136,6 +136,7 @@ export default function LoginForm() {
                                     <Mail24Regular />
                                 </div>
                                 <Field
+                                    id="login-email"
                                     name="email"
                                     type="email"
                                     className={styles.input}
@@ -146,7 +147,7 @@ export default function LoginForm() {
                         </div>
 
                         <div className={styles.fieldWrapper}>
-                            <label className={styles.label}>
+                            <label htmlFor="login-password" className={styles.label}>
                                 {t('Auth.password')}
                             </label>
                             <div className={styles.inputWrapper}>
@@ -154,16 +155,17 @@ export default function LoginForm() {
                                     <LockClosed24Regular />
                                 </div>
                                 <Field
+                                    id="login-password"
                                     name="password"
                                     type={showPassword ? 'text' : 'password'}
                                     className={styles.inputPassword}
-                                    placeholder="••••••••"
+                                    placeholder={t('Auth.passwordPlaceholder')}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className={styles.eyeButton}
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showPassword ? t('Auth.hidePassword') : t('Auth.showPassword')}
                                 >
                                     {showPassword ? <EyeOff24Regular /> : <Eye24Regular />}
                                 </button>
@@ -197,7 +199,7 @@ export default function LoginForm() {
                     </Link>
                     <Link href="/activate" className={styles.actionLink}>
                         <span className={styles.actionLinkTitle}>{t('Auth.activateProfile')}</span>
-                        <span className={styles.actionLinkSubtitle}>Invite Code</span>
+                        <span className={styles.actionLinkSubtitle}>{t('Auth.inviteCodeLabel')}</span>
                     </Link>
                 </div>
 

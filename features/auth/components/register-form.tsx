@@ -265,7 +265,7 @@ export default function RegisterForm() {
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className={styles.eyeButton}
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showPassword ? t('Auth.hidePassword') : t('Auth.showPassword')}
                                 >
                                     {showPassword ? <EyeOff24Regular className={styles.inputIconSize} /> : <Eye24Regular className={styles.inputIconSize} />}
                                 </button>
@@ -293,7 +293,7 @@ export default function RegisterForm() {
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className={styles.eyeButton}
-                                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showConfirmPassword ? t('Auth.hidePassword') : t('Auth.showPassword')}
                                 >
                                     {showConfirmPassword ? <EyeOff24Regular className={styles.inputIconSize} /> : <Eye24Regular className={styles.inputIconSize} />}
                                 </button>

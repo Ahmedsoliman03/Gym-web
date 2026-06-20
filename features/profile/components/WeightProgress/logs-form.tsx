@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus } from 'lucide-react';
+
+import { CustomDatePicker } from '@/components/ui/custom-date-picker';
 
 interface LogsFormProps {
   isRtl: boolean;
@@ -59,16 +61,12 @@ export function LogsForm({
             <label className="block text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1.5">
               {isRtl ? 'التاريخ' : 'Date'}
             </label>
-            <div className="relative flex items-center">
-              <Calendar size={14} className={`absolute ${isRtl ? 'right-4' : 'left-4'} text-foreground/30 pointer-events-none`} />
-              <input
-                type="date"
-                required
-                value={newDate}
-                onChange={(e) => onDateChange(e.target.value)}
-                className={`w-full bg-white/[0.02] border border-white/5 rounded-2xl py-3.5 ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none text-white text-sm`}
-              />
-            </div>
+            <CustomDatePicker
+              value={newDate}
+              onChange={onDateChange}
+              isRtl={isRtl}
+              max={new Date().toISOString().split('T')[0]}
+            />
           </div>
         </div>
 

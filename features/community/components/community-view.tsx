@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { GLoaderSection } from '@/components/ui/g-loader';
+import { RotateCw, MessageSquareText } from 'lucide-react';
+import { CommunityPostSkeleton } from '@/components/ui/skeletons/community-post-skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { useFeed } from '../services/community.service';
 import { AddCommunityPostButton } from './add-community-post-button';
@@ -13,11 +14,17 @@ const styles = {
   feedList: 'flex flex-col gap-4 sm:gap-6',
   loading: 'flex items-center justify-center py-12 text-foreground/40',
   empty:
-    'text-center py-16 text-foreground/40 font-bold uppercase tracking-wider text-sm',
+    'flex flex-col items-center justify-center py-16 text-center',
+  emptyIconWrapper: 'inline-flex p-6 bg-white/5 rounded-full mb-5',
+  emptyIcon: 'text-foreground/20',
+  emptyText:
+    'text-foreground/50 font-bold uppercase tracking-wider text-sm max-w-xs',
   loadMoreBtn:
     'w-full py-3 mt-2 rounded-xl border border-white/10 text-foreground/60 font-bold text-xs uppercase tracking-wider hover:border-primary/40 hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed',
   errorBox:
     'p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center',
+  retryBtn:
+    'mt-3 mx-auto flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-black font-black text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer',
 };
 
 export function CommunityView() {
@@ -30,6 +37,8 @@ export function CommunityView() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
+    isFetching,
   } = useFeed();
 
   const posts = data?.pages.flatMap((p) => p.items) ?? [];
@@ -54,13 +63,35 @@ export function CommunityView() {
         <AddCommunityPostButton />
 
         {isLoading ? (
-          <GLoaderSection minHeight={200} />
+          <div className={styles.feedList}>
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <CommunityPostSkeleton key={idx} />
+            ))}
+          </div>
         ) : isError ? (
-          <div className={styles.errorBox}>
-            {errorCode === 'missing_location' ? t('missingLocation') : t('feedFailed')}
+          <div>
+            <div className={styles.errorBox}>
+              {errorCode === 'missing_location' ? t('missingLocation') : t('feedFailed')}
+            </div>
+            {errorCode !== 'missing_location' && (
+              <button
+                type="button"
+                className={styles.retryBtn}
+                onClick={() => refetch()}
+                disabled={isFetching}
+              >
+                <RotateCw size={14} className={isFetching ? 'animate-spin' : ''} />
+                {t('retry')}
+              </button>
+            )}
           </div>
         ) : posts?.length === 0 ? (
-          <p className={styles.empty}>{t('feedEmpty')}</p>
+          <div className={styles.empty}>
+            <div className={styles.emptyIconWrapper}>
+              <MessageSquareText size={40} className={styles.emptyIcon} />
+            </div>
+            <p className={styles.emptyText}>{t('feedEmpty')}</p>
+          </div>
         ) : (
           <div className={styles.feedList}>
             {posts.map((post) => (

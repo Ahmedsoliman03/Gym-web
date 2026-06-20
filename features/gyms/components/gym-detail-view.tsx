@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { RotateCw } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { GLoader } from "@/components/ui/g-loader";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
@@ -17,7 +19,8 @@ const styles = {
 
 export function GymDetailView({ id }: GymDetailViewProps) {
   const router = useRouter();
-  const { data: gym, isLoading, error } = useGym(id);
+  const t = useTranslations("Gyms");
+  const { data: gym, isLoading, error, refetch, isFetching } = useGym(id);
   // Dual-id self-check lives in the hook (matches user-id or inner profile id).
   const { isSelf } = useProfileLink(id, 'gym');
 
@@ -36,7 +39,18 @@ export function GymDetailView({ id }: GymDetailViewProps) {
   if (error || !gym) {
     return (
       <div className={styles.loaderWrapper}>
-        <span className="text-red-500 font-bold uppercase tracking-wider">Failed to load gym.</span>
+        <div className="flex flex-col items-center gap-4">
+          <span className="text-red-500 font-bold uppercase tracking-wider">{t("loadFailed")}</span>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+          >
+            <RotateCw size={14} className={isFetching ? "animate-spin" : ""} />
+            {t("retry")}
+          </button>
+        </div>
       </div>
     );
   }
