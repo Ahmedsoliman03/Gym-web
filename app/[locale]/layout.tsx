@@ -8,6 +8,8 @@ import { GeistSans } from 'geist/font/sans';
 import { Almarai } from 'next/font/google';
 import '../globals.css';
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
+
 
 const almarai = Almarai({
     subsets: ['arabic'],
@@ -62,11 +64,13 @@ export async function generateMetadata({
 }
 
 import { Navbar } from '@/components/navbar';
-import { ChatWidget } from '@/features/chat/components/chat-widget';
 import { ChatSocketProvider } from '@/features/chat/socket/chat-socket-provider';
 import { ScrollToTopButton } from '@/components/shared/scroll-to-top-button';
 import { Toaster } from 'react-hot-toast';
 import { OfflineIndicator } from '@/components/shared/offline-indicator';
+
+import { ChatWrapper } from '@/features/chat/components/chat-wrapper';
+
 
 export default async function LocaleLayout({
     children,
@@ -82,6 +86,10 @@ export default async function LocaleLayout({
     }
 
     const messages = await getMessages();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('access_token')?.value || cookieStore.get('token')?.value;
+    const isLoggedIn = !!token;
+
 
     return (
         <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={`${GeistSans.variable} ${almarai.variable}`}>
@@ -144,8 +152,9 @@ export default async function LocaleLayout({
                                 <Navbar />
                                 <OfflineIndicator />
                                 {children}
-                                <ChatWidget />
+                                {isLoggedIn && <ChatWrapper />}
                                 <ScrollToTopButton />
+
                             </ThemeProvider>
                         </ChatSocketProvider>
                     </QueryProvider>

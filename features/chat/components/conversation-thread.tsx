@@ -23,8 +23,12 @@ import {
     ChatLoadingState,
 } from './chat-empty-state';
 import { MessageBubble } from './message-bubble';
-import { MessageComposer } from './message-composer';
 import { TypingIndicator } from './typing-indicator';
+import dynamic from 'next/dynamic';
+
+const MessageComposer = dynamic(() => import('./message-composer').then(mod => mod.MessageComposer), {
+    ssr: false,
+});
 
 const styles = {
     header:

@@ -1,11 +1,17 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import EmojiPicker, {
-    EmojiStyle,
+import type {
+    EmojiClickData,
     Theme,
-    type EmojiClickData,
+    EmojiStyle,
 } from 'emoji-picker-react';
+import dynamic from 'next/dynamic';
+
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), {
+    ssr: false,
+    loading: () => <div className="w-[320px] h-[400px] bg-surface border border-white/10 rounded-2xl flex items-center justify-center text-foreground/50">Loading Picker...</div>
+});
 import {
     Camera,
     FileText,
@@ -426,8 +432,8 @@ export const MessageComposer = ({
                         <div className={styles.emojiPopover} style={emojiThemeVars}>
                             <EmojiPicker
                                 onEmojiClick={handleEmojiSelect}
-                                theme={Theme.DARK}
-                                emojiStyle={EmojiStyle.NATIVE}
+                                theme={'dark' as Theme}
+                                emojiStyle={'native' as EmojiStyle}
                                 lazyLoadEmojis
                                 searchDisabled={false}
                                 width={320}
