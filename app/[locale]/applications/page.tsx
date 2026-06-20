@@ -27,6 +27,7 @@ type StatusFilter = 'all' | 'open' | 'closed';
 
 export default function ApplicationsPage() {
     const t = useTranslations('Applications');
+    const t_root = useTranslations();
     const [titleFilter, setTitleFilter] = useState<string>('all');
     const [specFilter, setSpecFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -83,10 +84,13 @@ export default function ApplicationsPage() {
         ];
         SPECIALIZATIONS.forEach((spec) => {
             const count = counts.get(spec.value);
-            if (count) opts.push({ value: spec.value, label: `${spec.fallback} (${count})` });
+            if (count) {
+                const label = t_root(spec.label as any) || spec.fallback;
+                opts.push({ value: spec.value, label: `${label} (${count})` });
+            }
         });
         return opts;
-    }, [applications, t]);
+    }, [applications, t, t_root]);
 
     const openCount = useMemo(
         () => applications.filter((app) => app.job?.status === 'open').length,

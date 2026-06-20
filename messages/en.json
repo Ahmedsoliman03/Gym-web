@@ -292,7 +292,7 @@
         "deleteSuccess": "Job deleted.",
         "deleteFailed": "Couldn't delete this job. Please try again.",
         "deleteConfirmTitle": "Delete this job?",
-        "deleteConfirmBody": "This will permanently remove the job. It can't be undone.",
+        "deleteConfirmBody": "This will permanently remove the job and all its applications. It can't be undone.",
         "deleting": "Deleting...",
         "cancel": "Cancel",
         "feedEmpty": "No open jobs yet. Check back later.",

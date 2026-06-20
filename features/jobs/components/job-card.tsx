@@ -21,6 +21,7 @@ import {
     useSaveJobMutation,
     useShareJobMutation,
 } from '../services/jobs.service';
+import { SPECIALIZATIONS } from '@/constants/specializations';
 import type { Job } from '../types';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -29,6 +30,7 @@ interface JobCardProps {
     job: Job;
     onApply: (job: Job) => void;
     onEdit?: (job: Job) => void;
+    onDelete?: (jobId: string) => void;
     index: number;
 }
 
@@ -72,7 +74,7 @@ const styles = {
     countPill:
         'min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/80 text-[10px] font-bold tabular-nums leading-none',
     statsRow:
-        'px-4 sm:px-6 md:px-8 pb-3 flex flex-wrap items-center gap-2',
+        'px-4 sm:px-6 md:px-8 pb-3 flex flex-wrap items-center gap-2 mt-3',
     statChip:
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/5 text-foreground/60 font-bold text-[11px] uppercase tracking-wider',
     // Owner-only clickable variant of the applications chip — routes to the
@@ -89,8 +91,9 @@ const styles = {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
+export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps) {
     const t = useTranslations('Jobs');
+    const t_root = useTranslations();
     const locale = useLocale();
     const { profile } = useProfileUser();
 
@@ -179,6 +182,9 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
             onSuccess: () => {
                 toast.success(t('deleteSuccess'));
                 setDeleteOpen(false);
+                if (onDelete) {
+                    onDelete(job.id);
+                }
             },
             onError: () => toast.error(t('deleteFailed')),
         });
@@ -306,16 +312,20 @@ export function JobCard({ job, onApply, onEdit, index }: JobCardProps) {
                         <h2 className={styles.jobTitle}>{job.title}</h2>
                         {job.specialization && job.specialization.length > 0 && (
                             <div className={styles.specTagsInline}>
-                                {job.specialization.map((spec) => (
-                                    <span key={spec} className={styles.specTag}>
-                                        <Briefcase size={11} className="inline mr-1" />
-                                        {spec}
-                                    </span>
-                                ))}
+                                {job.specialization.map((spec) => {
+                                    const match = SPECIALIZATIONS.find((s) => s.value === spec);
+                                    const label = match ? t_root(match.label as any) : spec;
+                                    return (
+                                        <span key={spec} className={styles.specTag}>
+                                            <Briefcase size={11} className="inline mr-1" />
+                                            {label}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
-                
+
                     {job.salary && (
                         <div className={`${styles.metaItem} ${styles.salaryChip} mb-4`}>
                             <Banknote size={14} />

@@ -245,7 +245,9 @@ export const useEditPostMutation = () => {
 };
 
 export const deletePost = async (postId: string): Promise<void> => {
-    await api.delete(`/api/community/posts/${postId}`);
+    await api.delete(`/api/community/posts/${postId}`, {
+        transformResponse: (data) => data,
+    });
 };
 
 export const useDeletePostMutation = () => {
@@ -268,8 +270,18 @@ export const useDeletePostMutation = () => {
                     };
                 },
             );
+
+            // Drop the post from flat lists (mine, saved, gym, coach)
+            queryClient.setQueriesData<CommunityPost[] | undefined>(
+                { queryKey: ['community', 'posts'] },
+                (curr) => (Array.isArray(curr) ? curr.filter((p) => p.id !== postId) : curr),
+            );
+
             // Clear the detail cache for this post too.
             queryClient.removeQueries({ queryKey: ['community', 'post', postId] });
+
+            // Refetch active community queries to ensure sync with server.
+            queryClient.invalidateQueries({ queryKey: ['community'] });
         },
     });
 };

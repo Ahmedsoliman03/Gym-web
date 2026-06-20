@@ -2,6 +2,8 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { SPECIALIZATIONS } from '@/constants/specializations';
 import { SpecializationDropdownProps } from '../types';
 
 const styles = {
@@ -42,6 +44,7 @@ export function SpecializationDropdown({
   placeholder,
   onClear,
 }: SpecializationDropdownProps) {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +58,12 @@ export function SpecializationDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const getLabel = (val: string) => {
+    if (val === 'All') return placeholder;
+    const match = SPECIALIZATIONS.find((s) => s.value === val);
+    return match ? t(match.label as any) : val;
+  };
+
   return (
     <div className={styles.container} ref={containerRef}>
       <div
@@ -62,7 +71,7 @@ export function SpecializationDropdown({
         className={styles.trigger(isOpen)}
       >
         <span className={styles.selectedText(value === 'All')}>
-          {value === 'All' ? placeholder : value}
+          {getLabel(value)}
         </span>
         {value !== 'All' && (
           <button
@@ -100,7 +109,7 @@ export function SpecializationDropdown({
                   className={styles.option(isSelected)}
                 >
                   <span className={styles.optionText(isSelected)}>
-                    {option}
+                    {getLabel(option)}
                   </span>
                   <div className={isSelected ? styles.indicator.active : styles.indicator.inactive} />
                 </div>

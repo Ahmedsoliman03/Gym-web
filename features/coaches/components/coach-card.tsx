@@ -3,6 +3,7 @@
 import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { COMMON_COACH_IMAGE } from '@/constants/coaches';
+import { SPECIALIZATIONS } from '@/constants/specializations';
 import { Link } from '@/i18n/routing';
 import { Coach } from '../types';
 
@@ -24,6 +25,7 @@ const styles = {
 
 export function CoachCard({ coach, index }: { coach: Coach, index: number }) {
   const t = useTranslations('Coaches');
+  const t_root = useTranslations();
 
   return (
     <Link
@@ -59,11 +61,15 @@ export function CoachCard({ coach, index }: { coach: Coach, index: number }) {
           </span>
         )}
         <div className={styles.tagContainer}>
-          {coach.specialization.map((spec: string) => (
-            <span key={spec} className={styles.tag}>
-              {spec}
-            </span>
-          ))}
+          {coach.specialization.map((spec: string) => {
+            const match = SPECIALIZATIONS.find((s) => s.value === spec);
+            const label = match ? t_root(match.label as any) : spec;
+            return (
+              <span key={spec} className={styles.tag}>
+                {label}
+              </span>
+            );
+          })}
         </div>
       </div>
     </Link>

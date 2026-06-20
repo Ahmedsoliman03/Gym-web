@@ -17,11 +17,11 @@ export function JobHeader({ title, highlight, description, statsLabel, len }: Jo
   const t = useTranslations('Jobs');
 
   return (
-    <PageHeader 
+    <PageHeader
       title={title || t('title')}
       highlight={highlight || t('highlight')}
       description={description || t('description')}
-      statsCount={len?.toString() || "124"}
+      statsCount={len?.toString() || "0"}
       statsLabel={statsLabel || t('openOpportunities')}
       showDivider={true}
     />

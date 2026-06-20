@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { GLoaderSection } from '@/components/ui/g-loader';
 import { useJob } from '../services/jobs.service';
 import { ApplyJobModal } from './apply-job-modal';
@@ -28,6 +28,7 @@ const styles = {
 
 export function JobDetailView({ jobId }: JobDetailViewProps) {
   const t = useTranslations('Jobs');
+  const router = useRouter();
   const [applyingJob, setApplyingJob] = useState<Job | null>(null);
   const { data: job, isLoading, isError } = useJob(jobId);
 
@@ -48,6 +49,7 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
             job={job}
             index={0}
             onApply={setApplyingJob}
+            onDelete={() => router.replace('/jobs')}
           />
         )}
       </div>

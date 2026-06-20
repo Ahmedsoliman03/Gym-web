@@ -26,7 +26,7 @@ import { SocialMediaLinks } from "./social-media-links";
 
 const styles = {
   container: "space-y-8",
-  header: "bg-surface p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row gap-8 items-center",
+  header: "bg-surface p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row gap-8 items-start md:items-center",
   // Avatar block — mirrors the coach profile header so the gym avatar shares
   // the same round photo + primary ring + story-state overlay UI.
   avatarWrapper: "relative",
@@ -34,17 +34,15 @@ const styles = {
   avatarInner: "w-full h-full rounded-full overflow-hidden relative",
   avatarImage: "object-cover",
   statusBadge: (status: PresenceStatus) =>
-    `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-surface ${
-      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-surface ${status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
     }`,
-  infoWrapper: "flex-1 text-center md:text-left",
+  infoWrapper: "flex-1",
   title: "text-4xl font-bold mb-2",
-  presencePill: "inline-flex items-center justify-center md:justify-start gap-2 mb-3 text-xs font-black uppercase tracking-wider text-foreground/55",
+  presencePill: "inline-flex items-center justify-start gap-2 mb-3 text-xs font-black uppercase tracking-wider text-foreground/55",
   presenceDot: (status: PresenceStatus) =>
-    `h-2.5 w-2.5 rounded-full ${
-      status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
+    `h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
     }`,
-  statsList: "flex flex-wrap justify-center md:justify-start gap-4 text-foreground/60 text-sm",
+  statsList: "flex flex-wrap justify-start gap-4 text-foreground/60 text-sm",
   statItem: "flex items-center gap-1",
   ratingStar: "text-yellow-500",
   actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
@@ -231,13 +229,13 @@ export const GymProfileView = ({
           <h1 className={styles.title}>{data.name}</h1>
           {/* Owner-only referral promocode chip with copy button. */}
           {isOwner && promocode && (
-            <div className="mt-2 mb-3 flex justify-center md:justify-start">
+            <div className="mt-2 mb-3 flex justify-start">
               <PromocodeChip code={promocode} />
             </div>
           )}
           {/* Owner-only email row mirrors the coach header. */}
           {isOwner && email && (
-            <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-foreground/60 mb-3 break-all">
+            <div className="flex items-center justify-start gap-2 text-sm font-medium text-foreground/60 mb-3 break-all">
               <Mail size={14} className="text-foreground/40 shrink-0" />
               <span>{email}</span>
             </div>

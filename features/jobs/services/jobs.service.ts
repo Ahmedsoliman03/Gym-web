@@ -115,7 +115,9 @@ export const useEditJobMutation = () => {
 };
 
 export const deleteJob = async (jobId: string): Promise<void> => {
-    await api.delete(`/api/jobs/${jobId}`);
+    await api.delete(`/api/jobs/${jobId}`, {
+        transformResponse: (data) => data,
+    });
 };
 
 export const useDeleteJobMutation = () => {
@@ -127,8 +129,8 @@ export const useDeleteJobMutation = () => {
             (['jobs', ['jobs', 'mine'], ['jobs', 'saved']] as const).forEach(
                 (key) => {
                     queryClient.setQueriesData<Job[] | undefined>(
-                        { queryKey: Array.isArray(key) ? key : [key] },
-                        (curr) => (curr ? curr.filter((j) => j.id !== jobId) : curr),
+                        { queryKey: Array.isArray(key) ? key : [key], exact: true },
+                        (curr) => (Array.isArray(curr) ? curr.filter((j) => j.id !== jobId) : curr),
                     );
                 },
             );
