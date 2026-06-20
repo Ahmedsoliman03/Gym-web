@@ -5,8 +5,14 @@ import { Briefcase } from 'lucide-react';
 
 import { JobCardSkeleton } from '@/components/ui/skeletons/job-card-skeleton';
 import { JobCard } from './job-card';
-import { ApplyJobModal } from './apply-job-modal';
-import { EditJobModal } from './edit-job-modal';
+import dynamic from 'next/dynamic';
+
+const ApplyJobModal = dynamic(() => import('./apply-job-modal').then(mod => mod.ApplyJobModal), {
+  ssr: false,
+});
+const EditJobModal = dynamic(() => import('./edit-job-modal').then(mod => mod.EditJobModal), {
+  ssr: false,
+});
 import type { Job } from '../types';
 
 interface JobsListProps {

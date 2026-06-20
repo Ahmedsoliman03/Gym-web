@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
-import { AddCommunityPostModal } from './add-community-post-modal';
+import dynamic from 'next/dynamic';
+
+const AddCommunityPostModal = dynamic(() => import('./add-community-post-modal').then(mod => mod.AddCommunityPostModal), {
+  ssr: false,
+});
 
 const styles = {
   wrapper: 'mb-4',

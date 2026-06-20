@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { formatRelativeTime } from '@/utils/format';
-import { SharePostModal } from '@/components/shared/share-post-modal';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import {
@@ -29,11 +28,26 @@ import {
   usePostVoters,
 } from '../services/community.service';
 import type { CommunityPost } from '../types';
-import { CommunityComments } from './community-comments';
-import { DeletePostConfirm } from './delete-post-confirm';
-import { EditPostModal } from './edit-post-modal';
-import { ReportPostModal } from './report-post-modal';
-import { UpvotersSheet } from './upvoters-sheet';
+import dynamic from 'next/dynamic';
+
+const CommunityComments = dynamic(() => import('./community-comments').then(mod => mod.CommunityComments), {
+  ssr: false,
+});
+const DeletePostConfirm = dynamic(() => import('./delete-post-confirm').then(mod => mod.DeletePostConfirm), {
+  ssr: false,
+});
+const EditPostModal = dynamic(() => import('./edit-post-modal').then(mod => mod.EditPostModal), {
+  ssr: false,
+});
+const ReportPostModal = dynamic(() => import('./report-post-modal').then(mod => mod.ReportPostModal), {
+  ssr: false,
+});
+const UpvotersSheet = dynamic(() => import('./upvoters-sheet').then(mod => mod.UpvotersSheet), {
+  ssr: false,
+});
+const SharePostModal = dynamic(() => import('@/components/shared/share-post-modal').then(mod => mod.SharePostModal), {
+  ssr: false,
+});
 
 interface CommunityPostCardProps {
   post: CommunityPost;
