@@ -74,8 +74,6 @@ export interface RequestAccessRequest {
     memberCount?: string | number;
     /** Coach-only: how many clients the coach currently trains. */
     numberOfClients?: string | number;
-    /** Optional referral / invitation promocode supplied by the applicant. */
-    invitationPromocode?: string;
     gymLicense?: File | null;
     gymPhoto?: File | null;
     [key: string]: unknown;
@@ -116,7 +114,6 @@ export interface GymFormInnerProps {
         email: string;
         gymLicense: File | null;
         gymPhoto: File | null;
-        invitationPromocode: string;
     };
     setFieldValue: (field: string, value: unknown) => void;
 }
@@ -150,7 +147,6 @@ export interface CoachFormInnerProps {
         certifications: File[];
         profile_image: File | null;
         numberOfClients: string;
-        invitationPromocode: string;
     };
     setFieldValue: (field: string, value: unknown) => void;
 }

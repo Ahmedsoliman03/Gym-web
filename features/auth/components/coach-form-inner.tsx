@@ -113,20 +113,6 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                     />
                     <ErrorMessage name="numberOfClients" component="div" className={styles.error} />
                 </div>
-
-                {/* Optional invitation promocode. */}
-                <div className={styles.fieldWrapper}>
-                    <label className={styles.label}>
-                        {t('Auth.invitationPromocode')} ({t('Auth.optional')})
-                    </label>
-                    <Field
-                        name="invitationPromocode"
-                        type="text"
-                        className={styles.input}
-                        placeholder={t('Auth.invitationPromocodePlaceholder')}
-                    />
-                    <ErrorMessage name="invitationPromocode" component="div" className={styles.error} />
-                </div>
             </div>
 
             <div className={styles.fieldWrapperRelative}>

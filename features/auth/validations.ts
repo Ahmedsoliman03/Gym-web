@@ -87,8 +87,6 @@ export const getRequestAccessSchema = (t: Translator) => Yup.object().shape({
             then: (schema) => schema.required(t('Validation.required', { field: t('Auth.numberOfClients') })),
             otherwise: (schema) => schema.optional(),
         }),
-    // Promocode is referral-style — always optional, accepted from both flows.
-    invitationPromocode: Yup.string().trim().optional(),
     certifications: Yup.array().of(Yup.mixed()).when('type', {
         is: 'coach',
         then: (schema) => schema.min(1, t('Validation.required', { field: t('Auth.certificateUpload') })).required(t('Validation.required', { field: t('Auth.certificateUpload') })),

@@ -1,31 +1,17 @@
-import { Check, Star } from 'lucide-react';
-
-interface PlanCardProps {
-  name: string;
-  tagline: string;
-  features: string[];
-  priceAfter: number;
-  priceBefore?: number;
-  currency: string;
-  perMonth: string;
-  billedLabel: string;
-  saveLabel: string;
-  ctaLabel: string;
-  free?: boolean;
-  freeLabel?: string;
-  popular?: boolean;
-  popularLabel?: string;
-}
+import { Check, CheckCircle2, Star } from 'lucide-react';
+import type { PlanCardProps } from '../types';
 
 const styles = {
-  card: (popular?: boolean) => `
+  card: (highlight?: boolean) => `
     relative flex flex-col p-6 sm:p-8 rounded-3xl bg-surface/60 backdrop-blur-xl transition-all duration-300 h-full
-    ${popular
+    ${highlight
       ? 'border-2 border-primary shadow-[0_0_40px_rgba(34,197,94,0.18)] sm:-translate-y-2'
       : 'border border-white/5 hover:border-primary/30'}
   `,
   popularBadge:
     'absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-4 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/30 whitespace-nowrap',
+  currentBadge:
+    'absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-4 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 whitespace-nowrap',
   name: 'text-sm font-black uppercase tracking-widest text-primary mb-1',
   tagline: 'text-foreground/50 text-sm leading-relaxed mb-6 min-h-[2.5rem]',
   priceRow: 'flex items-end gap-1.5 mb-1',
@@ -65,18 +51,26 @@ export function PlanCard({
   freeLabel,
   popular,
   popularLabel,
+  isCurrent,
+  currentLabel,
+  onSelect,
 }: PlanCardProps) {
   return (
-    <div className={styles.card(popular)}>
-      {popular && popularLabel && (
+    <div className={styles.card(popular || isCurrent)}>
+      {isCurrent && currentLabel ? (
+        <span className={styles.currentBadge}>
+          <CheckCircle2 size={11} />
+          {currentLabel}
+        </span>
+      ) : popular && popularLabel ? (
         <span className={styles.popularBadge}>
           <Star size={11} fill="currentColor" />
           {popularLabel}
         </span>
-      )}
+      ) : null}
 
       <h3 className={styles.name}>{name}</h3>
-      <p className={styles.tagline}>{tagline}</p>
+      {tagline && <p className={styles.tagline}>{tagline}</p>}
 
       {free ? (
         <>
@@ -119,8 +113,13 @@ export function PlanCard({
         ))}
       </ul>
 
-      <button type="button" className={styles.cta(popular)}>
-        {ctaLabel}
+      <button
+        type="button"
+        className={styles.cta(popular)}
+        onClick={onSelect}
+        disabled={!onSelect}
+      >
+        {isCurrent && currentLabel ? currentLabel : ctaLabel}
       </button>
     </div>
   );

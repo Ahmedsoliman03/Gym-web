@@ -30,11 +30,7 @@ export const getStories = async (): Promise<Story[]> => {
 };
 
 export const useStories = (enabled = true) => {
-    // Stories require an authenticated session. Use the non-HttpOnly `user_type`
-    // cookie set by the backend proxy as a "we have a session" hint so logged-out
-    // visitors on /gyms or /coaches don't fire 401s and don't see a bar. Callers
-    // can further gate this by passing `enabled=false` (e.g., when the profile
-    // query has not yet confirmed the user is authenticated).
+
     const isPossiblyLoggedIn =
         typeof document !== 'undefined' && /(?:^|;\s*)user_type=/.test(document.cookie);
     return useQuery<Story[]>({
@@ -67,19 +63,7 @@ export const useStoryDetails = (storyId: string | null, enabled = true) => {
         gcTime: 0,
     });
 
-    // The Story Details endpoint records the current user's view server-side,
-    // which flips `isViewed` on subsequent list responses. Invalidate both the
-    // public all-stories list AND the owner's `mine` list so any consumer (the
-    // StoriesBar ring AND the owner's own profile badge) sees the new viewed
-    // state right away. `exact: true` keeps us from recursively invalidating
-    // this very query, which is keyed under `['stories', 'details', ...]`.
-    //
-    // Coach and gym DETAIL responses also embed an `active stories` array that
-    // the per-profile badge reads through the `stories` prop. Those caches
-    // live under `['coaches', id]` / `['gyms', id]` so the stories-key
-    // invalidations above don't touch them — patch the matching story in
-    // place instead so the ring color (green ↔ gray) tracks `isViewed`
-    // without forcing a full coach/gym detail refetch mid-viewing.
+
     useEffect(() => {
         if (!query.data) return;
         const story = query.data;

@@ -1,16 +1,22 @@
 'use client';
 
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import toast from 'react-hot-toast';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useChatSocket } from '../socket/chat-socket-provider';
+import { useDeleteConversationsMutation } from '../services/chat.service';
 import type { ChatConversation } from '../types';
 import { pickOtherUser } from '../utils/format';
 import { formatWhen } from '@/utils/format';
 import { ChatRowAvatar } from './chat-row-avatar';
 
 const styles = {
+    wrap: 'relative group',
     conversationCard:
-        'w-full text-left rounded-2xl border border-white/10 bg-surface/40 p-3 flex items-center gap-3 hover:bg-surface/70 transition-colors',
+        'w-full text-left rounded-2xl border border-white/10 bg-surface/40 p-3 pe-10 flex items-center gap-3 hover:bg-surface/70 transition-colors',
     rowInfo: 'flex-1 min-w-0',
     rowName: 'text-sm font-bold truncate',
     conversationPreview: 'text-[12px] text-foreground/60 truncate',
@@ -18,6 +24,8 @@ const styles = {
     conversationTime: 'text-[10px] text-foreground/40',
     unreadBadge:
         'min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black flex items-center justify-center',
+    deleteBtn:
+        'absolute top-1/2 -translate-y-1/2 end-2 p-1.5 rounded-lg text-foreground/40 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all',
 };
 
 export const ConversationRow = ({
@@ -33,6 +41,9 @@ export const ConversationRow = ({
     // user, so we match against `/api/me`'s id.
     const { profile } = useProfileUser();
     const { unreadByConversation, presenceByUser } = useChatSocket();
+    const deleteMutation = useDeleteConversationsMutation();
+    const [confirmOpen, setConfirmOpen] = useState(false);
+
     const other = pickOtherUser(conversation, profile?.id);
     // Prefer the live socket presence; fall back to the status baked into the
     // REST payload (may be stale or missing until the socket delivers one).
@@ -46,31 +57,64 @@ export const ConversationRow = ({
         unreadByConversation[conversation.id] ?? 0,
     );
 
+    const handleDelete = async () => {
+        try {
+            await deleteMutation.mutateAsync([conversation.id]);
+            toast.success(t('deleteConversationSuccessToast'));
+            setConfirmOpen(false);
+        } catch {
+            toast.error(t('deleteConversationErrorToast'));
+        }
+    };
+
     return (
-        <button
-            type="button"
-            className={styles.conversationCard}
-            onClick={() => onOpen?.(conversation.id)}
-        >
-            <ChatRowAvatar
-                photo={other?.photo}
-                name={other?.fullName ?? ''}
-                status={status}
-            />
-            <div className={styles.rowInfo}>
-                <div className={styles.rowName}>{other?.fullName}</div>
-                <div className={styles.conversationPreview}>
-                    {conversation.lastMessage?.body ?? t('noMessagesYet')}
+        <div className={styles.wrap}>
+            <button
+                type="button"
+                className={styles.conversationCard}
+                onClick={() => onOpen?.(conversation.id)}
+            >
+                <ChatRowAvatar
+                    photo={other?.photo}
+                    name={other?.fullName ?? ''}
+                    status={status}
+                />
+                <div className={styles.rowInfo}>
+                    <div className={styles.rowName}>{other?.fullName}</div>
+                    <div className={styles.conversationPreview}>
+                        {conversation.lastMessage?.body ?? t('noMessagesYet')}
+                    </div>
                 </div>
-            </div>
-            <div className={styles.conversationMeta}>
-                <span className={styles.conversationTime}>
-                    {formatWhen(conversation.updatedAt, locale)}
-                </span>
-                {unreadCount > 0 && (
-                    <span className={styles.unreadBadge}>{unreadCount}</span>
-                )}
-            </div>
-        </button>
+                <div className={styles.conversationMeta}>
+                    <span className={styles.conversationTime}>
+                        {formatWhen(conversation.updatedAt, locale)}
+                    </span>
+                    {unreadCount > 0 && (
+                        <span className={styles.unreadBadge}>{unreadCount}</span>
+                    )}
+                </div>
+            </button>
+
+            <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={() => setConfirmOpen(true)}
+                aria-label={t('deleteConversation')}
+            >
+                <Trash2 size={16} />
+            </button>
+
+            <ConfirmDialog
+                isOpen={confirmOpen}
+                title={t('deleteConversation')}
+                body={t('deleteConversationConfirm')}
+                cancelLabel={t('deleteConversationCancel')}
+                confirmLabel={t('deleteConversationConfirmCta')}
+                submittingLabel={t('deletingConversation')}
+                isSubmitting={deleteMutation.isPending}
+                onCancel={() => setConfirmOpen(false)}
+                onConfirm={handleDelete}
+            />
+        </div>
     );
 };

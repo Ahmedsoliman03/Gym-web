@@ -108,7 +108,12 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
         }
 
         const { slug } = params;
-        const path = slug.join("/");
+        // Catch-all params drop the trailing slash; restore it from the original
+        // request path so backends that require it (Django APPEND_SLASH) match.
+        let path = slug.join("/");
+        if (new URL(request.url).pathname.endsWith("/") && !path.endsWith("/")) {
+            path += "/";
+        }
         const url = new URL(path, BACKEND_URL);
 
         // Preserve search params

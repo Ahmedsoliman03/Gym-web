@@ -91,20 +91,6 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                     <Field name="email" type="email" className={styles.input} placeholder={t('Auth.emailPlaceholder')} />
                     <ErrorMessage name="email" component="div" className={styles.error} />
                 </div>
-
-                {/* Optional invitation promocode — sent on the request body when filled. */}
-                <div className={`${styles.fieldWrapper} md:col-span-2`}>
-                    <label className={styles.label}>
-                        {t('Auth.invitationPromocode')} ({t('Auth.optional')})
-                    </label>
-                    <Field
-                        name="invitationPromocode"
-                        type="text"
-                        className={styles.input}
-                        placeholder={t('Auth.invitationPromocodePlaceholder')}
-                    />
-                    <ErrorMessage name="invitationPromocode" component="div" className={styles.error} />
-                </div>
             </div>
 
             {/* ── Location Section ── */}

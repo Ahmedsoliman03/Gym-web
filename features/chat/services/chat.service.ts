@@ -175,6 +175,49 @@ export const useConversations = () => {
     });
 };
 
+/**
+ * DELETE /api/chat/conversations/bulk-delete — removes one or more full
+ * conversations. The API takes a raw JSON array of conversation IDs (a single
+ * id still goes inside an array) and deletes nothing if any id is invalid.
+ */
+export const deleteConversations = async (ids: string[]): Promise<void> => {
+    await api.delete('/api/chat/conversations/bulk-delete', { data: ids });
+};
+
+export const useDeleteConversationsMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: deleteConversations,
+        onMutate: async (ids: string[]) => {
+            // Optimistically drop the rows so the list updates instantly.
+            await queryClient.cancelQueries({ queryKey: chatKeys.conversations });
+            const previous = queryClient.getQueryData<ChatConversation[]>(
+                chatKeys.conversations,
+            );
+            const removed = new Set(ids);
+            queryClient.setQueryData<ChatConversation[] | undefined>(
+                chatKeys.conversations,
+                (curr) => curr?.filter((c) => !removed.has(c.id)),
+            );
+            return { previous };
+        },
+        onError: (_err, _ids, ctx) => {
+            if (ctx?.previous) {
+                queryClient.setQueryData(chatKeys.conversations, ctx.previous);
+            }
+        },
+        onSuccess: (_data, ids) => {
+            // Drop any cached message threads for the deleted conversations.
+            ids.forEach((id) =>
+                queryClient.removeQueries({ queryKey: chatKeys.messages(id) }),
+            );
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
+        },
+    });
+};
+
 export const getConversationMessages = async ({
     conversationId,
     limit = 50,

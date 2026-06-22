@@ -70,6 +70,7 @@ import { Toaster } from 'react-hot-toast';
 import { OfflineIndicator } from '@/components/shared/offline-indicator';
 
 import { ChatWrapper } from '@/features/chat/components/chat-wrapper';
+import { CompleteProfileBanner } from '@/features/profile/components/complete-profile-banner';
 
 
 export default async function LocaleLayout({
@@ -153,6 +154,7 @@ export default async function LocaleLayout({
                                 <OfflineIndicator />
                                 {children}
                                 {isLoggedIn && <ChatWrapper />}
+                                {isLoggedIn && <CompleteProfileBanner />}
                                 <ScrollToTopButton />
 
                             </ThemeProvider>
