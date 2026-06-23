@@ -4,6 +4,7 @@ import {
     Bookmark,
     Briefcase,
     FileText,
+    Gauge,
     User,
     type LucideIcon,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ import { MyPostsView } from '@/features/community/components/my-posts-view';
 import { SavedPostsView } from '@/features/community/components/saved-posts-view';
 import { MyJobsView } from '@/features/jobs/components/my-jobs-view';
 import { SavedJobsView } from '@/features/jobs/components/saved-jobs-view';
+import { UsageView } from '@/features/plans/components/usage-view';
 
 type TabKey =
     | 'profile'
@@ -23,7 +25,8 @@ type TabKey =
     | 'saved-posts'
     | 'saved-jobs'
     | 'my-jobs'
-    | 'my-applications';
+    | 'my-applications'
+    | 'usage';
 
 type ProfileUserType = 'client' | 'coach' | 'gym';
 
@@ -37,10 +40,9 @@ const styles = {
     tabBar:
         'flex items-center gap-1 p-1 rounded-2xl bg-surface border border-white/5 mb-6 overflow-x-auto',
     tab: (active: boolean) =>
-        `flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
-            active
-                ? 'bg-primary/15 text-primary border border-primary/30'
-                : 'text-foreground/50 hover:text-foreground border border-transparent'
+        `flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${active
+            ? 'bg-primary/15 text-primary border border-primary/30'
+            : 'text-foreground/50 hover:text-foreground border border-transparent'
         }`,
 };
 
@@ -70,6 +72,10 @@ const tabsForUserType = (userType: ProfileUserType): TabDef[] => {
             icon: FileText,
         });
     }
+    // Platform subscriptions (and thus usage) exist only for gyms and coaches.
+    if (userType !== 'client') {
+        base.push({ key: 'usage', labelKey: 'tabUsage', icon: Gauge });
+    }
     return base;
 };
 
@@ -85,6 +91,8 @@ const TabContent = ({ tab }: { tab: TabKey }) => {
             return <MyJobsView embedded />;
         case 'my-applications':
             return <MyApplicationsView embedded />;
+        case 'usage':
+            return <UsageView />;
         default:
             return null;
     }
@@ -103,15 +111,13 @@ export function ProfileTabs({
 
     const tabs = tabsForUserType(userType);
     const requested = searchParams.get('tab') as TabKey | null;
-    // Fall back to the profile tab when the query is missing or points at a tab
-    // this role doesn't have (e.g. a stale `?tab=my-jobs` link for a coach).
+
     const active: TabKey = tabs.some((tabDef) => tabDef.key === requested)
         ? (requested as TabKey)
         : 'profile';
 
     const selectTab = (key: TabKey) => {
-        // `replace` keeps the back button pointed at the page the user came
-        // from rather than each tab switch.
+
         router.replace(key === 'profile' ? '/profile' : `/profile?tab=${key}`);
     };
 

@@ -20,7 +20,8 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
         <Formik
             initialValues={{
                 type: 'coach',
-                name: '',
+                firstName: '',
+                lastName: '',
                 email: '',
                 phone: '',
                 city: '',
@@ -35,7 +36,14 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    await requestAccess(values as RequestAccessRequest);
+                    // The backend expects a single space-separated `name`; the
+                    // form collects it as two fields (see CoachFormInner).
+                    const { firstName, lastName, ...rest } = values;
+                    const name = [firstName, lastName]
+                        .map((part) => part.trim())
+                        .filter(Boolean)
+                        .join(' ');
+                    await requestAccess({ ...rest, name } as RequestAccessRequest);
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
                 } catch (error: any) {

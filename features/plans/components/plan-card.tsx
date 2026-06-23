@@ -2,9 +2,9 @@ import { Check, CheckCircle2, Star } from 'lucide-react';
 import type { PlanCardProps } from '../types';
 
 const styles = {
-  card: (highlight?: boolean) => `
+  card: (popular?: boolean) => `
     relative flex flex-col p-6 sm:p-8 rounded-3xl bg-surface/60 backdrop-blur-xl transition-all duration-300 h-full
-    ${highlight
+    ${popular
       ? 'border-2 border-primary shadow-[0_0_40px_rgba(34,197,94,0.18)] sm:-translate-y-2'
       : 'border border-white/5 hover:border-primary/30'}
   `,
@@ -34,6 +34,8 @@ const styles = {
       ? 'bg-primary text-primary-foreground hover:brightness-110 shadow-lg shadow-primary/20'
       : 'bg-white/5 text-foreground/80 border border-white/10 hover:bg-primary hover:text-primary-foreground hover:border-primary'}
   `,
+  cancelCta:
+    'w-full py-3.5 rounded-xl font-black uppercase text-xs tracking-wider transition-all bg-transparent text-red-400 border border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50',
 };
 
 export function PlanCard({
@@ -53,10 +55,11 @@ export function PlanCard({
   popularLabel,
   isCurrent,
   currentLabel,
+  cancelLabel,
   onSelect,
 }: PlanCardProps) {
   return (
-    <div className={styles.card(popular || isCurrent)}>
+    <div className={styles.card(popular)}>
       {isCurrent && currentLabel ? (
         <span className={styles.currentBadge}>
           <CheckCircle2 size={11} />
@@ -113,14 +116,25 @@ export function PlanCard({
         ))}
       </ul>
 
-      <button
-        type="button"
-        className={styles.cta(popular)}
-        onClick={onSelect}
-        disabled={!onSelect}
-      >
-        {isCurrent && currentLabel ? currentLabel : ctaLabel}
-      </button>
+      {free ? null : isCurrent ? (
+        <button
+          type="button"
+          className={styles.cancelCta}
+          onClick={onSelect}
+          disabled={!onSelect}
+        >
+          {cancelLabel}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={styles.cta(popular)}
+          onClick={onSelect}
+          disabled={!onSelect}
+        >
+          {ctaLabel}
+        </button>
+      )}
     </div>
   );
 }

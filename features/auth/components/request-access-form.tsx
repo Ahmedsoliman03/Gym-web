@@ -85,11 +85,15 @@ export default function RequestAccessForm() {
                     </div>
                 </div>
 
-                {type === 'gym' ? (
+                {/* Both forms stay mounted and the inactive one is hidden, so
+                    each Formik instance keeps its entered data when the user
+                    toggles between Gym and Coach. */}
+                <div className={type === 'gym' ? undefined : 'hidden'}>
                     <GymRequestForm onSuccess={handleSuccess} />
-                ) : (
+                </div>
+                <div className={type === 'coach' ? undefined : 'hidden'}>
                     <CoachRequestForm onSuccess={handleSuccess} />
-                )}
+                </div>
             </div>
 
             <div className={styles.footerNote}>

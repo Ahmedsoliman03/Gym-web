@@ -136,7 +136,8 @@ export interface RegisterFormValues {
 export interface CoachFormInnerProps {
     isSubmitting: boolean;
     values: {
-        name: string;
+        firstName: string;
+        lastName: string;
         email: string;
         phone: string;
         city: string;

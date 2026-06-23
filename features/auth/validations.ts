@@ -16,9 +16,14 @@ export const getLoginSchema = (t: Translator) => Yup.object().shape({
 });
 
 export const getRequestAccessSchema = (t: Translator) => Yup.object().shape({
-    name: Yup.string().when('type', {
+    firstName: Yup.string().when('type', {
         is: 'coach',
-        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.legalFullName') })),
+        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.firstName') })),
+        otherwise: (schema) => schema.optional(),
+    }),
+    lastName: Yup.string().when('type', {
+        is: 'coach',
+        then: (schema) => schema.required(t('Validation.required', { field: t('Auth.lastName') })),
         otherwise: (schema) => schema.optional(),
     }),
     email: getEmailSchema(t),

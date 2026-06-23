@@ -13,6 +13,7 @@ import { CustomMultiSelect } from '@/components/shared/custom-multi-select';
 import { SPECIALIZATIONS } from '@/constants/specializations';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
+import { useFileDrop } from '@/hooks/use-file-drop';
 import { LiveValidate } from '@/components/shared/live-validate';
 import { CoachFormInnerProps } from '../types';
 
@@ -26,6 +27,7 @@ const styles = {
     textarea: "w-full px-4 py-3 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm resize-none",
     error: "text-red-500 text-[10px] mt-1 px-1",
     uploadContainer: "relative w-full py-8 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group",
+    uploadContainerDragging: "border-primary/40 bg-primary/10",
     uploadIconSize: "text-foreground/20 group-hover:text-primary transition-colors h-8 w-8",
     uploadTitle: "text-sm font-bold text-primary",
     uploadSubtitle: "text-[10px] text-foreground/30 font-medium mt-1 uppercase",
@@ -39,6 +41,17 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
     const tLoc = useTranslations('Location');
     const certificationsRef = useRef<HTMLInputElement>(null);
     const profileImageRef = useRef<HTMLInputElement>(null);
+
+    const profileImageDrop = useFileDrop({
+        accept: 'image/*',
+        onFiles: (files) => setFieldValue('profile_image', files[0]),
+    });
+    const certificationsDrop = useFileDrop({
+        accept: 'image/*',
+        multiple: true,
+        onFiles: (files) =>
+            setFieldValue('certifications', [...values.certifications, ...files]),
+    });
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
         // city = governorate-level (e.g. "Giza"); area = sub-area (e.g. "6th of October").
@@ -67,19 +80,34 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
         <Form className={styles.form}>
             <LiveValidate />
             <div className={styles.gridWrapper}>
-                {/* Full Name */}
+                {/* First Name */}
                 <div className={styles.fieldWrapper}>
                     <label className={styles.label}>
-                        {t('Auth.legalFullName')}
+                        {t('Auth.firstName')}
                     </label>
                     <Field
-                        name="name"
+                        name="firstName"
                         className={styles.input}
-                        placeholder="John Doe"
+                        placeholder="John"
                     />
-                    <ErrorMessage name="name" component="div" className={styles.error} />
+                    <ErrorMessage name="firstName" component="div" className={styles.error} />
                 </div>
 
+                {/* Last Name */}
+                <div className={styles.fieldWrapper}>
+                    <label className={styles.label}>
+                        {t('Auth.lastName')}
+                    </label>
+                    <Field
+                        name="lastName"
+                        className={styles.input}
+                        placeholder="Doe"
+                    />
+                    <ErrorMessage name="lastName" component="div" className={styles.error} />
+                </div>
+            </div>
+
+            <div className={styles.gridWrapper}>
                 {/* Experience */}
                 <div className={styles.fieldWrapper}>
                     <label className={styles.label}>
@@ -94,9 +122,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                     />
                     <ErrorMessage name="experience" component="div" className={styles.error} />
                 </div>
-            </div>
 
-            <div className={styles.gridWrapper}>
                 {/* Current number of clients — digits only via inputMode + type=number. */}
                 <div className={styles.fieldWrapper}>
                     <label className={styles.label}>
@@ -211,7 +237,8 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                     </label>
                     <div
                         onClick={() => profileImageRef.current?.click()}
-                        className={styles.uploadContainer}
+                        {...profileImageDrop.dropHandlers}
+                        className={`${styles.uploadContainer} ${profileImageDrop.isDragging ? styles.uploadContainerDragging : ''}`}
                     >
                         <input
                             ref={profileImageRef}
@@ -267,7 +294,8 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                     </label>
                     <div
                         onClick={() => certificationsRef.current?.click()}
-                        className={styles.uploadContainer}
+                        {...certificationsDrop.dropHandlers}
+                        className={`${styles.uploadContainer} ${certificationsDrop.isDragging ? styles.uploadContainerDragging : ''}`}
                     >
                         <input
                             ref={certificationsRef}

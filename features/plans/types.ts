@@ -2,10 +2,29 @@
 
 export type PlanAudience = 'gym' | 'coach';
 
+/**
+ * Known platform feature codes. Typed as a union for autocomplete while still
+ * accepting any string the backend may add later (`string & {}` keeps the
+ * literal suggestions without collapsing the type to plain `string`).
+ */
+export type FeatureCode =
+  | 'job_post'
+  | 'see_applicants'
+  | 'edit_profile'
+  | 'profile_images'
+  | 'transformation_photos'
+  | 'certifications'
+  | 'apply_job'
+  | 'gymspot_ai'
+  | (string & {});
+
 export interface PlanFeature {
   id: string;
   feature: {
+    id?: string;
+    code?: FeatureCode;
     name: string;
+    description?: string;
   };
   daily_limit: number;
   monthly_limit: number;
@@ -13,13 +32,33 @@ export interface PlanFeature {
 export interface PlatformPlan {
   id: string;
   name: string;
+  /** Backend slug, e.g. `warm_up_gym` / `power_set_coach`. Optional. */
+  code?: string;
   plan_type: 'COACH' | 'GYM';
+  trial_days?: number;
   price: string;
   sale_price: string;
   features: PlanFeature[];
 }
 
 export type PlatformPlansResponse = PlatformPlan[];
+
+// ── Subscription usage ────────────────────────────────────────────────────────
+// GET /api/v1/platform/subscriptions/usage/ — per-feature consumption for the
+// user's active subscription. Same shape across all plans; only the set of
+// feature codes and limits differ (paid plans add e.g. `gymspot_ai`).
+// A limit of -1 means unlimited.
+
+export interface FeatureUsage {
+  feature_code: FeatureCode;
+  feature_name: string;
+  daily_limit: number;
+  monthly_limit: number;
+  daily_used: number;
+  monthly_used: number;
+}
+
+export type PlatformUsageResponse = FeatureUsage[];
 
 // ── Current subscription ──────────────────────────────────────────────────────
 // GET /api/v1/platform/subscriptions/current/ — the user's active subscription.
@@ -87,8 +126,10 @@ export interface PlanCardProps {
   popularLabel?: string;
   /** Highlight this card as the user's active subscription. */
   isCurrent?: boolean;
-  /** Badge / CTA text shown when {@link isCurrent} is true. */
+  /** Badge text shown when {@link isCurrent} is true. */
   currentLabel?: string;
+  /** CTA text for the cancel-subscription button on the active paid plan. */
+  cancelLabel?: string;
   onSelect?: () => void;
 }
 

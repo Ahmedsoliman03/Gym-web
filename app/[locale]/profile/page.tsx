@@ -37,17 +37,11 @@ export default function ProfilePage() {
     switch (profile.userType) {
       case 'coach': {
         const coachProfile = profile.profile;
-        // `specialization` and `specializations` are both present on the API
-        // payload; fall back across them so the header chip + credentials
-        // section both have something to render.
+
         const specs =
           coachProfile.specializations ?? coachProfile.specialization ?? [];
-        // No mock fallbacks. Each section's empty-state renders when its
-        // field is missing/empty, and on this page (`isOwner=true`) the
-        // empty-state shows a CTA back to /profile/edit.
         const mappedCoach: CoachProfileViewModel = {
           id: profile.id,
-          // `/api/me` returns `User.id` at the top level — chat-target id.
           userId: profile.id,
           type: "coach",
           name: profile.fullName || coachProfile.name || "",
@@ -93,11 +87,8 @@ export default function ProfilePage() {
       }
       case 'gym': {
         const gymProfile = profile.profile;
-        // No mock fallbacks: each empty field flows into the section's
-        // empty-state, which on the own profile shows a CTA back to edit.
         const mappedGym: GymProfileViewModel = {
           id: profile.id,
-          // `/api/me` returns `User.id` at the top level — chat-target id.
           userId: profile.id,
           type: "gym",
           name: gymProfile.gymName || profile.fullName || gymProfile.name || "",

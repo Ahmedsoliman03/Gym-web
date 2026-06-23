@@ -70,11 +70,22 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const translateSpecializationLabel = (label: string) =>
     t_root(label as Parameters<typeof t_root>[0]);
 
+  // The backend stores a single `name` string. We split it on the first space
+  // for editing — everything after it becomes the last name — and rejoin on
+  // save so the API still receives one space-separated `name`.
+  const initialFullName = (profile.fullName ?? inner?.name ?? '').trim();
+  const firstSpace = initialFullName.indexOf(' ');
+  const initialFirstName =
+    firstSpace === -1 ? initialFullName : initialFullName.slice(0, firstSpace);
+  const initialLastName =
+    firstSpace === -1 ? '' : initialFullName.slice(firstSpace + 1).trim();
+
   // Coach editable state. Server-hosted images come back as `{id, file}` —
   // we wrap them in `{id, url}` so the GalleryEditor can show + delete them,
   // and the builder will tell the API which ids to keep.
   const [formData, setFormData] = useState({
-    name: profile.fullName ?? inner?.name ?? '',
+    firstName: initialFirstName,
+    lastName: initialLastName,
     philosophyDesc: inner?.description ?? '',
     specializations: inner?.specializations ?? [],
     certifications: (inner?.certifications ?? []).map<EditableImage>((c) => ({
@@ -105,7 +116,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   useUnsavedChangesWarning(isDirty);
 
   const handleInputChange = (
-    field: 'name' | 'philosophyDesc',
+    field: 'firstName' | 'lastName' | 'philosophyDesc',
     value: string,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -144,10 +155,16 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       return;
     }
     setPlanErrors({});
+    // Recombine the split fields into the single space-separated `name` the API
+    // expects (dropping a blank last name so there's no trailing space).
+    const name = [formData.firstName, formData.lastName]
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .join(' ');
     const payload = buildEditProfileFormData({
       role: 'coach',
       values: {
-        name: formData.name,
+        name,
         image: photoFile,
         philosophyDesc: formData.philosophyDesc,
         specializations: formData.specializations,
@@ -215,15 +232,23 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
           <h2 className={styles.sectionTitle}>{t('basicInfo')}</h2>
           <div className={styles.fieldGroup}>
             <div className={styles.inputWrapper}>
-              <label className={styles.label}>{t('fullName')}</label>
+              <label className={styles.label}>{t('firstName')}</label>
               <input
                 type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
                 className={styles.input}
               />
             </div>
-
+            <div className={styles.inputWrapper}>
+              <label className={styles.label}>{t('lastName')}</label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                className={styles.input}
+              />
+            </div>
           </div>
         </div>
 

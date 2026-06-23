@@ -11,6 +11,7 @@ import {
 } from '@fluentui/react-icons';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
+import { useFileDrop } from '@/hooks/use-file-drop';
 import { LiveValidate } from '@/components/shared/live-validate';
 import { GymFormInnerProps } from '../types';
 
@@ -22,6 +23,7 @@ const styles = {
     input: "w-full px-4 py-3.5 bg-[#0D121F] border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium",
     error: "text-red-500 text-[10px] mt-1 px-1",
     uploadContainer: "relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-foreground/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group min-h-[100px]",
+    uploadContainerDragging: "border-primary/40 bg-primary/10",
     uploadIcon: "text-foreground/20 group-hover:text-primary transition-colors h-8 w-8",
     uploadText: "text-xs font-medium text-foreground/40 text-center",
     submitWrapper: "flex justify-center pt-2",
@@ -34,6 +36,15 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
     const tLoc = useTranslations('Location');
     const gymLicenseRef = useRef<HTMLInputElement>(null);
     const gymPhotoRef = useRef<HTMLInputElement>(null);
+
+    const licenseDrop = useFileDrop({
+        accept: 'image/*',
+        onFiles: (files) => setFieldValue('gymLicense', files[0]),
+    });
+    const photoDrop = useFileDrop({
+        accept: 'image/*',
+        onFiles: (files) => setFieldValue('gymPhoto', files[0]),
+    });
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
         if (result.governorate) setFieldValue('governorate', result.governorate);
@@ -160,7 +171,11 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                 {/* Gym License */}
                 <div className={styles.fieldWrapper}>
                     <label className={styles.label}>{t('Auth.gymLicense')}</label>
-                    <div onClick={() => gymLicenseRef.current?.click()} className={styles.uploadContainer}>
+                    <div
+                        onClick={() => gymLicenseRef.current?.click()}
+                        {...licenseDrop.dropHandlers}
+                        className={`${styles.uploadContainer} ${licenseDrop.isDragging ? styles.uploadContainerDragging : ''}`}
+                    >
                         <input
                             ref={gymLicenseRef}
                             type="file"
@@ -188,7 +203,11 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                 {/* Gym Photo */}
                 <div className={styles.fieldWrapper}>
                     <label className={styles.label}>{t('Auth.gymPhoto')}</label>
-                    <div onClick={() => gymPhotoRef.current?.click()} className={styles.uploadContainer}>
+                    <div
+                        onClick={() => gymPhotoRef.current?.click()}
+                        {...photoDrop.dropHandlers}
+                        className={`${styles.uploadContainer} ${photoDrop.isDragging ? styles.uploadContainerDragging : ''}`}
+                    >
                         <input
                             ref={gymPhotoRef}
                             type="file"

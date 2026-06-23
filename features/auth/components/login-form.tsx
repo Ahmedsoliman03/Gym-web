@@ -39,6 +39,9 @@ const styles = {
     inputPassword: "w-full pl-10 pr-12 py-3 bg-foreground/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none",
     eyeButton: "absolute inset-y-0 right-0 pr-3 flex items-center text-foreground/30 hover:text-foreground/50 transition-colors cursor-pointer",
     error: "text-red-500 text-xs mt-1 px-1",
+    rememberRow: "flex items-center gap-2 px-1 select-none cursor-pointer w-fit",
+    rememberCheckbox: "w-4 h-4 rounded border-white/20 bg-foreground/5 accent-primary cursor-pointer",
+    rememberLabel: "text-[13px] font-medium text-foreground/60",
     submitButton: "w-full py-4 bg-primary text-black rounded-xl font-semibold shadow-lg shadow-primary/20 enabled:hover:scale-[1.01] enabled:active:scale-[0.99] transition-transform disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer text-base uppercase",
     footer: "mt-8 pt-6 border-t border-white/5 space-y-6",
     actionGrid: "grid grid-cols-2 gap-3",
@@ -60,6 +63,14 @@ export default function LoginForm() {
     const { login } = useAuthUser();
     const [showPassword, setShowPassword] = useState(false);
     const validationSchema = getLoginSchema(t);
+
+    // Backend login takes only email/password, so "remember me" is a
+    // client-side convenience: persist the email and prefill it next visit.
+    const [rememberedEmail] = useState(() =>
+        typeof window === 'undefined'
+            ? ''
+            : localStorage.getItem('rememberedEmail') ?? '',
+    );
 
     return (
         <div className={styles.container}>
@@ -110,11 +121,20 @@ export default function LoginForm() {
             </div>
 
             <Formik
-                initialValues={{ email: '', password: '' }}
+                initialValues={{
+                    email: rememberedEmail,
+                    password: '',
+                    remember: Boolean(rememberedEmail),
+                }}
                 validationSchema={validationSchema}
-                onSubmit={async (values) => {
+                onSubmit={async ({ remember, ...credentials }) => {
                     try {
-                        await login(values);
+                        await login(credentials);
+                        if (remember) {
+                            localStorage.setItem('rememberedEmail', credentials.email);
+                        } else {
+                            localStorage.removeItem('rememberedEmail');
+                        }
                         toast.success(t('Auth.loginSuccess') || 'Logged in successfully!');
 
                         const safeNext = normalizeAuthNextPath(searchParams.get('next'));
@@ -172,6 +192,17 @@ export default function LoginForm() {
                             </div>
                             <ErrorMessage name="password" component="div" className={styles.error} />
                         </div>
+
+                        <label className={styles.rememberRow}>
+                            <Field
+                                type="checkbox"
+                                name="remember"
+                                className={styles.rememberCheckbox}
+                            />
+                            <span className={styles.rememberLabel}>
+                                {t('Auth.rememberMe')}
+                            </span>
+                        </label>
 
                         <button
                             type="submit"

@@ -227,12 +227,6 @@ export const GymProfileView = ({
         </div>
         <div className={styles.infoWrapper}>
           <h1 className={styles.title}>{data.name}</h1>
-          {/* Owner-only referral promocode chip with copy button. */}
-          {isOwner && promocode && (
-            <div className="mt-2 mb-3 flex justify-start">
-              <PromocodeChip code={promocode} />
-            </div>
-          )}
           {/* Owner-only email row mirrors the coach header. */}
           {isOwner && email && (
             <div className="flex items-center justify-start gap-2 text-sm font-medium text-foreground/60 mb-3 break-all">
@@ -252,6 +246,13 @@ export const GymProfileView = ({
           </div>
         </div>
         <div className={styles.actionsWrapper}>
+          {/* Owner-only referral promocode chip with copy button, placed above
+              the edit-profile action to mirror the coach profile header. */}
+          {isOwner && promocode && (
+            <div className="mb-3 flex justify-center md:justify-start">
+              <PromocodeChip code={promocode} />
+            </div>
+          )}
           {/* Chat is only useful when viewing someone else's gym — the owner
               has no one to chat with on their own page. Mirrors the coach
               profile header, which already hides chat for the owner. */}

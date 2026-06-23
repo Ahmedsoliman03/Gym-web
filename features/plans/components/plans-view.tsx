@@ -50,6 +50,11 @@ export function PlansView() {
   const currentPlanId = currentSub?.plan?.id;
   const [selectedPlan, setSelectedPlan] = useState<PlatformPlan | null>(null);
 
+  const handleCancelSubscription = () => {
+    // TODO: wire to the cancel-subscription endpoint once it's available in the API.
+    window.confirm(t('cancelConfirm'));
+  };
+
 
   const featureLine = (f: PlanFeature) => {
     const value =
@@ -110,9 +115,15 @@ export function PlansView() {
               popularLabel={t('mostPopular')}
               isCurrent={isCurrent}
               currentLabel={t('currentPlan')}
-              // The free tier and the user's current plan aren't purchasable.
+              cancelLabel={t('cancelSubscription')}
+              // Free tier has no CTA; the current paid plan offers cancel;
+              // everything else opens the subscribe modal.
               onSelect={
-                free || isCurrent ? undefined : () => setSelectedPlan(plan)
+                free
+                  ? undefined
+                  : isCurrent
+                    ? handleCancelSubscription
+                    : () => setSelectedPlan(plan)
               }
             />
           );

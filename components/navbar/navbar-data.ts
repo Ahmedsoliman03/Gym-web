@@ -1,4 +1,4 @@
-import { Bookmark, Briefcase, FileText, Settings } from 'lucide-react';
+import { Bookmark, Briefcase, FileText, Gauge, Settings } from 'lucide-react';
 import type { AccountLink, NavEntry, NavItem, UserType } from './types';
 
 type Translate = (key: string) => string;
@@ -85,6 +85,10 @@ export function buildAccountLinks(t: Translate, userType: UserType): AccountLink
     // Saved Jobs is hidden for clients — they can't reach /jobs to save any.
     ...(userType !== 'client'
       ? [{ href: '/profile?tab=saved-jobs', label: t('savedJobs'), icon: Bookmark }]
+      : []),
+    // Usage exists only for gyms and coaches (platform subscriptions).
+    ...(userType !== 'client'
+      ? [{ href: '/profile?tab=usage', label: t('usage'), icon: Gauge }]
       : []),
     { href: '/settings', label: t('settings'), icon: Settings },
   ];

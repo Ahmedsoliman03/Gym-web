@@ -1,6 +1,19 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import {
+  ExternalLink,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Mail,
+  MessageCircle,
+  Music2,
+  Send,
+  Twitch,
+  Twitter,
+  Youtube,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { EmptySection } from "@/components/shared/empty-section";
@@ -22,6 +35,30 @@ const styles = {
 const externalHref = (url: string) =>
   /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
+// Map a link to its brand icon by scanning the URL (and platform name as a
+// secondary hint) for a known keyword. Anything unrecognized keeps the generic
+// arrow icon so the link still renders.
+const SOCIAL_ICON_RULES: { keywords: string[]; icon: LucideIcon }[] = [
+  { keywords: ["youtube", "youtu.be"], icon: Youtube },
+  { keywords: ["instagram", "instagr.am"], icon: Instagram },
+  { keywords: ["facebook", "fb.com", "fb.me"], icon: Facebook },
+  { keywords: ["twitter", "x.com"], icon: Twitter },
+  { keywords: ["linkedin", "lnkd.in"], icon: Linkedin },
+  { keywords: ["twitch"], icon: Twitch },
+  { keywords: ["tiktok"], icon: Music2 },
+  { keywords: ["telegram", "t.me"], icon: Send },
+  { keywords: ["whatsapp", "wa.me"], icon: MessageCircle },
+  { keywords: ["mailto:"], icon: Mail },
+];
+
+const getSocialIcon = (url: string, platform: string): LucideIcon => {
+  const haystack = `${url} ${platform}`.toLowerCase();
+  const match = SOCIAL_ICON_RULES.find((rule) =>
+    rule.keywords.some((keyword) => haystack.includes(keyword)),
+  );
+  return match?.icon ?? ExternalLink;
+};
+
 export const SocialMediaLinks = ({ links = [], isOwner = false }: SocialMediaLinksProps) => {
   const t = useTranslations("Profile");
   const visibleLinks = links.filter((link) => link.platform.trim() && link.url.trim());
@@ -38,18 +75,21 @@ export const SocialMediaLinks = ({ links = [], isOwner = false }: SocialMediaLin
         />
       ) : (
         <div className={styles.grid}>
-          {visibleLinks.map((link, index) => (
-            <a
-              key={`${link.platform}-${index}`}
-              href={externalHref(link.url.trim())}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.link}
-            >
-              <ExternalLink size={16} />
-              {link.platform.trim()}
-            </a>
-          ))}
+          {visibleLinks.map((link, index) => {
+            const Icon = getSocialIcon(link.url, link.platform);
+            return (
+              <a
+                key={`${link.platform}-${index}`}
+                href={externalHref(link.url.trim())}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                <Icon size={16} />
+                {link.platform.trim()}
+              </a>
+            );
+          })}
         </div>
       )}
     </div>

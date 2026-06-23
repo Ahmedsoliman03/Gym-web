@@ -3,6 +3,7 @@ import { api } from '@/utils/axios';
 import type {
   CurrentSubscription,
   PlatformPlansResponse,
+  PlatformUsageResponse,
   SubscribeArgs,
   SubscribeRequest,
   ValidatePromoArgs,
@@ -12,6 +13,7 @@ import type {
 export const plansKeys = {
   all: ['platform-plans'] as const,
   subscription: ['platform-subscription'] as const,
+  usage: ['platform-usage'] as const,
 };
 
 export const getPlatformPlans = async (): Promise<PlatformPlansResponse> => {
@@ -65,6 +67,27 @@ export const useCurrentSubscriptionQuery = (enabled = true) => {
 };
 
 /**
+ * GET /api/v1/platform/subscriptions/usage/ — per-feature consumption for the
+ * user's active subscription. Returns an array of {@link FeatureUsage}.
+ */
+export const getSubscriptionUsage = async (): Promise<PlatformUsageResponse> => {
+  const { data } = await api.get<PlatformUsageResponse>(
+    '/api/v1/platform/subscriptions/usage/',
+  );
+  return data;
+};
+
+export const useSubscriptionUsageQuery = (enabled = true) => {
+  return useQuery({
+    queryKey: plansKeys.usage,
+    queryFn: getSubscriptionUsage,
+    enabled,
+    retry: false,
+    staleTime: 60_000,
+  });
+};
+
+/**
  * POST /api/v1/platform/subscriptions/validate-promo/ — validate a promo code
  * against a plan. Returns the backend payload as-is; the caller normalizes the
  * valid flag / discount value (see {@link isPromoValid}).
@@ -105,6 +128,7 @@ export const useSubscribeMutation = () => {
     onSuccess: () => {
       // The active subscription and the user's editCount/limits may change.
       queryClient.invalidateQueries({ queryKey: plansKeys.subscription });
+      queryClient.invalidateQueries({ queryKey: plansKeys.usage });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['session'] });
     },

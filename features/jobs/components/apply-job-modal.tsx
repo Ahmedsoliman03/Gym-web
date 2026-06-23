@@ -1,12 +1,13 @@
 'use client';
 
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 import { Upload, Phone, FileCheck2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/modal';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { useFileDrop } from '@/hooks/use-file-drop';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useApplyForJobMutation } from '../services/jobs.service';
 import type { Job } from '../types';
@@ -26,6 +27,7 @@ const styles = {
     error: "text-red-500 text-[10px] mt-1 px-1",
     submitButton: "w-full py-4 bg-primary text-black rounded-xl font-bold hover:scale-[1.01] active:scale-[0.99] transition-all text-sm uppercase",
     uploadContainer: "relative w-full py-6 px-4 bg-[#0D121F] border-2 border-dashed border-white/5 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/20 hover:bg-primary/5 transition-all group",
+    uploadContainerDragging: "border-primary/40 bg-primary/10",
     uploadContainerSelected: "relative w-full py-5 px-4 bg-primary/10 border-2 border-primary/40 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-primary/15 transition-all group",
     uploadIconSelected: "shrink-0 w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center",
     uploadDetails: "flex-1 min-w-0 text-left",
@@ -36,6 +38,81 @@ const styles = {
     phoneIcon: "absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30 pointer-events-none",
     phoneInput: "w-full pl-10 pr-4 py-3.5 bg-[#0D121F] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium",
 };
+
+/** CV upload field with click-to-pick and drag-and-drop. Pulls form state from
+ *  Formik context so the drop hook can live at component top level. */
+function CvField() {
+    const t = useTranslations('Jobs');
+    const { values, setFieldValue } = useFormikContext<{ cv: File | null }>();
+    const cv = values.cv;
+
+    const { isDragging, dropHandlers } = useFileDrop({
+        onFiles: (files) => setFieldValue('cv', files[0]),
+    });
+
+    const openPicker = () =>
+        (document.getElementById('cv-upload') as HTMLInputElement | null)?.click();
+
+    return (
+        <div>
+            <label className={styles.label}>{t('uploadCv')}</label>
+            {cv ? (
+                // Selected state — primary tint, file icon, name, and a clear
+                // button that doesn't trigger reupload.
+                <div
+                    className={`${styles.uploadContainerSelected} ${isDragging ? styles.uploadContainerDragging : ''}`}
+                    onClick={openPicker}
+                    {...dropHandlers}
+                >
+                    <input
+                        id="cv-upload"
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => setFieldValue('cv', e.currentTarget.files?.[0])}
+                    />
+                    <span className={styles.uploadIconSelected}>
+                        <FileCheck2 size={18} />
+                    </span>
+                    <div className={styles.uploadDetails}>
+                        <p className={styles.uploadFilename}>{cv.name}</p>
+                        <p className={styles.uploadHint}>{t('cvSelected')}</p>
+                    </div>
+                    <button
+                        type="button"
+                        className={styles.uploadClearBtn}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setFieldValue('cv', null);
+                            const input = document.getElementById('cv-upload') as HTMLInputElement | null;
+                            if (input) input.value = '';
+                        }}
+                        aria-label={t('cvRemove')}
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            ) : (
+                <div
+                    className={`${styles.uploadContainer} ${isDragging ? styles.uploadContainerDragging : ''}`}
+                    onClick={openPicker}
+                    {...dropHandlers}
+                >
+                    <input
+                        id="cv-upload"
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => setFieldValue('cv', e.currentTarget.files?.[0])}
+                    />
+                    <Upload className="text-foreground/20" />
+                    <span className="text-xs text-foreground/40 font-medium">
+                        {t('uploadCv')}
+                    </span>
+                </div>
+            )}
+            <ErrorMessage name="cv" component="div" className={styles.error} />
+        </div>
+    );
+}
 
 export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
     const t = useTranslations('Jobs');
@@ -89,7 +166,7 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
                     }
                 }}
             >
-                {({ setFieldValue, values }) => (
+                {() => (
                     <Form className={styles.formWrapper}>
                         <LiveValidate />
                         <div>
@@ -124,69 +201,7 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
                                 placeholder={t('description')}
                             />
                         </div>
-                        <div>
-                            <label className={styles.label}>{t('uploadCv')}</label>
-                            {values.cv ? (
-                                // Selected state — primary tint, file icon, name,
-                                // and a clear button that doesn't trigger reupload.
-                                <div
-                                    className={styles.uploadContainerSelected}
-                                    onClick={() => {
-                                        const input = document.getElementById('cv-upload') as HTMLInputElement;
-                                        input?.click();
-                                    }}
-                                >
-                                    <input
-                                        id="cv-upload"
-                                        type="file"
-                                        className="hidden"
-                                        onChange={(e) => setFieldValue('cv', e.currentTarget.files?.[0])}
-                                    />
-                                    <span className={styles.uploadIconSelected}>
-                                        <FileCheck2 size={18} />
-                                    </span>
-                                    <div className={styles.uploadDetails}>
-                                        <p className={styles.uploadFilename}>
-                                            {(values.cv as File).name}
-                                        </p>
-                                        <p className={styles.uploadHint}>{t('cvSelected')}</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className={styles.uploadClearBtn}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setFieldValue('cv', null);
-                                            const input = document.getElementById('cv-upload') as HTMLInputElement | null;
-                                            if (input) input.value = '';
-                                        }}
-                                        aria-label={t('cvRemove')}
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div
-                                    className={styles.uploadContainer}
-                                    onClick={() => {
-                                        const input = document.getElementById('cv-upload') as HTMLInputElement;
-                                        input?.click();
-                                    }}
-                                >
-                                    <input
-                                        id="cv-upload"
-                                        type="file"
-                                        className="hidden"
-                                        onChange={(e) => setFieldValue('cv', e.currentTarget.files?.[0])}
-                                    />
-                                    <Upload className="text-foreground/20" />
-                                    <span className="text-xs text-foreground/40 font-medium">
-                                        {t('uploadCv')}
-                                    </span>
-                                </div>
-                            )}
-                            <ErrorMessage name="cv" component="div" className={styles.error} />
-                        </div>
+                        <CvField />
                         <button
                             type="submit"
                             className={styles.submitButton}
