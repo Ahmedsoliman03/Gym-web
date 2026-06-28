@@ -596,7 +596,12 @@
         "planName": "Plan Name"
     },
     "Errors": {
-        "featureLimitExceeded": "You've reached your monthly limit for this feature. Upgrade your plan or try again next billing cycle."
+        "featureLimitExceeded": "You've reached your monthly limit for this feature. Upgrade your plan or try again next billing cycle.",
+        "title": "Something went wrong",
+        "description": "An unexpected error occurred while loading this page. You can try again, or head back home.",
+        "reference": "Reference",
+        "retry": "Try again",
+        "goHome": "Back to home"
     },
     "Plans": {
         "title": "Membership",
