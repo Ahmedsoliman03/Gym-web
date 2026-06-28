@@ -43,15 +43,16 @@ const styles = {
  * currently browsing in.
  */
 /**
- * Build the public profile href for a viewer. Coaches and gyms each have a
- * detail page keyed by `profileId`; clients have none, so return `null` and
- * the row will render as plain (non-clickable) text. Mirrors the routing
- * rule already used by the comment upvoters sheet.
+ * Build the public profile href for a viewer. Coaches, gyms, and clients each
+ * have a detail page keyed by `profileId`; a missing `profileId` makes the row
+ * render as plain (non-clickable) text. Mirrors the routing rule already used
+ * by the comment upvoters sheet.
  */
 function getViewerHref(user: StoryViewerUser | undefined): string | null {
     if (!user?.profileId) return null;
     if (user.userType === 'coach') return `/coaches/${user.profileId}`;
     if (user.userType === 'gym') return `/gyms/${user.profileId}`;
+    if (user.userType === 'client') return `/clients/${user.profileId}`;
     return null;
 }
 

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
 import { chatKeys } from '@/features/chat/services/chat.service';
+import { plansKeys } from '@/features/plans/services/plans.service';
 import type { ChatConversation, ChatRequest } from '@/features/chat/types';
 import type { EditProfileValues, ProfilePlan, SocialMediaLink, UserProfile } from '../types';
 
@@ -190,6 +191,10 @@ export const useUpdateProfileMutation = () => {
             queryClient.setQueryData(['session'], data);
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             queryClient.invalidateQueries({ queryKey: ['session'] });
+            // Editing the profile consumes usage-tracked features
+            // (edit_profile / profile_images / transformation_photos /
+            // certifications) — refresh the usage meters.
+            queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
     });
 };

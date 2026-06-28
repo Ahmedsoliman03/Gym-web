@@ -10,6 +10,7 @@ import { ChangePasswordSection } from './change-password-section';
 import { ChatSettingsSection } from './chat-settings-section';
 import { NotificationsSection } from './notifications-section';
 import { BlockedUsersSection } from './blocked-users-section';
+import { useSettingsSections } from '../services/settings.service';
 
 const styles = {
     page: 'pt-20 sm:pt-24 pb-16 px-3 sm:px-6 md:px-12 min-h-screen',
@@ -33,6 +34,12 @@ export function SettingsView() {
         PANELS.find((p) => p === searchParams.get('section')) ?? null;
     const [open, setOpen] = useState<Panel>(initialPanel);
 
+    // Which sections the backend permits for this user type — the single source
+    // of truth (apps/accounts/settings_sections.py). While loading, fall back to
+    // showing all so the page never flashes empty for the common all-allowed case.
+    const { data: allowed } = useSettingsSections();
+    const canSee = (section: Exclude<Panel, null>) => !allowed || allowed.includes(section);
+
     const toggle = (panel: Exclude<Panel, null>) =>
         setOpen((curr) => (curr === panel ? null : panel));
 
@@ -41,45 +48,53 @@ export function SettingsView() {
             <div className={styles.inner}>
                 <h1 className={styles.pageTitle}>{t('title')}</h1>
                 <div className={styles.accordionGroup}>
-                    <SettingsAccordion
-                        icon={<Lock size={18} />}
-                        title={t('passwordTitle')}
-                        subtitle={t('passwordSubtitle')}
-                        open={open === 'password'}
-                        onToggle={() => toggle('password')}
-                    >
-                        <ChangePasswordSection />
-                    </SettingsAccordion>
+                    {canSee('password') && (
+                        <SettingsAccordion
+                            icon={<Lock size={18} />}
+                            title={t('passwordTitle')}
+                            subtitle={t('passwordSubtitle')}
+                            open={open === 'password'}
+                            onToggle={() => toggle('password')}
+                        >
+                            <ChangePasswordSection />
+                        </SettingsAccordion>
+                    )}
 
-                    <SettingsAccordion
-                        icon={<MessageSquare size={18} />}
-                        title={t('chatTitle')}
-                        subtitle={t('chatSubtitle')}
-                        open={open === 'chat'}
-                        onToggle={() => toggle('chat')}
-                    >
-                        <ChatSettingsSection />
-                    </SettingsAccordion>
+                    {canSee('chat') && (
+                        <SettingsAccordion
+                            icon={<MessageSquare size={18} />}
+                            title={t('chatTitle')}
+                            subtitle={t('chatSubtitle')}
+                            open={open === 'chat'}
+                            onToggle={() => toggle('chat')}
+                        >
+                            <ChatSettingsSection />
+                        </SettingsAccordion>
+                    )}
 
-                    <SettingsAccordion
-                        icon={<Bell size={18} />}
-                        title={t('notificationsTitle')}
-                        subtitle={t('notificationsSubtitle')}
-                        open={open === 'notifications'}
-                        onToggle={() => toggle('notifications')}
-                    >
-                        <NotificationsSection />
-                    </SettingsAccordion>
+                    {canSee('notifications') && (
+                        <SettingsAccordion
+                            icon={<Bell size={18} />}
+                            title={t('notificationsTitle')}
+                            subtitle={t('notificationsSubtitle')}
+                            open={open === 'notifications'}
+                            onToggle={() => toggle('notifications')}
+                        >
+                            <NotificationsSection />
+                        </SettingsAccordion>
+                    )}
 
-                    <SettingsAccordion
-                        icon={<UserX size={18} />}
-                        title={t('blockedUsersTitle')}
-                        subtitle={t('blockedUsersSubtitle')}
-                        open={open === 'blocked'}
-                        onToggle={() => toggle('blocked')}
-                    >
-                        <BlockedUsersSection />
-                    </SettingsAccordion>
+                    {canSee('blocked') && (
+                        <SettingsAccordion
+                            icon={<UserX size={18} />}
+                            title={t('blockedUsersTitle')}
+                            subtitle={t('blockedUsersSubtitle')}
+                            open={open === 'blocked'}
+                            onToggle={() => toggle('blocked')}
+                        >
+                            <BlockedUsersSection />
+                        </SettingsAccordion>
+                    )}
                 </div>
             </div>
         </div>

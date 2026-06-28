@@ -15,6 +15,7 @@ import {
 import { useRouter } from '@/i18n/routing';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { FormPersist, clearFormDraft } from '@/components/shared/form-persist';
 import { useLocationDetect, type LocationResult } from '@/hooks/use-location-detect';
 import { toastApiError } from '@/utils/toast-api-error';
 import { useGoogleSignupCompleteMutation } from '../services/auth.service';
@@ -126,6 +127,7 @@ export default function GoogleSignupCompleteForm() {
                             area: values.area.trim(),
                         });
                         clearGoogleSignupProfile();
+                        clearFormDraft('draft:google-signup');
                         toast.success(t('Auth.googleSignupComplete'));
                         router.push(safeNext as never);
                     } catch (error) {
@@ -136,6 +138,7 @@ export default function GoogleSignupCompleteForm() {
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
                         <LiveValidate />
+                        <FormPersist storageKey="draft:google-signup" />
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>{t('Auth.fullName')}</label>
                             <div className={styles.inputWrapper}>

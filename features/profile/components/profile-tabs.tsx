@@ -5,6 +5,7 @@ import {
     Briefcase,
     FileText,
     Gauge,
+    Receipt,
     User,
     type LucideIcon,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ import { SavedPostsView } from '@/features/community/components/saved-posts-view
 import { MyJobsView } from '@/features/jobs/components/my-jobs-view';
 import { SavedJobsView } from '@/features/jobs/components/saved-jobs-view';
 import { UsageView } from '@/features/plans/components/usage-view';
+import { InvoicesView } from '@/features/plans/components/invoices-view';
 
 type TabKey =
     | 'profile'
@@ -26,7 +28,8 @@ type TabKey =
     | 'saved-jobs'
     | 'my-jobs'
     | 'my-applications'
-    | 'usage';
+    | 'usage'
+    | 'invoices';
 
 type ProfileUserType = 'client' | 'coach' | 'gym';
 
@@ -72,9 +75,10 @@ const tabsForUserType = (userType: ProfileUserType): TabDef[] => {
             icon: FileText,
         });
     }
-    // Platform subscriptions (and thus usage) exist only for gyms and coaches.
+    // Platform subscriptions (and thus usage + billing) exist only for gyms and coaches.
     if (userType !== 'client') {
         base.push({ key: 'usage', labelKey: 'tabUsage', icon: Gauge });
+        base.push({ key: 'invoices', labelKey: 'tabInvoices', icon: Receipt });
     }
     return base;
 };
@@ -93,6 +97,8 @@ const TabContent = ({ tab }: { tab: TabKey }) => {
             return <MyApplicationsView embedded />;
         case 'usage':
             return <UsageView />;
+        case 'invoices':
+            return <InvoicesView />;
         default:
             return null;
     }

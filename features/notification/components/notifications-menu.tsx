@@ -154,6 +154,13 @@ export const NotificationsMenu = ({
                                         notification={notif}
                                         locale={locale}
                                         onClick={() => handleItemClick(notif)}
+                                        onActorClick={() => {
+                                            // Avatar links straight to the actor's
+                                            // profile — just close the menu and mark
+                                            // read; the Link handles navigation.
+                                            if (!notif.isRead) markRead.mutate(notif.id);
+                                            setIsOpen(false);
+                                        }}
                                         onDelete={() => deleteOne.mutate(notif.id)}
                                         deleteLabel={t('delete')}
                                     />

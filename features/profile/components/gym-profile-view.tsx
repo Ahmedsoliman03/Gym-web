@@ -23,6 +23,7 @@ import { ProfilePosts } from "./profile-posts";
 import { PromocodeChip } from "./promocode-chip";
 import type { PresenceStatus } from "@/features/chat/types";
 import { SocialMediaLinks } from "./social-media-links";
+import { sectionDomId } from "../checklist-sections";
 
 const styles = {
   container: "space-y-8",
@@ -313,16 +314,20 @@ export const GymProfileView = ({
           )}
         </div>
 
-        <SocialMediaLinks links={data.socialMedia} isOwner={isOwner} />
+        <div id={sectionDomId('socialMedia')} className="scroll-mt-28">
+          <SocialMediaLinks links={data.socialMedia} isOwner={isOwner} />
+        </div>
 
         {/* Slider of Gym Images */}
-        <TransformationGallery
-          transformations={galleryImages}
-          title={t('facilityGallery')}
-          hideOverlay={true}
-          isOwner={isOwner}
-          emptyVisitorMessage={t('noGalleryYet')}
-        />
+        <div id={sectionDomId('gallery')} className="scroll-mt-28">
+          <TransformationGallery
+            transformations={galleryImages}
+            title={t('facilityGallery')}
+            hideOverlay={true}
+            isOwner={isOwner}
+            emptyVisitorMessage={t('noGalleryYet')}
+          />
+        </div>
 
         {/* Recent posts — surfaced after the about + gallery cards so the
             visitor sees content before scrolling further into programs. */}
@@ -337,7 +342,7 @@ export const GymProfileView = ({
         )}
 
         {/* Programs — translated from API specializations */}
-        <div className={styles.card}>
+        <div id={sectionDomId('specializations')} className={`${styles.card} scroll-mt-28`}>
           <h2 className={styles.sectionTitle}>{t('activePrograms')}</h2>
           {translatedPrograms.length === 0 ? (
             <EmptySection
@@ -357,13 +362,15 @@ export const GymProfileView = ({
         </div>
       </div>
 
-      <Plans
-        ref={plansRef}
-        plans={data.plans}
-        isOwner={isOwner}
-        onGetStarted={handlePlanGetStarted}
-        pendingPlanId={planGetStarted.isPending ? (planGetStarted.variables?.planId ?? null) : null}
-      />
+      <div id={sectionDomId('plans')} className="scroll-mt-28">
+        <Plans
+          ref={plansRef}
+          plans={data.plans}
+          isOwner={isOwner}
+          onGetStarted={handlePlanGetStarted}
+          pendingPlanId={planGetStarted.isPending ? (planGetStarted.variables?.planId ?? null) : null}
+        />
+      </div>
 
       <ConfirmDialog
         isOpen={blockOpen}

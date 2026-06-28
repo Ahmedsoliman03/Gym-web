@@ -43,11 +43,7 @@ export interface PlatformPlan {
 
 export type PlatformPlansResponse = PlatformPlan[];
 
-// ── Subscription usage ────────────────────────────────────────────────────────
-// GET /api/v1/platform/subscriptions/usage/ — per-feature consumption for the
-// user's active subscription. Same shape across all plans; only the set of
-// feature codes and limits differ (paid plans add e.g. `gymspot_ai`).
-// A limit of -1 means unlimited.
+
 
 export interface FeatureUsage {
   feature_code: FeatureCode;
@@ -72,6 +68,27 @@ export interface CurrentSubscription {
   end_date: string | null;
   trial_end_date: string | null;
 }
+
+
+// ── Invoices ──────────────────────────────────────────────────────────────────
+// GET /api/v1/platform/invoices/ — billing history for the user. Each invoice
+// embeds the full subscription snapshot (same shape as {@link CurrentSubscription}).
+
+export type InvoiceStatus = 'PAID' | 'PENDING' | 'FAILED' | 'REFUNDED';
+
+export interface Invoice {
+  id: string;
+  subscription_details: CurrentSubscription;
+  plan_price: string;
+  prorated_discount: string;
+  referral_discount: string;
+  amount_paid: string;
+  payment_method: string | null;
+  status: InvoiceStatus;
+  created_at: string;
+}
+
+export type InvoicesResponse = Invoice[];
 
 
 export interface SubscribeRequest {
@@ -130,6 +147,8 @@ export interface PlanCardProps {
   currentLabel?: string;
   /** CTA text for the cancel-subscription button on the active paid plan. */
   cancelLabel?: string;
+
+  showCta?: boolean;
   onSelect?: () => void;
 }
 

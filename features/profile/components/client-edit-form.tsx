@@ -11,6 +11,7 @@ import {
   serializeFormState,
 } from "@/hooks/use-unsaved-changes-warning";
 import { formStyles as styles } from "@/components/shared/form-styles";
+import { toastApiError } from "@/utils/toast-api-error";
 import type { ClientEditFormProps } from "../types";
 import {
   buildEditProfileFormData,
@@ -67,10 +68,8 @@ export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
       toast.success(t('saveSuccess'));
       router.push('/profile');
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } } | undefined)
-          ?.response?.data?.message ?? t('saveFailed');
-      toast.error(message);
+      // feature_limit_exceeded → friendly localized toast (see toastApiError).
+      toastApiError(err, t('saveFailed'));
     }
   };
 

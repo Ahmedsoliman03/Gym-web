@@ -56,6 +56,7 @@ export function PlanCard({
   isCurrent,
   currentLabel,
   cancelLabel,
+  showCta = true,
   onSelect,
 }: PlanCardProps) {
   return (
@@ -116,7 +117,7 @@ export function PlanCard({
         ))}
       </ul>
 
-      {free ? null : isCurrent ? (
+      {!showCta || free ? null : isCurrent ? (
         <button
           type="button"
           className={styles.cancelCta}

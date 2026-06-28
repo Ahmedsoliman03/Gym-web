@@ -42,6 +42,9 @@ export function useProfileLink(
         return { href: `/gyms/${id}` as Route, isSelf: false };
     }
 
-    // Clients don't have a public profile page.
+    if (userType === 'client') {
+        return { href: `/clients/${id}` as Route, isSelf: false };
+    }
+
     return { href: null, isSelf: false };
 }

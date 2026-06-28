@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
+import { plansKeys } from '@/features/plans/services/plans.service';
 import type { JobApplication } from '../types';
 
 // ─── Response shapes ──────────────────────────────────────────────────────────
@@ -109,6 +110,11 @@ export const useMarkCvViewedMutation = () => {
         },
         onError: () => {
             queryClient.invalidateQueries({ queryKey: ['applications'] });
+        },
+        onSuccess: () => {
+            // Viewing an applicant's CV consumes the `see_applicants` feature —
+            // refresh usage.
+            queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
     });
 };

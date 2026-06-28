@@ -1,4 +1,5 @@
 import toast from 'react-hot-toast';
+import { getApiErrorCodeMessage } from './api-error-messages';
 
 type FieldMessage = { field?: string; message?: string };
 
@@ -23,6 +24,14 @@ type ApiErrorResponse = {
 export const toastApiError = (error: unknown, fallback: string) => {
     const data = (error as { response?: { data?: ApiErrorResponse } })?.response?.data;
     const envelope: ApiErrorEnvelope | undefined = data?.error ?? data;
+
+    // Known error codes (e.g. feature_limit_exceeded) get a friendly, localized
+    // static message — shown instead of the raw backend text.
+    const friendly = getApiErrorCodeMessage(envelope?.code ?? data?.error?.code);
+    if (friendly) {
+        toast.error(friendly);
+        return;
+    }
 
     const messages = envelope?.messages;
     if (Array.isArray(messages) && messages.length > 0) {

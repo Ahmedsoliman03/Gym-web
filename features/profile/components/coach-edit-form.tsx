@@ -20,6 +20,9 @@ import {
   type PlanErrors,
 } from "@/components/shared/plans-editor";
 import { SocialMediaEditor, hasIncompleteSocialLinks } from "./social-media-editor";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { toastApiError } from "@/utils/toast-api-error";
+import { useProfileSaveGuard } from "../hooks/use-profile-save-guard";
 import type {
   CoachEditFormProps,
   EditableImage,
@@ -115,6 +118,19 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
+  // Pre-save guard: warn before the last profile edit is spent while these
+  // capped features still have unused slots. We subtract what this save adds so
+  // we don't warn about slots the save itself is filling.
+  const newlyAdding = {
+    certifications: formData.certifications.filter((c) => c.file && !c.id).length,
+    transformation_photos: formData.transformations.filter(
+      (tr) => tr.image instanceof File,
+    ).length,
+  };
+  const saveGuard = useProfileSaveGuard(true, newlyAdding);
+  const [showLastEditWarn, setShowLastEditWarn] = useState(false);
+  const pendingPlansRef = useRef<ProfilePlan[] | null>(null);
+
   const handleInputChange = (
     field: 'firstName' | 'lastName' | 'philosophyDesc',
     value: string,
@@ -139,22 +155,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
     }));
   };
 
-  const handleSave = async () => {
-    if (updateMutation.isPending) return;
-    // Drop blank rows and enforce required fields on touched ones before
-    // building the FormData — the API never sees half-finished plan cards.
-    const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
-    if (hasErrors) {
-      // No toast — the inline "Required" labels plus the shake animation
-      // on the offending plan cards are the only feedback the user needs.
-      setPlanErrors(errors);
-      return;
-    }
-    if (hasIncompleteSocialLinks(formData.socialMedia)) {
-      toast.error(t('completeSocialLinks'));
-      return;
-    }
-    setPlanErrors({});
+  const performSave = async (sanitized: ProfilePlan[]) => {
     // Recombine the split fields into the single space-separated `name` the API
     // expects (dropping a blank last name so there's no trailing space).
     const name = [formData.firstName, formData.lastName]
@@ -184,12 +185,45 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       toast.success(t('saveSuccess'));
       router.push('/profile');
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } } | undefined)
-          ?.response?.data?.message ?? t('saveFailed');
-      toast.error(message);
+      // feature_limit_exceeded → friendly localized toast (see toastApiError).
+      toastApiError(err, t('saveFailed'));
     }
   };
+
+  const handleSave = () => {
+    if (updateMutation.isPending) return;
+
+    const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
+    if (hasErrors) {
+
+      setPlanErrors(errors);
+      return;
+    }
+    if (hasIncompleteSocialLinks(formData.socialMedia)) {
+      toast.error(t('completeSocialLinks'));
+      return;
+    }
+    setPlanErrors({});
+    // Last edit + unused profile slots → confirm before spending it.
+    if (saveGuard.shouldWarn) {
+      pendingPlansRef.current = sanitized;
+      setShowLastEditWarn(true);
+      return;
+    }
+    void performSave(sanitized);
+  };
+
+  const confirmLastEditSave = () => {
+    setShowLastEditWarn(false);
+    void performSave(pendingPlansRef.current ?? []);
+  };
+
+  const slotSummary = saveGuard.unusedSlots
+    .map((s) => {
+      const key = `slotCount_${s.code}`;
+      return t.has(key) ? t(key, { count: s.remaining }) : `${s.remaining} ${s.name}`;
+    })
+    .join(', ');
 
   return (
     <div className={styles.container}>
@@ -374,6 +408,19 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
           {t('cancelChanges')}
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showLastEditWarn}
+        tone="primary"
+        title={t('lastEditTitle')}
+        body={t('lastEditBody', { slots: slotSummary })}
+        cancelLabel={t('lastEditCancel')}
+        confirmLabel={t('lastEditConfirm')}
+        submittingLabel={t('saving')}
+        isSubmitting={updateMutation.isPending}
+        onCancel={() => setShowLastEditWarn(false)}
+        onConfirm={confirmLastEditSave}
+      />
     </div>
   );
 };

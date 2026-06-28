@@ -6,6 +6,7 @@ import { getRequestAccessSchema } from '../validations';
 import { useAuthRequest } from '../hooks/useAuthRequest';
 import { RequestAccessRequest, CoachRequestFormProps, CoachFormInnerProps } from '../types';
 import { CoachFormInner } from './coach-form-inner';
+import { clearFormDraft } from '@/components/shared/form-persist';
 
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
@@ -44,6 +45,7 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                         .filter(Boolean)
                         .join(' ');
                     await requestAccess({ ...rest, name } as RequestAccessRequest);
+                    clearFormDraft('draft:coach-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
                 } catch (error: any) {

@@ -13,6 +13,8 @@ import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
 import { useFileDrop } from '@/hooks/use-file-drop';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { FormPersist } from '@/components/shared/form-persist';
+import { WhyWeAsk } from '@/components/shared/why-we-ask';
 import { GymFormInnerProps } from '../types';
 
 const styles = {
@@ -59,6 +61,7 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
     return (
         <Form className={styles.form}>
             <LiveValidate />
+            <FormPersist storageKey="draft:gym-request" />
             <div className={styles.gridWrapper}>
                 {/* Gym Name */}
                 <div className={styles.fieldWrapper}>
@@ -170,7 +173,13 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
             <div className={styles.gridWrapper}>
                 {/* Gym License */}
                 <div className={styles.fieldWrapper}>
-                    <label className={styles.label}>{t('Auth.gymLicense')}</label>
+                    <label className={`${styles.label} inline-flex items-center gap-1.5`}>
+                        {t('Auth.gymLicense')}
+                        <WhyWeAsk
+                            text={t('Auth.gymLicenseWhy')}
+                            label={t('Auth.whyWeAsk')}
+                        />
+                    </label>
                     <div
                         onClick={() => gymLicenseRef.current?.click()}
                         {...licenseDrop.dropHandlers}

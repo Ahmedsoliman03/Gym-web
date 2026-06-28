@@ -17,6 +17,7 @@ import {
 import { useChatSocket } from '../socket/chat-socket-provider';
 import { pickOtherUser } from '../utils/format';
 import { ChatRowAvatar } from './chat-row-avatar';
+import { ChatProfileLink } from './chat-profile-link';
 import {
     ChatEmptyState,
     ChatErrorState,
@@ -36,6 +37,8 @@ const styles = {
     backBtn:
         'p-2 hover:bg-white/5 rounded-full transition-colors text-foreground/70 hover:text-foreground shrink-0',
     identity: 'flex items-center gap-3 min-w-0 flex-1',
+    identityLink:
+        'flex items-center gap-3 min-w-0 flex-1 rounded-lg -m-1 p-1 hover:bg-white/5 transition-colors',
     nameWrap: 'min-w-0',
     name: 'text-sm font-bold truncate',
     userType: 'text-[11px] text-foreground/50 uppercase tracking-wider',
@@ -153,7 +156,10 @@ export const ConversationThread = ({
                 >
                     <BackIcon size={18} />
                 </button>
-                <div className={styles.identity}>
+                {/* Avatar + name link to the participant's public profile
+                    (coach/gym). Clients have no public page, so ChatProfileLink
+                    renders the same content un-clickable. */}
+                <ChatProfileLink user={other} className={styles.identityLink}>
                     <ChatRowAvatar
                         photo={other?.photo}
                         name={other?.fullName ?? ''}
@@ -165,7 +171,7 @@ export const ConversationThread = ({
                             <div className={styles.userType}>{other.userType}</div>
                         )}
                     </div>
-                </div>
+                </ChatProfileLink>
             </div>
 
             <div className={styles.body}>

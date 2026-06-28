@@ -13,6 +13,7 @@ import {
 import type { PlanAudience, PlanFeature, PlatformPlan } from '../types';
 import { PlanCard } from './plan-card';
 import { SubscribeModal } from './subscribe-modal';
+import { CancelSubscriptionModal } from './cancel-subscription-modal';
 
 const styles = {
   container: 'pt-20 sm:pt-24 pb-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto',
@@ -49,10 +50,11 @@ export function PlansView() {
   const { data: currentSub } = useCurrentSubscriptionQuery(Boolean(profile));
   const currentPlanId = currentSub?.plan?.id;
   const [selectedPlan, setSelectedPlan] = useState<PlatformPlan | null>(null);
+  const [cancelPlan, setCancelPlan] = useState<PlatformPlan | null>(null);
 
-  const handleCancelSubscription = () => {
+  const handleConfirmCancel = () => {
     // TODO: wire to the cancel-subscription endpoint once it's available in the API.
-    window.confirm(t('cancelConfirm'));
+    setCancelPlan(null);
   };
 
 
@@ -83,6 +85,8 @@ export function PlansView() {
 
   const renderSection = (audience: PlanAudience) => {
     const tiers = byAudience[audience];
+   
+    const canSubscribe = profile?.userType === audience;
     return (
       <div className={styles.grid}>
         {tiers.map((plan, index) => {
@@ -116,13 +120,15 @@ export function PlansView() {
               isCurrent={isCurrent}
               currentLabel={t('currentPlan')}
               cancelLabel={t('cancelSubscription')}
+              // Only the section matching the viewer's account type shows a CTA.
+              showCta={canSubscribe}
               // Free tier has no CTA; the current paid plan offers cancel;
               // everything else opens the subscribe modal.
               onSelect={
                 free
                   ? undefined
                   : isCurrent
-                    ? handleCancelSubscription
+                    ? () => setCancelPlan(plan)
                     : () => setSelectedPlan(plan)
               }
             />
@@ -153,7 +159,7 @@ export function PlansView() {
         </div>
       </div>
 
-      {isLoading && <GLoaderSection minHeight={320} label={t('loading')} />}
+      {isLoading && <GLoaderSection minHeight={320} />}
 
       {isError && (
         <div className={styles.state}>
@@ -206,6 +212,13 @@ export function PlansView() {
         plan={selectedPlan}
         onClose={() => setSelectedPlan(null)}
         currency={t('currency')}
+      />
+
+      <CancelSubscriptionModal
+        isOpen={Boolean(cancelPlan)}
+        onClose={() => setCancelPlan(null)}
+        onConfirm={handleConfirmCancel}
+        planName={cancelPlan?.name}
       />
     </div>
   );

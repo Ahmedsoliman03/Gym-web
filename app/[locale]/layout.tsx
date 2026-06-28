@@ -29,6 +29,7 @@ export async function generateMetadata({
     const isAr = locale === 'ar';
 
     const title = 'GymSpot';
+    
     const description = isAr
         ? 'منصة GymSpot — تواصل مع نخبة المدربين والصالات الرياضية واكتشف الفرص الوظيفية.'
         : 'GymSpot — connect with elite coaches and gyms, and discover fitness career opportunities.';
@@ -38,6 +39,11 @@ export async function generateMetadata({
         title: { default: title, template: `%s | ${title}` },
         description,
         applicationName: title,
+        icons: {
+            icon: [{ url: OG_IMAGE, type: 'image/png' }],
+            shortcut: OG_IMAGE,
+            apple: OG_IMAGE,
+        },
         openGraph: {
             type: 'website',
             siteName: title,
@@ -71,6 +77,8 @@ import { OfflineIndicator } from '@/components/shared/offline-indicator';
 
 import { ChatWrapper } from '@/features/chat/components/chat-wrapper';
 import { CompleteProfileBanner } from '@/features/profile/components/complete-profile-banner';
+import { ProfileChecklist } from '@/features/profile/components/profile-checklist';
+import { ApiErrorMessagesProvider } from '@/components/providers/api-error-messages-provider';
 
 
 export default async function LocaleLayout({
@@ -96,6 +104,7 @@ export default async function LocaleLayout({
         <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={`${GeistSans.variable} ${almarai.variable}`}>
             <body className="font-sans antialiased selection:bg-primary/30">
                 <NextIntlClientProvider messages={messages}>
+                    <ApiErrorMessagesProvider />
                     <QueryProvider>
                         <ChatSocketProvider>
                             <ThemeProvider
@@ -155,6 +164,7 @@ export default async function LocaleLayout({
                                 {children}
                                 {isLoggedIn && <ChatWrapper />}
                                 {isLoggedIn && <CompleteProfileBanner />}
+                                {isLoggedIn && <ProfileChecklist />}
                                 <ScrollToTopButton />
 
                             </ThemeProvider>

@@ -15,6 +15,7 @@ import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
 import { useFileDrop } from '@/hooks/use-file-drop';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { FormPersist } from '@/components/shared/form-persist';
 import { CoachFormInnerProps } from '../types';
 
 const styles = {
@@ -79,6 +80,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
     return (
         <Form className={styles.form}>
             <LiveValidate />
+            <FormPersist storageKey="draft:coach-request" />
             <div className={styles.gridWrapper}>
                 {/* First Name */}
                 <div className={styles.fieldWrapper}>

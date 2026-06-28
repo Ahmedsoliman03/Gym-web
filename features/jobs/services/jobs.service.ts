@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
+import { plansKeys } from '@/features/plans/services/plans.service';
 import type {
     ApplyJobInput,
     CreateJobInput,
@@ -91,6 +92,8 @@ export const useCreateJobMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['jobs'] });
             queryClient.invalidateQueries({ queryKey: ['jobs', 'mine'] });
+            // Posting a job consumes the `job_post` feature — refresh usage.
+            queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
     });
 };
@@ -414,6 +417,10 @@ export const useApplyForJobMutation = () => {
             ctx?.previous?.forEach(([key, data]) => {
                 queryClient.setQueryData(key, data);
             });
+        },
+        onSuccess: () => {
+            // A successful apply consumes the `apply_job` feature — refresh usage.
+            queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
         onSettled: () => {
             // Resync with the server's authoritative counts, and refresh the

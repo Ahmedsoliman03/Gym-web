@@ -20,6 +20,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { LocationDetectButton } from '@/components/ui/location-detect-button';
 import { useLocationDetect, LocationResult } from '@/hooks/use-location-detect';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { FormPersist, clearFormDraft } from '@/components/shared/form-persist';
 import { GoogleAuthButton } from './google-auth-button';
 
 const styles = {
@@ -130,6 +131,7 @@ export default function RegisterForm() {
                             city: city.trim(),
                             area: area.trim(),
                         });
+                        clearFormDraft('draft:register');
                         toast.success(t('Auth.otpSent'));
                         router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
                     } catch (error) {
@@ -140,6 +142,10 @@ export default function RegisterForm() {
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
                         <LiveValidate />
+                        <FormPersist
+                            storageKey="draft:register"
+                            exclude={['password', 'confirmPassword']}
+                        />
                         {/* Name Grid */}
                         <div className="grid grid-cols-2 gap-3">
                             {/* First Name */}

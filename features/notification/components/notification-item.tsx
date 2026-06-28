@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import type { AppNotification, NotificationType } from "../types";
 import { formatRelativeTimeLong } from "@/utils/format";
+import { Link } from "@/i18n/routing";
+import { useProfileLink } from "@/features/profile/hooks/useProfileLink";
 
 const TYPE_ICON: Record<NotificationType, LucideIcon> = {
     post_vote: Heart,
@@ -33,6 +35,8 @@ const styles = {
         `group/notif relative p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex gap-3 ${isUnread ? "bg-primary/5" : ""}`,
     avatarWrap: "relative shrink-0",
     avatar: "w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 flex items-center justify-center text-primary",
+    avatarLink:
+        "block w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 flex items-center justify-center text-primary hover:ring-2 hover:ring-primary/50 transition-all",
     avatarImg: "w-full h-full object-cover",
     typeBadge: (accent: string) =>
         `absolute -bottom-1 -end-1 w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-surface ${accent}`,
@@ -45,26 +49,31 @@ const styles = {
         "absolute top-2 end-2 p-1.5 rounded-lg text-foreground/30 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover/notif:opacity-100 transition-all",
 };
 
-const initials = (name: string) =>
-    name
-        .trim()
-        .split(/\s+/)
-        .map((p) => p[0])
-        .filter(Boolean)
-        .slice(0, 2)
-        .join("")
-        .toUpperCase();
+// Two capital letters: first letter of the first two words, or — for a
+// single-word name — its first two characters. Used for the fallback avatar
+// when the actor has no uploaded photo.
+const initials = (name: string) => {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+};
 
 export const NotificationItem = ({
     notification,
     locale,
     onClick,
+    onActorClick,
     onDelete,
     deleteLabel,
 }: {
     notification: AppNotification;
     locale: string;
     onClick: () => void;
+    /** Fired when the actor avatar (a profile link) is clicked — lets the menu
+     *  close and mark the notification read without also running `onClick`
+     *  (which would navigate to the post instead of the profile). */
+    onActorClick?: () => void;
     onDelete: () => void;
     deleteLabel: string;
 }) => {
@@ -73,19 +82,37 @@ export const NotificationItem = ({
     const accent = TYPE_ACCENT[type] ?? "bg-primary/20 text-primary";
     const name = actor?.fullName ?? "";
 
+    // Coach/gym → their public profile; clients (no public page) and missing
+    // actors resolve to null, leaving the avatar non-clickable.
+    const { href: actorHref } = useProfileLink(actor?.profileId, actor?.userType);
+
+    const avatarInner = actor?.photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={actor.photo} alt={name} className={styles.avatarImg} />
+    ) : (
+        <span className="text-sm font-black">
+            {initials(name) || <UserIcon size={18} />}
+        </span>
+    );
+
     return (
         <div className={styles.container(!isRead)} onClick={onClick}>
             <div className={styles.avatarWrap}>
-                <div className={styles.avatar}>
-                    {actor?.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={actor.photo} alt={name} className={styles.avatarImg} />
-                    ) : (
-                        <span className="text-sm font-black">
-                            {initials(name) || <UserIcon size={18} />}
-                        </span>
-                    )}
-                </div>
+                {actorHref ? (
+                    <Link
+                        href={actorHref}
+                        className={styles.avatarLink}
+                        onClick={(e) => {
+                            // Don't let the row's onClick (post navigation) fire too.
+                            e.stopPropagation();
+                            onActorClick?.();
+                        }}
+                    >
+                        {avatarInner}
+                    </Link>
+                ) : (
+                    <div className={styles.avatar}>{avatarInner}</div>
+                )}
                 <span className={styles.typeBadge(accent)}>
                     <Icon size={11}  />
                 </span>

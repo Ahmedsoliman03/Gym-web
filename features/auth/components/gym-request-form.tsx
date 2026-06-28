@@ -6,6 +6,7 @@ import { getRequestAccessSchema } from '../validations';
 import { useAuthRequest } from '../hooks/useAuthRequest';
 import { RequestAccessRequest, GymRequestFormProps, GymFormInnerProps } from '../types';
 import { GymFormInner } from './gym-form-inner';
+import { clearFormDraft } from '@/components/shared/form-persist';
 
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
@@ -51,6 +52,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                         gymAddress: friendlyAddress,
                     };
                     await requestAccess(mappedValues as RequestAccessRequest);
+                    clearFormDraft('draft:gym-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
                 } catch (error: any) {

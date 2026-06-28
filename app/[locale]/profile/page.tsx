@@ -1,7 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useProfileUser } from "@/features/profile/hooks/useProfileUser";
+import { sectionDomId, type ChecklistKey } from "@/features/profile/checklist-sections";
 import type { CoachProfileViewModel, GymProfileViewModel } from "@/features/profile/types";
 import { CoachProfileView } from "@/features/profile/components/coach-profile-view";
 import { GymProfileView } from "@/features/profile/components/gym-profile-view";
@@ -17,6 +19,19 @@ const styles = {
 
 export default function ProfilePage() {
   const { profile, isLoading, error } = useProfileUser();
+  const searchParams = useSearchParams();
+  const focus = searchParams.get("focus");
+
+  // When the floating checklist links here with ?focus=<section>, wait for the
+  // profile to render then smooth-scroll that section into view.
+  useEffect(() => {
+    if (!focus || isLoading || !profile) return;
+    const id = sectionDomId(focus as ChecklistKey);
+    const raf = requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focus, isLoading, profile]);
 
   if (isLoading) {
     return (

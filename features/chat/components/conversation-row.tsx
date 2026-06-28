@@ -12,11 +12,15 @@ import type { ChatConversation } from '../types';
 import { pickOtherUser } from '../utils/format';
 import { formatWhen } from '@/utils/format';
 import { ChatRowAvatar } from './chat-row-avatar';
+import { ChatProfileLink } from './chat-profile-link';
 
 const styles = {
     wrap: 'relative group',
     conversationCard:
-        'w-full text-left rounded-2xl border border-white/10 bg-surface/40 p-3 pe-10 flex items-center gap-3 hover:bg-surface/70 transition-colors',
+        'w-full rounded-2xl border border-white/10 bg-surface/40 p-3 pe-10 flex items-center gap-3 hover:bg-surface/70 transition-colors',
+    // The conversation-open hit area (everything except the avatar, which links
+    // to the participant's profile instead).
+    openArea: 'flex-1 min-w-0 flex items-center gap-3 text-left',
     rowInfo: 'flex-1 min-w-0',
     rowName: 'text-sm font-bold truncate',
     conversationPreview: 'text-[12px] text-foreground/60 truncate',
@@ -69,31 +73,38 @@ export const ConversationRow = ({
 
     return (
         <div className={styles.wrap}>
-            <button
-                type="button"
-                className={styles.conversationCard}
-                onClick={() => onOpen?.(conversation.id)}
-            >
-                <ChatRowAvatar
-                    photo={other?.photo}
-                    name={other?.fullName ?? ''}
-                    status={status}
-                />
-                <div className={styles.rowInfo}>
-                    <div className={styles.rowName}>{other?.fullName}</div>
-                    <div className={styles.conversationPreview}>
-                        {conversation.lastMessage?.body ?? t('noMessagesYet')}
+            <div className={styles.conversationCard}>
+                {/* Avatar links to the participant's public profile; the rest of
+                    the row opens the conversation. Kept as separate hit areas so
+                    an <a> isn't nested inside the open <button>. */}
+                <ChatProfileLink user={other}>
+                    <ChatRowAvatar
+                        photo={other?.photo}
+                        name={other?.fullName ?? ''}
+                        status={status}
+                    />
+                </ChatProfileLink>
+                <button
+                    type="button"
+                    className={styles.openArea}
+                    onClick={() => onOpen?.(conversation.id)}
+                >
+                    <div className={styles.rowInfo}>
+                        <div className={styles.rowName}>{other?.fullName}</div>
+                        <div className={styles.conversationPreview}>
+                            {conversation.lastMessage?.body ?? t('noMessagesYet')}
+                        </div>
                     </div>
-                </div>
-                <div className={styles.conversationMeta}>
-                    <span className={styles.conversationTime}>
-                        {formatWhen(conversation.updatedAt, locale)}
-                    </span>
-                    {unreadCount > 0 && (
-                        <span className={styles.unreadBadge}>{unreadCount}</span>
-                    )}
-                </div>
-            </button>
+                    <div className={styles.conversationMeta}>
+                        <span className={styles.conversationTime}>
+                            {formatWhen(conversation.updatedAt, locale)}
+                        </span>
+                        {unreadCount > 0 && (
+                            <span className={styles.unreadBadge}>{unreadCount}</span>
+                        )}
+                    </div>
+                </button>
+            </div>
 
             <button
                 type="button"

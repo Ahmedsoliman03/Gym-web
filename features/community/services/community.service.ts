@@ -390,7 +390,10 @@ const updateAllPostCaches = (
         });
     queryClient.setQueriesData<PostListQueryData>(
         { queryKey: ['community', 'posts'] },
-        (curr) => (curr ? curr.map((p) => (p.id === postId ? transform(p) : p)) : curr),
+        // The `['community','posts']` prefix also matches non-array caches like
+        // the post-voters object (`['community','posts','voters',id]`), so guard
+        // with Array.isArray before mapping (mirrors the delete-post updater).
+        (curr) => (Array.isArray(curr) ? curr.map((p) => (p.id === postId ? transform(p) : p)) : curr),
     );
 
     const prevPost = queryClient.getQueryData<CommunityPost>([

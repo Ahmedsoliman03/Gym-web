@@ -20,6 +20,9 @@ import { SocialMediaEditor, hasIncompleteSocialLinks } from "./social-media-edit
 import { CustomMultiSelect } from "@/components/shared/custom-multi-select";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import { formStyles as styles } from "@/components/shared/form-styles";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { toastApiError } from "@/utils/toast-api-error";
+import { useProfileSaveGuard } from "../hooks/use-profile-save-guard";
 import type {
   EditableImage,
   GymEditFormProps,
@@ -64,6 +67,15 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
+  // Pre-save guard: warn before the last profile edit is spent while the gym's
+  // capped gallery still has unused slots (minus what this save adds).
+  const newlyAdding = {
+    profile_images: formData.gymImages.filter((g) => g.file && !g.id).length,
+  };
+  const saveGuard = useProfileSaveGuard(true, newlyAdding);
+  const [showLastEditWarn, setShowLastEditWarn] = useState(false);
+  const pendingPlansRef = useRef<ProfilePlan[] | null>(null);
+
   const handleInputChange = (field: 'name' | 'description', value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -78,22 +90,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
 
   const triggerFileInput = () => fileInputRef.current?.click();
 
-  const handleSave = async () => {
-    if (updateMutation.isPending) return;
-    // Drop blank rows and enforce required fields on touched ones before
-    // building the FormData — the API never sees half-finished plan cards.
-    const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
-    if (hasErrors) {
-      // No toast — the inline "Required" labels plus the shake animation
-      // on the offending plan cards are the only feedback the user needs.
-      setPlanErrors(errors);
-      return;
-    }
-    if (hasIncompleteSocialLinks(formData.socialMedia)) {
-      toast.error(t('completeSocialLinks'));
-      return;
-    }
-    setPlanErrors({});
+  const performSave = async (sanitized: ProfilePlan[]) => {
     const payload = buildEditProfileFormData({
       role: 'gym',
       values: {
@@ -111,12 +108,47 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
       toast.success(t('saveSuccess'));
       router.push('/profile');
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } } | undefined)
-          ?.response?.data?.message ?? t('saveFailed');
-      toast.error(message);
+      // feature_limit_exceeded → friendly localized toast (see toastApiError).
+      toastApiError(err, t('saveFailed'));
     }
   };
+
+  const handleSave = () => {
+    if (updateMutation.isPending) return;
+    // Drop blank rows and enforce required fields on touched ones before
+    // building the FormData — the API never sees half-finished plan cards.
+    const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
+    if (hasErrors) {
+      // No toast — the inline "Required" labels plus the shake animation
+      // on the offending plan cards are the only feedback the user needs.
+      setPlanErrors(errors);
+      return;
+    }
+    if (hasIncompleteSocialLinks(formData.socialMedia)) {
+      toast.error(t('completeSocialLinks'));
+      return;
+    }
+    setPlanErrors({});
+    // Last edit + unused gallery slots → confirm before spending it.
+    if (saveGuard.shouldWarn) {
+      pendingPlansRef.current = sanitized;
+      setShowLastEditWarn(true);
+      return;
+    }
+    void performSave(sanitized);
+  };
+
+  const confirmLastEditSave = () => {
+    setShowLastEditWarn(false);
+    void performSave(pendingPlansRef.current ?? []);
+  };
+
+  const slotSummary = saveGuard.unusedSlots
+    .map((s) => {
+      const key = `slotCount_${s.code}`;
+      return t.has(key) ? t(key, { count: s.remaining }) : `${s.remaining} ${s.name}`;
+    })
+    .join(', ');
 
   return (
     <div className={styles.container}>
@@ -228,6 +260,19 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
           {t('cancelChanges')}
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showLastEditWarn}
+        tone="primary"
+        title={t('lastEditTitle')}
+        body={t('lastEditBody', { slots: slotSummary })}
+        cancelLabel={t('lastEditCancel')}
+        confirmLabel={t('lastEditConfirm')}
+        submittingLabel={t('saving')}
+        isSubmitting={updateMutation.isPending}
+        onCancel={() => setShowLastEditWarn(false)}
+        onConfirm={confirmLastEditSave}
+      />
     </div>
   );
 };

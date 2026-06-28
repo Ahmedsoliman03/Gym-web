@@ -29,6 +29,10 @@ export type ChatRequestOutcome = 'pending' | 'approved' | 'rejected';
  *  pass to `POST /api/chat/start { userId }`. */
 export interface ChatUser {
     id: string;
+    /** Coach/gym/client profile id (NOT `id`, which is the `User.id`). Used to
+     *  link a participant to their public profile page via `useProfileLink`.
+     *  `null`/absent for clients, who have no public profile. */
+    profileId?: string | null;
     fullName: string;
     email: string;
     phone: string;

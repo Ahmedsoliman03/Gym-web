@@ -6,26 +6,41 @@ import { useLocale } from 'next-intl';
 
 import { CustomSelect } from '@/components/ui/custom-select';
 
-import { WeightLog, GoalMode } from './types';
+import { GoalMode } from './types';
 import { ClearConfirmModal } from './clear-confirm-modal';
 import { CelebrationBanner } from './celebration-banner';
 import { WeightChart } from './weight-chart';
 import { LogsForm } from './logs-form';
 import { LogsHistory } from './logs-history';
+import { downloadWeightProgressPdf } from './weight-progress-pdf';
+import {
+  useWeightTracker,
+  useUpsertWeightLogMutation,
+  useDeleteWeightLogMutation,
+  useClearWeightLogsMutation,
+  useUpdateWeightGoalMutation,
+} from '../../services/weight-tracker.service';
 
-// const DEFAULT_MOCK_LOGS: WeightLog[] = [];
 
 export function WeightProgress() {
   const locale = useLocale();
   const isRtl = locale === 'ar';
 
-  const [logs, setLogs] = useState<WeightLog[]>([]);
-  const [goalWeight, setGoalWeight] = useState<number>(0);
+  const { data: tracker } = useWeightTracker();
+  const upsertLog = useUpsertWeightLogMutation();
+  const deleteLogMutation = useDeleteWeightLogMutation();
+  const clearLogsMutation = useClearWeightLogsMutation();
+  const updateGoalMutation = useUpdateWeightGoalMutation();
+
+  // Server-backed data (replaces the old localStorage state).
+  const logs = tracker?.logs ?? [];
+  const goalWeight = tracker?.goalWeight ?? 0;
+  const goalMode: GoalMode = tracker?.goalMode ?? 'lose';
+
   const [newWeight, setNewWeight] = useState<string>('');
   const [newDate, setNewDate] = useState<string>('');
   const [isEditingGoal, setIsEditingGoal] = useState<boolean>(false);
   const [goalInput, setGoalInput] = useState<string>('0');
-  const [goalMode, setGoalMode] = useState<GoalMode>('lose');
   const [tempGoalMode, setTempGoalMode] = useState<GoalMode>('lose');
   const [weightError, setWeightError] = useState<string>('');
 
@@ -45,59 +60,13 @@ export function WeightProgress() {
   const [confettiTrigger, setConfettiTrigger] = useState<number>(0);
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
 
-  // Load from LocalStorage
+  // Default the new-entry date to today on mount. (Data now comes from the API
+  // via useWeightTracker — no more localStorage.)
   useEffect(() => {
-    const storedLogs = localStorage.getItem('gym_weight_logs');
-    const storedGoal = localStorage.getItem('gym_goal_weight');
-    const storedGoalMode = localStorage.getItem('gym_weight_goal_mode');
-
-    if (storedLogs) {
-      try {
-        const parsed = JSON.parse(storedLogs);
-        // Clean out legacy mock data if it matches the old default mock list
-        if (Array.isArray(parsed) && parsed.length === 6 && parsed[0]?.id === '1' && parsed[0]?.weight === 95) {
-          setLogs([]);
-          localStorage.setItem('gym_weight_logs', JSON.stringify([]));
-        } else {
-          setLogs(parsed);
-        }
-      } catch (e) {
-        setLogs([]);
-      }
-    } else {
-      setLogs([]);
-      localStorage.setItem('gym_weight_logs', JSON.stringify([]));
-    }
-
-    if (storedGoal) {
-      const g = parseFloat(storedGoal);
-      if (!isNaN(g)) {
-        setGoalWeight(g);
-        setGoalInput(g.toString());
-      }
-    } else {
-      localStorage.setItem('gym_goal_weight', '0');
-    }
-
-    if (storedGoalMode === 'lose' || storedGoalMode === 'gain') {
-      setGoalMode(storedGoalMode as GoalMode);
-      setTempGoalMode(storedGoalMode as GoalMode);
-    } else {
-      localStorage.setItem('gym_weight_goal_mode', 'lose');
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    setNewDate(today);
+    setNewDate(new Date().toISOString().split('T')[0]);
   }, []);
 
-  // Save logs helper
-  const saveLogs = (updatedLogs: WeightLog[]) => {
-    const sorted = [...updatedLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    setLogs(sorted);
-    localStorage.setItem('gym_weight_logs', JSON.stringify(sorted));
-  };
-
-  // Add Log
+  // Add / update a dated weight entry — the server upserts by date.
   const handleAddLog = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -115,50 +84,40 @@ export function WeightProgress() {
     setWeightError('');
     if (!newDate) return;
 
-    const existingIndex = logs.findIndex((log) => log.date === newDate);
-    let updated: WeightLog[];
-    if (existingIndex > -1) {
-      updated = [...logs];
-      updated[existingIndex].weight = weightVal;
-    } else {
-      const newLog: WeightLog = {
-        id: Math.random().toString(36).substring(2, 9),
-        date: newDate,
-        weight: weightVal,
-      };
-      updated = [...logs, newLog];
-    }
-
-    saveLogs(updated);
-    setNewWeight('');
-    setNewDate(new Date().toISOString().split('T')[0]);
+    upsertLog.mutate(
+      { date: newDate, weight: weightVal },
+      {
+        onSuccess: () => {
+          setNewWeight('');
+          setNewDate(new Date().toISOString().split('T')[0]);
+        },
+      },
+    );
   };
 
-  // Delete Log
+  // Delete one entry.
   const handleDeleteLog = (id: string) => {
-    const updated = logs.filter((log) => log.id !== id);
-    saveLogs(updated);
+    deleteLogMutation.mutate(id);
     setHoveredIndex(null);
     setTooltipPos(null);
   };
 
-  // Clear Logs
+  // Clear all entries.
   const handleConfirmClear = () => {
-    saveLogs([]);
+    clearLogsMutation.mutate();
     setHoveredIndex(null);
     setTooltipPos(null);
     setShowClearConfirm(false);
   };
 
-  // Update Goal Weight
+  // Update goal weight + mode.
   const handleSaveGoal = (mode: GoalMode) => {
     const goalVal = parseFloat(goalInput);
     if (!isNaN(goalVal) && goalVal > 0) {
-      setGoalWeight(goalVal);
-      setGoalMode(mode);
-      localStorage.setItem('gym_goal_weight', goalVal.toString());
-      localStorage.setItem('gym_weight_goal_mode', mode);
-      setIsEditingGoal(false);
+      updateGoalMutation.mutate(
+        { goalWeight: goalVal, goalMode: mode },
+        { onSuccess: () => setIsEditingGoal(false) },
+      );
     }
   };
 
@@ -177,6 +136,20 @@ export function WeightProgress() {
   const isGoalAchieved = currentWeight > 0 && (
     goalMode === 'lose' ? currentWeight <= goalWeight : currentWeight >= goalWeight
   );
+
+  // Export the chart + its underlying log detail as a PDF report. Offered once
+  // the goal is achieved (button lives in the celebration banner).
+  const handleDownloadPdf = () => {
+    void downloadWeightProgressPdf({
+      logs,
+      goalWeight,
+      goalMode,
+      initialWeight,
+      currentWeight,
+      weightDifference,
+      isGoalAchieved,
+    });
+  };
 
   // Confetti Particle Celebration effect
   useEffect(() => {
@@ -312,6 +285,7 @@ export function WeightProgress() {
           goalWeight={goalWeight}
           goalMode={goalMode}
           onCelebrateAgain={() => setConfettiTrigger((prev) => prev + 1)}
+          onDownloadPdf={handleDownloadPdf}
         />
       )}
 

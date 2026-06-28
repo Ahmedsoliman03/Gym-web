@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
 import type {
   CurrentSubscription,
+  InvoicesResponse,
   PlatformPlansResponse,
   PlatformUsageResponse,
   SubscribeArgs,
@@ -14,6 +15,7 @@ export const plansKeys = {
   all: ['platform-plans'] as const,
   subscription: ['platform-subscription'] as const,
   usage: ['platform-usage'] as const,
+  invoices: ['platform-invoices'] as const,
 };
 
 export const getPlatformPlans = async (): Promise<PlatformPlansResponse> => {
@@ -81,6 +83,25 @@ export const useSubscriptionUsageQuery = (enabled = true) => {
   return useQuery({
     queryKey: plansKeys.usage,
     queryFn: getSubscriptionUsage,
+    enabled,
+    retry: false,
+    staleTime: 60_000,
+  });
+};
+
+/**
+ * GET /api/v1/platform/invoices/ — the user's billing history, newest first.
+ * Each invoice embeds the subscription snapshot it was billed for.
+ */
+export const getInvoices = async (): Promise<InvoicesResponse> => {
+  const { data } = await api.get<InvoicesResponse>('/api/v1/platform/invoices/');
+  return data;
+};
+
+export const useInvoicesQuery = (enabled = true) => {
+  return useQuery({
+    queryKey: plansKeys.invoices,
+    queryFn: getInvoices,
     enabled,
     retry: false,
     staleTime: 60_000,

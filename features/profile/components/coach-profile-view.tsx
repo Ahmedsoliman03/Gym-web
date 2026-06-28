@@ -14,6 +14,7 @@ import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { usePlanGetStartedMutation } from "../services/profile.service";
 import { ProfilePosts } from "./profile-posts";
 import { SocialMediaLinks } from "./social-media-links";
+import { sectionDomId } from "../checklist-sections";
 
 const styles = {
   container: "space-y-8",
@@ -101,12 +102,16 @@ export const CoachProfileView = ({
           onGoToPlans={scrollToPlans}
           isOwner={isOwner}
         />
-        <TransformationGallery
-          transformations={data.transformations}
-          isOwner={isOwner}
-          emptyVisitorMessage={t('noTransformationsYet')}
-        />
-        <SocialMediaLinks links={data.socialMedia} isOwner={isOwner} />
+        <div id={sectionDomId('transformations')} className="scroll-mt-28">
+          <TransformationGallery
+            transformations={data.transformations}
+            isOwner={isOwner}
+            emptyVisitorMessage={t('noTransformationsYet')}
+          />
+        </div>
+        <div id={sectionDomId('socialMedia')} className="scroll-mt-28">
+          <SocialMediaLinks links={data.socialMedia} isOwner={isOwner} />
+        </div>
       </div>
       {/* Recent posts — placed after the philosophy + transformations cards
           so the visitor reads the coach's pitch before browsing posts. */}
@@ -119,27 +124,31 @@ export const CoachProfileView = ({
           viewAllHref={postsViewAllHref}
         />
       )}
-      <TransformationGallery
-        title={t('certifications')}
-        hideOverlay
-        transformations={data.credentials.certifications.map(cert => ({
-          clientName: t('certification'),
-          duration: "",
-          image: cert
-        }))}
-        isOwner={isOwner}
-        emptyVisitorMessage={t('noCertificationsYet')}
-      />
-      <Plans
-        ref={plansRef}
-        plans={data.plans}
-        isOwner={isOwner}
-        onGetStarted={handlePlanGetStarted}
-        pendingPlanId={planGetStarted.isPending ? (planGetStarted.variables?.planId ?? null) : null}
-      />
+      <div id={sectionDomId('certifications')} className="scroll-mt-28">
+        <TransformationGallery
+          title={t('certifications')}
+          hideOverlay
+          transformations={data.credentials.certifications.map(cert => ({
+            clientName: t('certification'),
+            duration: "",
+            image: cert
+          }))}
+          isOwner={isOwner}
+          emptyVisitorMessage={t('noCertificationsYet')}
+        />
+      </div>
+      <div id={sectionDomId('plans')} className="scroll-mt-28">
+        <Plans
+          ref={plansRef}
+          plans={data.plans}
+          isOwner={isOwner}
+          onGetStarted={handlePlanGetStarted}
+          pendingPlanId={planGetStarted.isPending ? (planGetStarted.variables?.planId ?? null) : null}
+        />
+      </div>
 
 
-      <div className={styles.gridWrapper}>
+      <div id={sectionDomId('specializations')} className={`${styles.gridWrapper} scroll-mt-28`}>
         <CoachCredentials
           specializations={data.credentials.specializations}
           isOwner={isOwner}

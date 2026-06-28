@@ -1,10 +1,13 @@
 'use client';
 
+import { Download } from 'lucide-react';
+
 interface CelebrationBannerProps {
   isRtl: boolean;
   goalWeight: number;
   goalMode: 'lose' | 'gain';
   onCelebrateAgain: () => void;
+  onDownloadPdf: () => void;
 }
 
 export function CelebrationBanner({
@@ -12,6 +15,7 @@ export function CelebrationBanner({
   goalWeight,
   goalMode,
   onCelebrateAgain,
+  onDownloadPdf,
 }: CelebrationBannerProps) {
   return (
     <div className="relative overflow-hidden mb-6 p-5 rounded-2xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 text-emerald-400 flex items-center justify-between gap-4 animate-in slide-in-from-top duration-500 z-10">
@@ -38,13 +42,23 @@ export function CelebrationBanner({
         </div>
       </div>
       
-      <button 
-        type="button"
-        onClick={onCelebrateAgain}
-        className="px-3.5 py-1.5 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/10 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-      >
-        {isRtl ? 'احتفل مجدداً 🥳' : 'Celebrate 🥳'}
-      </button>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={onDownloadPdf}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 text-white text-[10px] font-black uppercase tracking-wider rounded-xl border border-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
+        >
+          <Download size={13} />
+          {isRtl ? 'تحميل PDF' : 'Download PDF'}
+        </button>
+        <button
+          type="button"
+          onClick={onCelebrateAgain}
+          className="px-3.5 py-1.5 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/10 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        >
+          {isRtl ? 'احتفل مجدداً 🥳' : 'Celebrate 🥳'}
+        </button>
+      </div>
     </div>
   );
 }

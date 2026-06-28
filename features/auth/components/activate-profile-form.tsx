@@ -17,6 +17,7 @@ import {
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { FormPersist, clearFormDraft } from '@/components/shared/form-persist';
 
 const styles = {
     success: {
@@ -113,6 +114,7 @@ export default function ActivateProfileForm() {
                 onSubmit={async (values) => {
                     try {
                         await activate(values);
+                        clearFormDraft('draft:activate-profile');
                         toast.success(t('Auth.registrationComplete'));
                         setStep('success');
                     } catch (error: any) {
@@ -123,6 +125,10 @@ export default function ActivateProfileForm() {
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
                         <LiveValidate />
+                        <FormPersist
+                            storageKey="draft:activate-profile"
+                            exclude={['password', 'confirmPassword']}
+                        />
 
 
                         <div className={styles.fieldWrapper}>

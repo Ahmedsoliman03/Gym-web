@@ -11,12 +11,14 @@ import type { ChatRequest, ChatRequestOutcome } from '../types';
 import { formatWhen } from '@/utils/format';
 import { getRequestOutcome } from '../utils/request-status';
 import { ChatRowAvatar } from './chat-row-avatar';
+import { ChatProfileLink } from './chat-profile-link';
 
 const styles = {
     rowCard:
         'rounded-2xl border border-white/10 bg-surface/40 p-3 flex items-center gap-3',
     rowInfo: 'flex-1 min-w-0',
     rowName: 'text-sm font-bold truncate',
+    nameLink: 'hover:text-primary hover:underline transition-colors',
     rowMeta: 'text-[11px] text-foreground/50 truncate',
     rowMessage: 'mt-1 line-clamp-2 text-xs text-foreground/70',
     rowActions: 'flex items-center gap-1.5 shrink-0',
@@ -60,9 +62,15 @@ export const IncomingRequestRow = ({ request }: { request: ChatRequest }) => {
 
     return (
         <div className={styles.rowCard}>
-            <ChatRowAvatar photo={other?.photo} name={other?.fullName ?? ''} />
+            <ChatProfileLink user={other}>
+                <ChatRowAvatar photo={other?.photo} name={other?.fullName ?? ''} />
+            </ChatProfileLink>
             <div className={styles.rowInfo}>
-                <div className={styles.rowName}>{other?.fullName}</div>
+                <div className={styles.rowName}>
+                    <ChatProfileLink user={other} className={styles.nameLink}>
+                        {other?.fullName}
+                    </ChatProfileLink>
+                </div>
                 <div className={styles.rowMeta}>
                     {pending
                         ? `${t('wantsToChat')} · ${formatWhen(request.createdAt, locale)}`

@@ -160,6 +160,53 @@
   content: '';
 }
 
+/* Profile checklist FAB attention animation.
+   While the owner still has empty profile sections, the floating checklist
+   button gently "breathes" + wiggles on a long loop (with a rest pause) and
+   casts a soft pulsing green glow ring — enough to draw the eye without being
+   annoying. The whole thing stops once every section is complete, and is
+   disabled entirely for users who prefer reduced motion. */
+@keyframes checklist-attract {
+  0%, 70%, 100% { transform: scale(1) rotate(0deg); }
+  76% { transform: scale(1.12) rotate(-8deg); }
+  82% { transform: scale(1.12) rotate(8deg); }
+  88% { transform: scale(1.1) rotate(-6deg); }
+  94% { transform: scale(1.05) rotate(0deg); }
+}
+
+@keyframes checklist-glow {
+  0%, 100% {
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35), 0 0 0 0 rgba(34, 197, 94, 0.5);
+  }
+  50% {
+    box-shadow: 0 8px 30px rgba(34, 197, 94, 0.6), 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+}
+
+.checklist-attract {
+  animation:
+    checklist-attract 4s ease-in-out infinite,
+    checklist-glow 2s ease-in-out infinite;
+}
+
+/* Smooth slide-up + fade entrance for the checklist panel. */
+@keyframes checklist-panel-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.checklist-panel-in {
+  animation: checklist-panel-in 0.25s ease-out;
+  transform-origin: bottom right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checklist-attract,
+  .checklist-panel-in {
+    animation: none;
+  }
+}
+
 /* Custom Date Picker webkit calendar icon color for Dark Mode */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(0.9);
