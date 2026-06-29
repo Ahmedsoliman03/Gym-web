@@ -16,7 +16,10 @@ const styles = {
     tagWrapper: "flex flex-wrap gap-2 sm:gap-4",
     tag: "px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-primary shadow-[0_0_15px_rgba(34,197,94,0.1)]",
     blobPrimary: "absolute top-0 right-0 w-96 h-96 bg-primary/20 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50",
-    blobSecondary: "absolute bottom-0 left-0 w-64 h-64 bg-primary/10 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2 opacity-30"
+    blobSecondary: "absolute bottom-0 left-0 w-64 h-64 bg-primary/10 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2 opacity-30",
+    bluredCard: "relative",
+    comingSoonOverlay: "absolute top-3 ltr:right-3 rtl:left-3 z-10",
+    comingSoonBadge: "px-4 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.25)]"
 };
 
 export default function AboutPage() {
@@ -44,6 +47,7 @@ export default function AboutPage() {
             icon: <MessageSquare className="w-6 h-6 text-primary" />,
         },
         {
+            type:'Ai',
             title: t('aiFeaturesTitle'),
             description: t('aiFeaturesDescription'),
             icon: <Cpu className="w-6 h-6 text-primary" />,
@@ -60,21 +64,31 @@ export default function AboutPage() {
 
             {/* Features Grid */}
             <div className={styles.featuresGrid}>
-                {features.map((feature, index) => (
-                    <div
-                        key={index}
-                        className={styles.featureCard}
-                        style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                        <div className={styles.featureIconWrapper}>
-                            {feature.icon}
+                {features.map((feature, index) => {
+                    const isComingSoon = feature.type === 'Ai';
+                    return (
+                        <div
+                            key={index}
+                            className={`${styles.featureCard} ${isComingSoon ? styles.bluredCard : ''}`}
+                            style={{ animationDelay: `${index * 100}ms` }}
+                            aria-disabled={isComingSoon || undefined}
+                        >
+                            <div className={styles.featureIconWrapper}>
+                                {feature.icon}
+                            </div>
+                            <h3 className={styles.featureTitle}>{feature.title}</h3>
+                            <p className={styles.featureDescription}>
+                                {feature.description}
+                            </p>
+
+                            {isComingSoon && (
+                                <div className={styles.comingSoonOverlay}>
+                                    <span className={styles.comingSoonBadge}>{t('comingSoon')}</span>
+                                </div>
+                            )}
                         </div>
-                        <h3 className={styles.featureTitle}>{feature.title}</h3>
-                        <p className={styles.featureDescription}>
-                            {feature.description}
-                        </p>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Summary Section */}
