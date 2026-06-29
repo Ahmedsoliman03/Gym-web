@@ -40,12 +40,6 @@ export const useStories = (enabled = true) => {
     });
 };
 
-/**
- * Fetch a single active story by id. The backend records/updates the current
- * user's view as a side effect of this call (per postman README), so the hook
- * intentionally fires once per story id rather than re-using cached results
- * forever — we want the "viewed" mark to land on each open.
- */
 export const getStory = async (storyId: string): Promise<Story> => {
     const { data } = await api.get<Story>(`/api/community/stories/${storyId}`);
     return data;
@@ -57,8 +51,6 @@ export const useStoryDetails = (storyId: string | null, enabled = true) => {
         queryKey: ['stories', 'details', storyId],
         queryFn: () => getStory(storyId as string),
         enabled: enabled && !!storyId,
-        // Always refetch on open so the view-mark side effect runs and any
-        // newer media replacements show up.
         staleTime: 0,
         gcTime: 0,
     });
@@ -74,8 +66,6 @@ export const useStoryDetails = (storyId: string | null, enabled = true) => {
         const patchDetailEntries = (rootKey: string) => {
             const entries = queryClient.getQueriesData<unknown>({ queryKey: [rootKey] });
             for (const [key, data] of entries) {
-                // Skip the list query (`[rootKey]`); only detail queries
-                // (`[rootKey, id]`) carry an embedded `stories` array.
                 if ((key as unknown[]).length < 2) continue;
                 if (!data || typeof data !== 'object') continue;
                 const detail = data as { stories?: Story[] };

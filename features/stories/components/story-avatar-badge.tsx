@@ -27,11 +27,6 @@ interface StoryAvatarBadgeProps {
     authorId?: string;
     /** Author userType for fallback matching when id is missing. */
     authorUserType?: StoryAuthor['userType'];
-    /**
-     * When provided in non-owner mode, use these stories directly instead of
-     * fetching the public list and filtering by author. Pass the array
-     * embedded in detail responses (e.g. `coachDetail.stories`).
-     */
     stories?: Story[];
 }
 
@@ -39,18 +34,8 @@ const styles = {
     badge: "absolute bottom-1 right-1 z-30 w-9 h-9 rounded-full bg-primary text-primary-foreground border-4 border-surface flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 transition-transform disabled:opacity-60 disabled:cursor-wait",
     spinner: "absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin pointer-events-none",
     avatarHitArea: "absolute inset-0 z-20 rounded-full cursor-pointer",
-    // Story-state ring overlay painted on top of the parent avatar boundary.
-    // Mirrors the stories-bar colors: primary when any story is unviewed,
-    // muted gray when every story is viewed. The viewed ring MUST be a fully
-    // opaque color — the parent (`avatarBorder`) paints a solid primary green
-    // border underneath, and a semi-transparent overlay would just tint that
-    // green instead of replacing it with gray.
     storyRing: "absolute inset-0 rounded-full border-4 border-primary pointer-events-none z-10",
     storyRingViewed: "absolute inset-0 rounded-full border-4 border-zinc-600 pointer-events-none z-10",
-    // No-stories overlay — masks the parent's hardcoded primary border with
-    // the surrounding card color (`bg-surface`) so the avatar reads as a
-    // plain photo with no ring at all. We can't remove the parent border
-    // from here, so we cover it with a matching-color border instead.
     storyRingNone: "absolute inset-0 rounded-full border-4 border-surface pointer-events-none z-10",
 };
 
@@ -92,13 +77,7 @@ export function StoryAvatarBadge({
 
     const visibleStories = isOwner ? (myStories ?? []) : theirStories;
     const hasStories = visibleStories.length > 0;
-    // `isViewed === false` is intentional — when the field is missing (older
-    // payloads) we fall back to gray so the UI doesn't claim "unviewed" for
-    // stories we can't actually classify.
     const hasUnviewedStory = visibleStories.some((s) => s?.isViewed === false);
-    // First-unviewed index, expressed in the viewer modal's playback order
-    // (the modal reverses the array internally; mirror that here so the index
-    // we pass in lines up with the slide we want to land on).
     const initialStoryIndex = useMemo(() => {
         const playback = [...visibleStories].reverse();
         const idx = playback.findIndex((s) => s?.isViewed === false);

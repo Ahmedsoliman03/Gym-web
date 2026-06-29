@@ -13,9 +13,6 @@ interface UseFileDropOptions {
     disabled?: boolean;
 }
 
-/** Returns whether `file` satisfies a comma-separated `accept` rule string.
- *  Supports `*`/`*​/*` wildcards, `type/*` prefixes, exact MIME types, and
- *  `.ext` extensions — the same forms the native file picker accepts. */
 const matchesAccept = (file: File, accept?: string) => {
     if (!accept) return true;
     const rules = accept
@@ -33,11 +30,6 @@ const matchesAccept = (file: File, accept?: string) => {
     });
 };
 
-/**
- * Drag-and-drop support for the custom upload dropzones. Wire the returned
- * `dropHandlers` onto the dropzone element and use `isDragging` to highlight it;
- * the click-to-pick `<input type="file">` keeps working alongside it.
- */
 export function useFileDrop({
     onFiles,
     accept,

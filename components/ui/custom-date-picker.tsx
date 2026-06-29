@@ -108,8 +108,6 @@ export function CustomDatePicker({
         };
     }, [isOpen, reposition]);
 
-    // Move DOM focus to the active day so keyboard navigation is visible and
-    // announced by screen readers.
     useEffect(() => {
         if (!isOpen || !activeDate) return;
         dayRefs.current.get(toISO(activeDate))?.focus();
@@ -159,8 +157,6 @@ export function CustomDatePicker({
     };
 
     const onGridKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        // Only intercept when a day cell is focused, so the nav/Today buttons
-        // keep their native Enter/Space activation.
         if (!(e.target instanceof HTMLElement) || !e.target.dataset.day) return;
         switch (e.key) {
             case 'ArrowRight': e.preventDefault(); moveActive(isRtl ? -1 : 1); break;

@@ -18,8 +18,6 @@ const styles = {
   addBtn: "min-w-[200px] md:min-w-[240px] aspect-square flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/5 rounded-2xl text-foreground/20 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all group active:scale-95",
 };
 
-/** Build the preview URL for a row: server-hosted items expose `url`,
- *  freshly picked Files use an object URL. */
 const previewSrc = (img: EditableImage): string => {
   if (img.url) return img.url;
   if (img.file) return URL.createObjectURL(img.file);
@@ -39,8 +37,6 @@ export const GalleryEditor = ({
     index: 0
   });
 
-  // Materialize preview URLs once per render and revoke object URLs on
-  // unmount so picked Files don't leak blobs.
   const previews = useMemo(() => images.map(previewSrc), [images]);
   useEffect(() => {
     return () => {

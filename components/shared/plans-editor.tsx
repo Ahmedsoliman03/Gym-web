@@ -52,9 +52,6 @@ export type PlanFieldErrors = {
 };
 export type PlanErrors = Record<number, PlanFieldErrors>;
 
-/** A "fully blank" row — everything the user could type is empty. These get
- *  dropped silently at save time so the form doesn't bother the API with
- *  half-finished cards the user left lying around. */
 export const isPlanRowEmpty = (p: ProfilePlan): boolean => {
   const featuresEmpty = !p.features || p.features.every((f) => !f?.trim());
   return (
@@ -66,15 +63,6 @@ export const isPlanRowEmpty = (p: ProfilePlan): boolean => {
   );
 };
 
-/**
- * Walk every plan card in the editor and decide which to ship to the API.
- *  - Fully blank rows → skipped from `sanitized` (silently dropped).
- *  - Touched rows → name + duration + price are required; features stay
- *    optional. Empty feature rows are stripped before submit so the user
- *    isn't punished for leaving an unused "+" entry behind.
- * Errors are keyed by ORIGINAL index so they line up with the editor's
- * current plan list when rendered back.
- */
 export const validatePlans = (
   plans: ProfilePlan[],
 ): { sanitized: ProfilePlan[]; errors: PlanErrors; hasErrors: boolean } => {
@@ -112,18 +100,12 @@ export const validatePlans = (
 interface PlansEditorProps {
   plans: ProfilePlan[];
   onChange: (plans: ProfilePlan[]) => void;
-  /** Optional per-row field errors. Pass the `errors` field from
-   *  `validatePlans()` after a failed save attempt. */
   errors?: PlanErrors;
 }
 
 export const PlansEditor = ({ plans, onChange, errors }: PlansEditorProps) => {
   const t = useTranslations("Profile");
 
-  // Brief shake animation drawing the eye to whichever cards failed
-  // validation. The state holds the set of row indexes currently shaking;
-  // each entry self-clears after the animation duration so the class can
-  // re-apply if the user re-submits the same broken plan.
   const [shakingRows, setShakingRows] = useState<Set<number>>(new Set());
   useEffect(() => {
     if (!errors) return;

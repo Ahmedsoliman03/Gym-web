@@ -36,11 +36,6 @@ const buildJobSchema = (t: (k: string) => string) =>
 export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
   const t = useTranslations('Jobs');
 
-  // `location` is intentionally not collected here — the backend derives the
-  // job location from the gym profile's `area, city` (per postman README),
-  // so submitting it from the client would be ignored at best and could
-  // mislead the gym owner about which address gets attached to the post.
-
   return (
     <Formik
       initialValues={{

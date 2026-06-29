@@ -66,18 +66,6 @@ export const useProfileQuery = () => {
     });
 };
 
-// ── Edit Profile builder ───────────────────────────────────────────────────────
-//
-// The forms describe their values in human-readable shapes; this helper turns
-// that into the exact multipart/form-data contract `PATCH /api/me` expects so
-// the forms don't have to know about field renames, JSON stringification, or
-// the existing-vs-new file split rules. The value shapes themselves live in
-// ../types alongside the rest of the profile domain types.
-
-/** Split a free-form duration label ("8 years", "12 weeks", "6 month") into
- *  the `durationValue` / `durationUnit` pair the API expects. When the label
- *  doesn't match `<number> <unit>`, we send the raw string as the value with
- *  an empty unit so the backend can decide what to do with it. */
 const splitDurationLabel = (raw: string): { value: string; unit: string } => {
     const trimmed = (raw ?? '').trim();
     if (!trimmed) return { value: '', unit: '' };
@@ -132,13 +120,6 @@ export const buildEditProfileFormData = (input: EditProfileValues): FormData => 
             const meta: Array<Record<string, unknown>> = [];
             let imageIndex = 0;
             v.transformations.forEach((t) => {
-                // The API contract (postman README → "Edit Profile - Coach")
-                // expects each transformation row to carry `durationValue` +
-                // `durationUnit` as separate fields. The /me read returns a
-                // single `duration` string like "8 years", so we parse it back
-                // into number + unit here. When parsing fails (free-form
-                // text), we send the whole string as the value with an empty
-                // unit so the backend can fall back to its own normaliser.
                 const { value, unit } = splitDurationLabel(t.duration);
                 const row: Record<string, unknown> = {
                     id: t.id,
@@ -191,9 +172,6 @@ export const useUpdateProfileMutation = () => {
             queryClient.setQueryData(['session'], data);
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             queryClient.invalidateQueries({ queryKey: ['session'] });
-            // Editing the profile consumes usage-tracked features
-            // (edit_profile / profile_images / transformation_photos /
-            // certifications) — refresh the usage meters.
             queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
     });

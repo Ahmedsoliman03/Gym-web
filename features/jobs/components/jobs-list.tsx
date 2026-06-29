@@ -37,10 +37,6 @@ const styles = {
     'text-foreground/50 font-bold uppercase tracking-wider text-sm max-w-xs',
 };
 
-/**
- * Shared list shell used by /jobs, /my-jobs, and /saved-jobs. Owns the
- * apply/edit modals so any card in the list can open them.
- */
 export function JobsList({
   jobs,
   isLoading,

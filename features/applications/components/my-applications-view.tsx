@@ -24,8 +24,6 @@ const styles = {
 
 type StatusFilter = 'all' | 'open' | 'closed';
 
-/** `embedded` renders the list without the full-page chrome (top padding +
- *  PageHeader) so it can sit inside the profile page's tabbed layout. */
 export function MyApplicationsView({ embedded = false }: { embedded?: boolean }) {
     const t = useTranslations('Applications');
     const [postFilter, setPostFilter] = useState<string>('all');
@@ -33,15 +31,11 @@ export function MyApplicationsView({ embedded = false }: { embedded?: boolean })
 
     const { data: applications = [], isLoading } = useMyApplications();
 
-    // Drop applications whose job payload didn't come back — defensive against
-    // backend nulls so the cards below can safely read `app.job.id`.
     const safeApplications = useMemo(
         () => applications.filter((app) => !!app.job),
         [applications],
     );
 
-    // Posts the coach has applied to — one option per distinct job.id, with a
-    // tally so they can spot where they've sent multiple applications.
     const postOptions = useMemo(() => {
         const seen = new Map<string, { title: string; count: number }>();
         safeApplications.forEach((app) => {

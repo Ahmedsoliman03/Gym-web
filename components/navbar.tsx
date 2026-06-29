@@ -45,9 +45,6 @@ export const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      // If the current page is protected, send the user home; otherwise stay put
-      // and let the UI rerender into its logged-out state. `pathname` from
-      // @/i18n/routing is already locale-stripped.
       const publicPaths = ["/", "/gyms", "/coaches"];
       if (!publicPaths.includes(pathname)) {
         router.push("/");
@@ -64,8 +61,6 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close the mobile drawer whenever the route changes (covers programmatic
-  // pushes too). The desktop dropdowns/user-menu close themselves.
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);

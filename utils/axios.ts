@@ -9,12 +9,6 @@ export const api = axios.create({
     }
 });
 
-// Tag every outgoing request with the current next-intl locale so the backend
-// can return localized error messages, content, and validation strings. Read
-// from the URL prefix (`/en/...` or `/ar/...`) because the locale is the
-// source of truth in this app; it survives SSR (where window is undefined,
-// the header simply isn't set and the proxy passes through whatever the
-// caller already had).
 api.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
         const match = window.location.pathname.match(/^\/(en|ar)(?:\/|$)/);
@@ -41,13 +35,9 @@ api.interceptors.response.use(
                 '/activate',
                 '/complete-google-signup',
             ];
-            // Don't redirect if the user is already on any auth page (avoids loops
-            // and lets the auth flow handle its own 401s)
             const isOnAuthPage = authPaths.some(
                 (p) => pathWithoutLocale === p || pathWithoutLocale.startsWith(`${p}/`)
             );
-            // Don't redirect from public pages either — logged-out users browsing
-            // /, /gyms, /coaches will hit 401 on /api/me; the UI handles it.
             const isOnPublicPage = ['/', '/gyms', '/coaches'].includes(pathWithoutLocale);
             if (!isOnAuthPage && !isOnPublicPage) {
                 window.location.href = `/${locale}/login`;

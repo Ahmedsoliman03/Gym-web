@@ -2,17 +2,6 @@
 
 import { Dumbbell } from 'lucide-react';
 
-/**
- * GymSpot brand loader.
- *
- * A dumbbell sits inside a dark tile, lifting up-and-down on a rep cadence
- * while a conic-gradient ring orbits around it. The result reads as "loading
- * = working out" rather than as a generic spinner.
- *
- * `size` controls the tile diameter; ring + label scale off it.
- * `fullScreen` renders the loader centered over a full-viewport backdrop
- * so it can drop straight into a route-level loading.tsx file.
- */
 interface GLoaderProps {
     size?: number;
     label?: string;
@@ -139,11 +128,6 @@ export function GLoader({
     );
 }
 
-/**
- * Section-level loader: centers the GymSpot loader inside a min-height block.
- * Use this as the loading state inside a page section instead of a fixed
- * overlay, e.g. while a list query is in flight.
- */
 export function GLoaderSection({
     label,
     minHeight = 240,

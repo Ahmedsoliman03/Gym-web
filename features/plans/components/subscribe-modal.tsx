@@ -99,8 +99,6 @@ export function SubscribeModal({ plan, onClose, currency }: SubscribeModalProps)
     try {
       await mutateAsync({
         planId: plan.id,
-        // Only send a promo code that passed validation; otherwise fall back to
-        // the referral discount (the two are mutually exclusive).
         promoCode: promoApplied ? promoCode : undefined,
         applyReferralDiscount: applyReferral && !promoApplied,
       });

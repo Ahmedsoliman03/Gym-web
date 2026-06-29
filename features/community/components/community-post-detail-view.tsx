@@ -28,8 +28,6 @@ const styles = {
 export function CommunityPostDetailView({ postId }: CommunityPostDetailViewProps) {
   const t = useTranslations('Community');
   const router = useRouter();
-  // Deep-link anchors from a post-comment / comment-reply notification: the
-  // detail page scrolls to and flashes the matching comment or reply.
   const searchParams = useSearchParams();
   const highlightCommentId = searchParams.get('commentId') ?? undefined;
   const highlightReplyId = searchParams.get('replyId') ?? undefined;

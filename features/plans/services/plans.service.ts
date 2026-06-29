@@ -68,10 +68,6 @@ export const useCurrentSubscriptionQuery = (enabled = true) => {
   });
 };
 
-/**
- * GET /api/v1/platform/subscriptions/usage/ — per-feature consumption for the
- * user's active subscription. Returns an array of {@link FeatureUsage}.
- */
 export const getSubscriptionUsage = async (): Promise<PlatformUsageResponse> => {
   const { data } = await api.get<PlatformUsageResponse>(
     '/api/v1/platform/subscriptions/usage/',
@@ -89,10 +85,6 @@ export const useSubscriptionUsageQuery = (enabled = true) => {
   });
 };
 
-/**
- * GET /api/v1/platform/invoices/ — the user's billing history, newest first.
- * Each invoice embeds the subscription snapshot it was billed for.
- */
 export const getInvoices = async (): Promise<InvoicesResponse> => {
   const { data } = await api.get<InvoicesResponse>('/api/v1/platform/invoices/');
   return data;
@@ -108,11 +100,6 @@ export const useInvoicesQuery = (enabled = true) => {
   });
 };
 
-/**
- * POST /api/v1/platform/subscriptions/validate-promo/ — validate a promo code
- * against a plan. Returns the backend payload as-is; the caller normalizes the
- * valid flag / discount value (see {@link isPromoValid}).
- */
 export const validatePromoCode = async ({
   planId,
   promoCode,

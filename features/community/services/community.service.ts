@@ -59,10 +59,6 @@ export const getFeed = async(): Promise<FeedPage> => {
     };
 };
 
-// `/community` is gated by middleware (only authenticated users reach it), so
-// no client-side cookie check is needed. Gating on `document.cookie` would
-// cause `enabled` to differ between SSR and client and produce a hydration
-// mismatch.
 export const useFeed = (enabled = true) =>
     useInfiniteQuery<FeedPage>({
         queryKey: ['community', 'feed'],
@@ -98,12 +94,6 @@ export const useSavedPosts = (enabled = true) =>
         enabled,
     });
 
-// ─── My posts ────────────────────────────────────────────────────────────────
-//
-// `GET /api/community/posts/mine` (per postman README) — returns community
-// posts authored by the current user. Same envelope handling as the saved
-// list since the backend uses the same paging shapes across these lists.
-
 export const getMyPosts = async (): Promise<CommunityPost[]> => {
     const { data } = await api.get<RawSavedPostsResponse>('/api/community/posts/mine');
     if (Array.isArray(data)) return data.filter(Boolean);
@@ -117,13 +107,6 @@ export const useMyPosts = (enabled = true) =>
         queryFn: getMyPosts,
         enabled,
     });
-
-// ─── Coach / Gym posts ───────────────────────────────────────────────────────
-//
-// `GET /api/community/coaches/{id}/posts` and `GET /api/community/gyms/{id}/posts`
-// per postman README. The id passed in is the coach/gym **profileId**
-// (CoachProfile.id / GymProfile.id) — not the User.id. Same envelope handling
-// as the saved/mine lists.
 
 export const getCoachPosts = async (coachProfileId: string): Promise<CommunityPost[]> => {
     const { data } = await api.get<RawSavedPostsResponse>(
@@ -224,8 +207,6 @@ export const useEditPostMutation = () => {
     return useMutation({
         mutationFn: editPost,
         onSuccess: (updated) => {
-            // Replace the post inside every cached feed page with the server's
-            // version, instead of refetching the whole feed.
             queryClient.setQueriesData<{ pages: FeedPage[]; pageParams: unknown[] } | undefined>(
                 { queryKey: ['community', 'feed'] },
                 (curr) => {
@@ -255,8 +236,6 @@ export const useDeletePostMutation = () => {
     return useMutation({
         mutationFn: deletePost,
         onSuccess: (_data, postId) => {
-            // Drop the post from every cached feed page so it disappears
-            // immediately, without refetching the whole feed.
             queryClient.setQueriesData<{ pages: FeedPage[]; pageParams: unknown[] } | undefined>(
                 { queryKey: ['community', 'feed'] },
                 (prev) => {
@@ -317,11 +296,6 @@ const applyVoteTransition = (post: CommunityPost, nextVote: VoteValue): Communit
     };
 };
 
-/**
- * Add or remove the current user from a voters list. Used by both the post
- * and comment vote paths so the "Liked by" modal reflects the viewer's vote
- * immediately, without waiting for the next refetch.
- */
 const applyVoteToVotersList = (
     list: CommentVoter[],
     me: PostAuthor,
@@ -344,15 +318,6 @@ const applyVoteToVotersList = (
 type FeedQueryData = { pages: FeedPage[]; pageParams: unknown[] } | undefined;
 type PostListQueryData = CommunityPost[] | undefined;
 
-/**
- * Apply `transform` to one post (matched by id) inside every cached post-list
- * — the paginated feed, every flat list (`mine`, `saved`, `coach`, `gym`, …),
- * and the post-detail cache. Used by vote / save / share / comment mutations
- * so the UI updates everywhere the post is rendered, without waiting for a
- * refetch and regardless of which list it was loaded from.
- *
- * Snapshots are returned so the caller can roll them back on error.
- */
 const updateAllPostCaches = (
     queryClient: ReturnType<typeof useQueryClient>,
     postId: string,
@@ -390,9 +355,6 @@ const updateAllPostCaches = (
         });
     queryClient.setQueriesData<PostListQueryData>(
         { queryKey: ['community', 'posts'] },
-        // The `['community','posts']` prefix also matches non-array caches like
-        // the post-voters object (`['community','posts','voters',id]`), so guard
-        // with Array.isArray before mapping (mirrors the delete-post updater).
         (curr) => (Array.isArray(curr) ? curr.map((p) => (p.id === postId ? transform(p) : p)) : curr),
     );
 
@@ -440,16 +402,11 @@ export const useVotePostMutation = () => {
                 queryKey: ['community', 'posts', 'voters', postId],
             });
 
-            // Read the post's *current* myVote before the count transition so
-            // we know which side the viewer was previously on. This is what
-            // the voters-cache patch keys off of.
             const prevPostCache = queryClient.getQueryData<CommunityPost>([
                 'community',
                 'post',
                 postId,
             ]);
-            // Fall back to scanning the feed for the post if the detail cache
-            // is empty — same as how the optimistic count update works.
             let prevVote: VoteValue = prevPostCache?.myVote ?? null;
             if (!prevPostCache) {
                 const feeds =
@@ -471,12 +428,6 @@ export const useVotePostMutation = () => {
                 applyVoteTransition(p, vote),
             );
 
-            // Patch the post-voters cache too so the likes modal reflects the
-            // viewer's vote without refetching. Seed an empty cache when none
-            // exists — that way, when the user opens the modal right after
-            // liking (before any GET /votes has run), they still see their
-            // own avatar in the list; the background refetch fires later and
-            // replaces this seed with the server's authoritative response.
             const me = optimisticAuthorFromCache(queryClient);
             const prevVoters = queryClient.getQueryData<PostVotersResponse>([
                 'community',
@@ -518,9 +469,6 @@ export const useVotePostMutation = () => {
         },
         onError: (_err, { postId }, context) => {
             if (context) restorePostCaches(queryClient, postId, context);
-            // Roll back: if we had a snapshot, restore it; otherwise drop the
-            // seeded cache so the next open refetches from scratch instead of
-            // showing a stale optimistic list.
             if (context?.prevVoters !== undefined) {
                 queryClient.setQueryData(
                     ['community', 'posts', 'voters', postId],
@@ -532,9 +480,6 @@ export const useVotePostMutation = () => {
                 });
             }
         },
-        // Once the server confirms the vote, refresh the voters list so the
-        // displayed names match the backend's authoritative ordering and any
-        // votes from other users that landed in the meantime get picked up.
         onSuccess: (_data, { postId }) => {
             queryClient.invalidateQueries({
                 queryKey: ['community', 'posts', 'voters', postId],
@@ -553,12 +498,6 @@ export const voteComment = async ({
     await api.post(`/api/community/comments/${commentId}/vote`, { vote });
 };
 
-/** Apply a vote transition (prev → next) to a single comment. Pure.
- *
- *  `me` is the optimistic current-user author — passing it lets us patch the
- *  embedded `upVoters` / `downVoters` arrays in lock-step with the counts, so
- *  the "Liked by" modal renders the viewer's like immediately after they tap
- *  it (instead of needing a manual refresh). */
 const applyCommentVoteTransition = (
     comment: CommunityComment,
     nextVote: VoteValue,
@@ -597,10 +536,6 @@ const applyCommentVoteTransition = (
     };
 };
 
-/**
- * Walk a comment tree (top-level + replies) and apply `transform` to the node
- * whose id matches. Returns a new array; non-matching nodes are returned as-is.
- */
 const mapCommentTree = (
     nodes: CommunityComment[],
     targetId: string,
@@ -681,15 +616,6 @@ export const useCommentVoters = (commentId: string | null, enabled = true) =>
         enabled: enabled && !!commentId,
     });
 
-// ─── Post voters ──────────────────────────────────────────────────────────────
-//
-// `GET /api/community/posts/{post_id}/votes` returns `upVotes`, `downVotes`,
-// plus `upVoters` / `downVoters` arrays (and a combined `voters` list). The
-// post payload itself doesn't embed these arrays, so the post likes modal
-// fetches them on demand. We normalize across a few shapes the backend may
-// return — voter rows can come either as the nested `{user, value, votedAt}`
-// shape used by comments, or as a flat author shape.
-
 interface RawPostVotersResponse {
     upVotes?: number;
     downVotes?: number;
@@ -735,8 +661,6 @@ export const getPostVoters = async (postId: string): Promise<PostVotersResponse>
     const { data } = await api.get<RawPostVotersResponse>(
         `/api/community/posts/${postId}/votes`,
     );
-    // Some backend versions return only `voters` with a `vote` discriminator
-    // instead of the split arrays. Fall back to splitting that ourselves.
     let upVoters = normalizeVoters(data.upVoters);
     let downVoters = normalizeVoters(data.downVoters);
     if (upVoters.length === 0 && downVoters.length === 0 && data.voters) {
@@ -789,12 +713,6 @@ export const createComment = async ({
     return data;
 };
 
-/**
- * Bump `commentsCount` on the matching post everywhere it's cached — the
- * paginated feed, every flat list (mine/saved/coach/gym/…), and the
- * post-detail cache. `delta` is positive for create, negative for delete.
- * The counter stays in lock-step with the comments list without a refetch.
- */
 const adjustPostCommentsCount = (
     queryClient: ReturnType<typeof useQueryClient>,
     postId: string,
@@ -807,10 +725,6 @@ const adjustPostCommentsCount = (
     updateAllPostCaches(queryClient, postId, bump);
 };
 
-/** Build a placeholder author from the cached current-user profile so an
- *  optimistic comment can render with the right avatar / name before the
- *  server responds. Returns a minimal fallback when the profile isn't
- *  cached yet. */
 const optimisticAuthorFromCache = (
     queryClient: ReturnType<typeof useQueryClient>,
 ): PostAuthor => {
@@ -833,8 +747,6 @@ export const useCreateCommentMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: createComment,
-        // Insert a placeholder immediately so the input clears and the comment
-        // appears in the list without waiting for the server. Roll back on error.
         onMutate: async (vars) => {
             await queryClient.cancelQueries({
                 queryKey: ['community', 'comments', vars.postId],
@@ -858,9 +770,6 @@ export const useCreateCommentMutation = () => {
                 'comments',
                 vars.postId,
             ]);
-            // Prepend so the new comment shows at the top immediately — matching
-            // the server's newest-first order after a refetch (previously it was
-            // appended to the end and only jumped to the top on reload).
             queryClient.setQueryData<CommunityComment[] | undefined>(
                 ['community', 'comments', vars.postId],
                 (curr) => (curr ? [optimistic, ...curr] : [optimistic]),
@@ -880,8 +789,6 @@ export const useCreateCommentMutation = () => {
             }
         },
         onSuccess: (created, vars, context) => {
-            // Swap the placeholder for the real server-returned comment so the
-            // id/score/timestamps reflect the actual record.
             queryClient.setQueryData<CommunityComment[] | undefined>(
                 ['community', 'comments', vars.postId],
                 (curr) =>
@@ -944,13 +851,6 @@ const removeCommentFromTree = (
                 : c,
         );
 
-/**
- * Locate which post owns the comment `commentId` and whether it sits at the
- * top level (vs. as a reply). We rely on the cached comment lists keyed by
- * postId: `['community', 'comments', postId]`. Only top-level deletions
- * decrement `commentsCount` — replies are not tracked by that counter
- * (mirrors the create/reply path, where reply creation also doesn't bump it).
- */
 const locateCommentInCache = (
     queryClient: ReturnType<typeof useQueryClient>,
     commentId: string,
@@ -996,8 +896,6 @@ export const useDeleteCommentMutation = () => {
                     prev.push({ key: key as unknown[], data });
                 });
 
-            // Snapshot feed + post-detail caches only when we're about to mutate
-            // them, so we can roll back on error.
             const prevFeed: { key: unknown[]; data: FeedQueryData }[] = [];
             let prevPost: CommunityPost | undefined;
             if (located?.isTopLevel) {
@@ -1099,11 +997,6 @@ const applyShareIncrement = (post: CommunityPost): CommunityPost => ({
     sharesCount: (post.sharesCount ?? 0) + 1,
 });
 
-/**
- * Optimistic share ping. Increments `sharesCount` everywhere the post is
- * cached (feed pages, mine/saved/coach/gym lists, post detail) so the UI
- * reflects the action without a refetch. Rolls back on error.
- */
 export const useSharePostMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({

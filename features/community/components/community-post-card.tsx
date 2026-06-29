@@ -55,12 +55,6 @@ interface CommunityPostCardProps {
   defaultCommentsOpen?: boolean;
   /** Called after the post is successfully deleted (e.g., to leave the detail page). */
   onDeleted?: () => void;
-  /**
-   * When set, the post body + media become a link to this href (e.g. the
-   * `/community/{id}` detail page). The header menu and action buttons stay
-   * interactive — only the content/media region navigates. Used by the
-   * profile "Posts of {owner}" strip so each preview opens its full page.
-   */
   href?: string;
   /** Comment id to scroll to and flash (from a post-comment notification). */
   highlightCommentId?: string;
@@ -147,8 +141,6 @@ function PostMedia({
   return <img src={file} alt="" className={className} />;
 }
 
-// Wraps the media region in a link to the detail page when `href` is given
-// (profile preview), otherwise renders a plain container (feed/detail page).
 function MediaRegion({
   href,
   className,
@@ -187,8 +179,6 @@ export function CommunityPostCard({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  // A comment/reply deep-link always needs the comments section open so the
-  // target row exists in the DOM to scroll to.
   const [commentsOpen, setCommentsOpen] = useState(
     defaultCommentsOpen || !!highlightCommentId || !!highlightReplyId,
   );
@@ -199,14 +189,10 @@ export function CommunityPostCard({
   const [contentExpanded, setContentExpanded] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Fetch the post's voters lazily — only when the user opens the likes
-  // modal — so we don't issue a request per post in the feed.
   const { data: votersData, isLoading: votersLoading } = usePostVoters(
     likesOpen ? post.id : null,
   );
 
-  // Same see-more pattern used on the job card: clamp long bodies and let
-  // the user toggle. Threshold is a cheap character-count check.
   const CONTENT_TRUNCATE_AT = 240;
   const contentNeedsToggle = (post.content?.length ?? 0) > CONTENT_TRUNCATE_AT;
 
@@ -252,8 +238,6 @@ export function CommunityPostCard({
   const handleComment = () => setCommentsOpen((v) => !v);
 
   const isMine = !!profile?.id && profile.id === post.author?.id;
-  // Resolve the author's destination via the shared hook: /profile for self,
-  // /coaches/{id} or /gyms/{id} otherwise, or no link for clients.
   const { href: authorHref } = useProfileLink(
     post.author?.profileId,
     post.author?.userType,
@@ -264,10 +248,6 @@ export function CommunityPostCard({
       : `/${locale}/community/${post.id}`;
   const shareTitle = post.content?.slice(0, 80) || post.author.fullName;
 
-  // Always open the in-app modal. The modal exposes the device's native share
-  // sheet as one of the actions when available, plus copy + platform buttons.
-  // The /share API only fires when the user actually picks an option, not
-  // when the modal opens.
   const handleShare = () => setShareOpen(true);
 
   return (
@@ -384,8 +364,6 @@ export function CommunityPostCard({
       </header>
 
       {post.content &&
-        // With an href the body is a link to the detail page: render it
-        // clamped and skip the see-more toggle (clicking opens the full page).
         (href ? (
           <Link href={href} className={`block ${styles.contentClamped}`}>
             {post.content}
@@ -526,9 +504,6 @@ export function CommunityPostCard({
             setDeleteOpen(false);
             onDeleted?.();
           } catch {
-            // Mutation error stays in deleteMutation.error; keep the modal
-            // open so the user can retry. The button reverts to the
-            // non-submitting state automatically.
           }
         }}
       />

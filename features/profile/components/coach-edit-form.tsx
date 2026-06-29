@@ -73,9 +73,6 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const translateSpecializationLabel = (label: string) =>
     t_root(label as Parameters<typeof t_root>[0]);
 
-  // The backend stores a single `name` string. We split it on the first space
-  // for editing — everything after it becomes the last name — and rejoin on
-  // save so the API still receives one space-separated `name`.
   const initialFullName = (profile.fullName ?? inner?.name ?? '').trim();
   const firstSpace = initialFullName.indexOf(' ');
   const initialFirstName =
@@ -83,9 +80,6 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const initialLastName =
     firstSpace === -1 ? '' : initialFullName.slice(firstSpace + 1).trim();
 
-  // Coach editable state. Server-hosted images come back as `{id, file}` —
-  // we wrap them in `{id, url}` so the GalleryEditor can show + delete them,
-  // and the builder will tell the API which ids to keep.
   const [formData, setFormData] = useState({
     firstName: initialFirstName,
     lastName: initialLastName,
@@ -106,21 +100,14 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
-  // Plan-row validation errors, set after a failed save attempt and cleared
-  // whenever the user touches the plans list again.
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
-  // Warn before leaving with unsaved edits. Snapshot the pristine state once,
-  // then compare on every render (photo file change counts as dirty too).
   const initialSnapshotRef = useRef(serializeFormState(formData));
   const isDirty =
     photoFile !== null ||
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
-  // Pre-save guard: warn before the last profile edit is spent while these
-  // capped features still have unused slots. We subtract what this save adds so
-  // we don't warn about slots the save itself is filling.
   const newlyAdding = {
     certifications: formData.certifications.filter((c) => c.file && !c.id).length,
     transformation_photos: formData.transformations.filter(
@@ -156,8 +143,6 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   };
 
   const performSave = async (sanitized: ProfilePlan[]) => {
-    // Recombine the split fields into the single space-separated `name` the API
-    // expects (dropping a blank last name so there's no trailing space).
     const name = [formData.firstName, formData.lastName]
       .map((part) => part.trim())
       .filter(Boolean)

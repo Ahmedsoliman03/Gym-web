@@ -74,17 +74,12 @@ export function StoryViewerModal({
 }: StoryViewerModalProps) {
     const t = useTranslations('Stories');
 
-    // When `stories` is not provided, fall back to current user's stories
-    // (mine-mode), enabled only while the modal is open.
     const minePath = stories === undefined;
     const ownerEffective = isOwner ?? minePath;
     const { data: myStories, isLoading: myLoading } = useMyStories(isOpen && minePath);
     const sourceStories = useMemo<Story[]>(
         () => {
             const base = minePath ? (myStories ?? []) : (stories ?? []);
-            // The API returns newest first — both at the stories level and at
-            // the media-within-a-story level. We want newest LAST, so reverse
-            // the stories array AND each story's media array.
             return [...base].reverse().map((s) => ({
                 ...s,
                 media: [...(s?.media ?? [])].reverse(),
@@ -109,19 +104,10 @@ export function StoryViewerModal({
     const reportMutation = useReportStoryMutation();
 
     const currentStory: Story | undefined = sourceStories[storyIdx];
-    // Fetch Story Details for the active story regardless of who's viewing.
-    // The endpoint has a server-side side effect (records the viewer for
-    // non-owners; refreshes the owner's own snapshot too), and the hook
-    // invalidates both `['stories']` and `['stories', 'mine']` on success,
-    // so the public bar AND the owner's profile badge stay in sync with the
-    // new `isViewed` state.
     const detailsQuery = useStoryDetails(
         isOpen ? (currentStory?.id ?? null) : null,
         isOpen,
     );
-    // Prefer the freshly-fetched media (sorted by `position` ascending). Fall
-    // back to whatever the list endpoint already gave us so the modal still
-    // shows something while details are loading or if the call fails.
     const displayedMedia = useMemo(() => {
         const details = detailsQuery.data;
         if (details?.media && details.media.length > 0) {
@@ -153,10 +139,6 @@ export function StoryViewerModal({
         return p + mediaIdx;
     }, [storyIdx, mediaIdx, sourceStories]);
 
-    // Snapshot `initialStoryIndex` only at the open transition. After the
-    // first story is viewed, the badge recomputes `initialStoryIndex` (because
-    // the cache patch flips `isViewed` to true), and re-applying it mid-
-    // viewing would jump the user backward to a different slide.
     const wasOpenRef = useRef(false);
     useEffect(() => {
         if (isOpen && !wasOpenRef.current) {
@@ -191,8 +173,6 @@ export function StoryViewerModal({
 
     const goNext = () => {
         setProgress(0);
-        // Prefer the fetched-details media count when available, so navigation
-        // stays in sync with what's actually being rendered.
         const mediaCount =
             displayedMedia.length || sourceStories[storyIdx]?.media?.length || 0;
         if (mediaIdx + 1 < mediaCount) {

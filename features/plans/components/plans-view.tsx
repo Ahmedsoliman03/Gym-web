@@ -122,8 +122,6 @@ export function PlansView() {
               cancelLabel={t('cancelSubscription')}
               // Only the section matching the viewer's account type shows a CTA.
               showCta={canSubscribe}
-              // Free tier has no CTA; the current paid plan offers cancel;
-              // everything else opens the subscribe modal.
               onSelect={
                 free
                   ? undefined

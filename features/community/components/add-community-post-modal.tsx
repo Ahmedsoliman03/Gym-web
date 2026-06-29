@@ -44,8 +44,6 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
   const { mutateAsync, isPending, error, reset } = useCreatePostMutation();
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // Neither content nor media is required on its own — but the post must have
-  // at least one of them, otherwise the publish button stays disabled.
   const buildSchema = () =>
     Yup.object({
       content: Yup.string().trim(),

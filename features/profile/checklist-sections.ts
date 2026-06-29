@@ -1,7 +1,5 @@
 import type { UserProfile } from './types';
 
-/** A checklist row: one array on the `/api/me` response that the owner can
- *  fill in to complete their profile. */
 export type ChecklistKey =
     | 'specializations'
     | 'certifications'
@@ -25,8 +23,6 @@ export const buildProfileChecklist = (
 ): ChecklistItem[] => {
     if (!profile) return [];
 
-    // `profile.profile` can briefly be undefined right after the /me response
-    // resolves, so read every array through optional chaining.
     if (profile.userType === 'coach') {
         const p = profile.profile;
         const specs = p?.specializations ?? p?.specialization ?? [];

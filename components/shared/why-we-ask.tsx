@@ -3,11 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Info24Regular } from '@fluentui/react-icons';
 
-/**
- * Small "(i) why we ask?" affordance placed next to a sensitive field label.
- * Hover or tap toggles a short popover explaining why the data is needed —
- * a low-friction way to reduce hesitation on fields like the gym license.
- */
 interface WhyWeAskProps {
     /** Explanation text shown in the popover. */
     text: string;

@@ -37,8 +37,6 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    // The backend expects a single space-separated `name`; the
-                    // form collects it as two fields (see CoachFormInner).
                     const { firstName, lastName, ...rest } = values;
                     const name = [firstName, lastName]
                         .map((part) => part.trim())

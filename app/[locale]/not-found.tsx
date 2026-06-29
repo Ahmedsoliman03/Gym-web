@@ -3,10 +3,6 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Home, MoveLeft } from "lucide-react";
 
-/**
- * Styling object for the Not Found page
- * Adheres to the project's premium dark mode aesthetic
- */
 const styles = {
   container: "min-h-[85vh] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden",
   glow: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-full max-h-[800px] bg-primary/5 blur-[120px] rounded-full -z-10",
@@ -22,10 +18,6 @@ const styles = {
   buttonIcon: "group-hover:translate-x-0.5 transition-transform"
 };
 
-/**
- * Premium Not Found Page
- * Standardized 404 page with localized content and home redirect
- */
 export default function NotFound() {
   const t = useTranslations("NotFound");
 

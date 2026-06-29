@@ -70,9 +70,6 @@ export const useJob = (jobId: string | null) =>
 // ─── Create / edit / delete / close / reopen ─────────────────────────────────
 
 export const createJob = async (input: CreateJobInput): Promise<Job> => {
-    // Per postman README: the create-job endpoint accepts `title`, `content`,
-    // `specialization`, `image`. `location` is auto-derived from the gym
-    // profile (`area, city`) server-side, so we MUST NOT send it from here.
     const formData = new FormData();
     formData.append('title', input.title);
     formData.append('specialization', input.specialization);
@@ -143,19 +140,11 @@ export const useDeleteJobMutation = () => {
 };
 
 export const closeJob = async (jobId: string): Promise<void> => {
-    // The close endpoint replies 200 but may send an empty (or partial) body.
-    // `transformResponse: identity` stops Axios from trying to JSON-parse it,
-    // which otherwise surfaced a false "close failed" error on a successful
-    // request. We don't use the body — the optimistic patch + refetch below
-    // own the cache update.
     await api.post(`/api/jobs/${jobId}/close`, undefined, {
         transformResponse: (data) => data,
     });
 };
 
-/** Mark a job closed in-place, preserving every other field (counts, gym,
- *  etc.). Closing must never wipe `applicationsCount` / `savesCount` /
- *  `sharesCount`, so we patch rather than replace with the server payload. */
 const applyJobClosedTransition = (job: Job, jobId: string, closedAt: string): Job =>
     job.id === jobId ? { ...job, status: 'closed', closedAt } : job;
 
@@ -166,8 +155,6 @@ export const useCloseJobMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: closeJob,
-        // Optimistically flip the job to closed everywhere it's cached, keeping
-        // its counts intact. Snapshot first so we can roll back on failure.
         onMutate: async (jobId) => {
             await queryClient.cancelQueries({ queryKey: ['jobs'] });
             const previous = queryClient.getQueriesData<Job[] | Job | undefined>({
@@ -194,8 +181,6 @@ export const useCloseJobMutation = () => {
             });
         },
         onSettled: (_data, _err, jobId) => {
-            // Resync this job (and lists) with the server's authoritative copy —
-            // which keeps the counts correct after the optimistic patch.
             queryClient.invalidateQueries({ queryKey: ['jobs'] });
             queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
         },
@@ -282,8 +267,6 @@ export const useSaveJobMutation = () => {
                 });
             const prevDetail = queryClient.getQueryData<Job>(['jobs', jobId]);
 
-            // The ['jobs'] prefix also matches the single-Job detail query
-            // (['jobs', id]), so guard against non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
@@ -332,8 +315,6 @@ export const useShareJobMutation = () => {
         mutationFn: shareJob,
         onMutate: async (jobId) => {
             await queryClient.cancelQueries({ queryKey: ['jobs'] });
-            // The ['jobs'] prefix also matches the single-Job detail query
-            // (['jobs', id]), so guard against non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
@@ -369,9 +350,6 @@ export const applyForJob = async (input: ApplyJobInput): Promise<void> => {
     });
 };
 
-/** Flip `isApplied` to true and bump `applicationsCount` on the matching job.
- *  Guarded on `isApplied` so re-runs (or a server refetch racing the optimistic
- *  patch) can't double-count the same application. */
 const applyJobAppliedTransition = (job: Job, jobId: string): Job =>
     job.id === jobId && !job.isApplied
         ? {
@@ -385,19 +363,12 @@ export const useApplyForJobMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: applyForJob,
-        // Optimistic: swap the Apply button to "Already applied" AND increment
-        // the applicant count everywhere the job is rendered, before the request
-        // resolves. Snapshot first so we can roll back if the apply fails.
         onMutate: async (vars) => {
             await queryClient.cancelQueries({ queryKey: ['jobs'] });
             const previous = queryClient.getQueriesData<Job[] | Job | undefined>({
                 queryKey: ['jobs'],
             });
 
-            // Patch every cached list view (feed, mine, saved, and any future
-            // list under the ['jobs'] root). The ['jobs'] prefix also matches
-            // the single-Job detail query (['jobs', id]), so guard against
-            // non-array entries before mapping.
             queryClient.setQueriesData<Job[] | undefined>(
                 { queryKey: ['jobs'] },
                 (curr) =>
@@ -423,8 +394,6 @@ export const useApplyForJobMutation = () => {
             queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
         onSettled: () => {
-            // Resync with the server's authoritative counts, and refresh the
-            // coach's own applications list so the new application shows up.
             queryClient.invalidateQueries({ queryKey: ['jobs'] });
             queryClient.invalidateQueries({ queryKey: ['applications'] });
         },

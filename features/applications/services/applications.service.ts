@@ -112,8 +112,6 @@ export const useMarkCvViewedMutation = () => {
             queryClient.invalidateQueries({ queryKey: ['applications'] });
         },
         onSuccess: () => {
-            // Viewing an applicant's CV consumes the `see_applicants` feature —
-            // refresh usage.
             queryClient.invalidateQueries({ queryKey: plansKeys.usage });
         },
     });

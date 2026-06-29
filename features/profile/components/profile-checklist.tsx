@@ -117,8 +117,6 @@ export function ProfileChecklist() {
                 onClick={() => setOpen((o) => !o)}
                 aria-label={t('checklistOpen')}
                 aria-expanded={open}
-                // Animate to attract attention only while there are still empty
-                // sections and the panel isn't already open.
                 className={`${styles.fab} ${remaining > 0 && !open ? 'checklist-attract' : ''}`}
             >
                 <ClipboardList size={22} strokeWidth={2.25} />

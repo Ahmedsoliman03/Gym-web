@@ -1,7 +1,3 @@
-// Centralized formatting helpers shared across features. Keep all date / time /
-// number formatting here so every call site uses one implementation instead of
-// re-declaring near-identical local copies.
-
 const RELATIVE_DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
     { amount: 60, unit: 'second' },
     { amount: 60, unit: 'minute' },
@@ -12,9 +8,6 @@ const RELATIVE_DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[
     { amount: Number.POSITIVE_INFINITY, unit: 'year' },
 ];
 
-/** Compact relative time ("5s", "3m", "2h", "4d"), falling back to a locale
- *  date string for anything older than a week. When `justNowLabel` is provided,
- *  anything under 30s renders that label instead of a bare "Ns". */
 export function formatRelativeTime(iso?: string, justNowLabel?: string): string {
     if (!iso) return '';
     const date = new Date(iso);
@@ -31,8 +24,6 @@ export function formatRelativeTime(iso?: string, justNowLabel?: string): string 
     return date.toLocaleDateString();
 }
 
-/** Localized "5 minutes ago" relative time via Intl.RelativeTimeFormat.
- *  Returns "" on an unparseable date so a row never renders "Invalid Date". */
 export function formatRelativeTimeLong(iso: string, locale: string): string {
     const then = new Date(iso).getTime();
     if (Number.isNaN(then)) return '';

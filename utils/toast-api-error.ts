@@ -17,16 +17,10 @@ type ApiErrorResponse = {
     fields?: Record<string, string[]>;
 };
 
-// Surface backend validation errors as toasts. When the response includes a
-// per-field `messages` array (or a `fields` map), each field's message gets
-// its own toast so the user sees every problem at once instead of just the
-// first one. Falls back to a single toast for non-field errors.
 export const toastApiError = (error: unknown, fallback: string) => {
     const data = (error as { response?: { data?: ApiErrorResponse } })?.response?.data;
     const envelope: ApiErrorEnvelope | undefined = data?.error ?? data;
 
-    // Known error codes (e.g. feature_limit_exceeded) get a friendly, localized
-    // static message — shown instead of the raw backend text.
     const friendly = getApiErrorCodeMessage(envelope?.code ?? data?.error?.code);
     if (friendly) {
         toast.error(friendly);

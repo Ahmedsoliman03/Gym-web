@@ -108,8 +108,6 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
         }
 
         const { slug } = params;
-        // Catch-all params drop the trailing slash; restore it from the original
-        // request path so backends that require it (Django APPEND_SLASH) match.
         let path = slug.join("/");
         if (new URL(request.url).pathname.endsWith("/") && !path.endsWith("/")) {
             path += "/";
@@ -144,9 +142,6 @@ async function handleProxy(request: Request, params: { slug: string[] }) {
             }
         }
 
-        // Translate the cookie token to the Authorization Bearer header for backends
-        // that accept it; Django still receives the
-        //  Cookie header too.
         const cookieStore = await cookies();
         const token = cookieStore.get('access_token')?.value || cookieStore.get('token')?.value;
         if (token && !headers.has('Authorization')) {

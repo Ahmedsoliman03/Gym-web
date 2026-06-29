@@ -49,9 +49,6 @@ const styles = {
         }`,
 };
 
-/** Tabs available per role. Posts is author-only (clients can't publish posts);
- *  My Jobs is gym-only; My Applications is coach-only. Keep this in sync with
- *  `buildAccountLinks` in components/navbar/navbar-data.ts. */
 const tabsForUserType = (userType: ProfileUserType): TabDef[] => {
     const base: TabDef[] = [
         { key: 'profile', labelKey: 'tabProfile', icon: User },
@@ -60,8 +57,6 @@ const tabsForUserType = (userType: ProfileUserType): TabDef[] => {
         base.push({ key: 'posts', labelKey: 'tabPosts', icon: FileText });
     }
     base.push({ key: 'saved-posts', labelKey: 'tabSavedPosts', icon: Bookmark });
-    // Saved Jobs is for roles that can reach the job board (gyms + coaches);
-    // clients are blocked from /jobs so they can never save one.
     if (userType !== 'client') {
         base.push({ key: 'saved-jobs', labelKey: 'tabSavedJobs', icon: Bookmark });
     }

@@ -21,13 +21,6 @@ const styles = {
     "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-primary hover:text-primary-foreground border border-white/10 text-foreground/70 font-black uppercase text-xs tracking-wider transition-all",
 };
 
-/**
- * Inline "Posts of {owner}" strip for the profile page. Shows up to 3 cards
- * from the profile owner's authored posts (coach or gym), with a "See all
- * posts" affordance that routes to the full list. Renders nothing while
- * loading/erroring AND when the owner has no posts — the profile page should
- * not advertise an empty posts section.
- */
 export const ProfilePosts = ({
   profileType,
   profileId,
@@ -43,9 +36,6 @@ export const ProfilePosts = ({
   const visible = posts.slice(0, 3);
   const hasMore = posts.length > 3;
 
-  // Hide the section entirely while loading, on error, OR when there are no
-  // posts to show. We don't want an empty "no posts" placeholder taking up
-  // space on the profile.
   if (query.isLoading || query.isError || posts.length === 0) return null;
 
   const headerText = ownerName

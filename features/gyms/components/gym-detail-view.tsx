@@ -55,9 +55,6 @@ export function GymDetailView({ id }: GymDetailViewProps) {
     );
   }
 
-  // No mock fallbacks: empty fields render through the section empty-states.
-  // `isOwner={false}` below so visitor-facing copy is used instead of the
-  // "edit your profile" CTA reserved for the owner's own /profile page.
   const mappedGym: GymProfileViewModel = {
     id: gym.id,
     userId: gym.userId,

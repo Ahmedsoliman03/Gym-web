@@ -64,8 +64,6 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const validationSchema = getLoginSchema(t);
 
-    // Backend login takes only email/password, so "remember me" is a
-    // client-side convenience: persist the email and prefill it next visit.
     const [rememberedEmail] = useState(() =>
         typeof window === 'undefined'
             ? ''

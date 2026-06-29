@@ -60,8 +60,6 @@ export function WeightProgress() {
   const [confettiTrigger, setConfettiTrigger] = useState<number>(0);
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
 
-  // Default the new-entry date to today on mount. (Data now comes from the API
-  // via useWeightTracker — no more localStorage.)
   useEffect(() => {
     setNewDate(new Date().toISOString().split('T')[0]);
   }, []);
@@ -137,8 +135,6 @@ export function WeightProgress() {
     goalMode === 'lose' ? currentWeight <= goalWeight : currentWeight >= goalWeight
   );
 
-  // Export the chart + its underlying log detail as a PDF report. Offered once
-  // the goal is achieved (button lives in the celebration banner).
   const handleDownloadPdf = () => {
     void downloadWeightProgressPdf({
       logs,

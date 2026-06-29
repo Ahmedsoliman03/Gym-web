@@ -56,8 +56,6 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
-  // Plan-row validation errors, set after a failed save attempt and cleared
-  // whenever the user touches the plans list again.
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
   // Warn before leaving with unsaved edits.
@@ -67,8 +65,6 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
-  // Pre-save guard: warn before the last profile edit is spent while the gym's
-  // capped gallery still has unused slots (minus what this save adds).
   const newlyAdding = {
     profile_images: formData.gymImages.filter((g) => g.file && !g.id).length,
   };
@@ -115,12 +111,8 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
 
   const handleSave = () => {
     if (updateMutation.isPending) return;
-    // Drop blank rows and enforce required fields on touched ones before
-    // building the FormData — the API never sees half-finished plan cards.
     const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
     if (hasErrors) {
-      // No toast — the inline "Required" labels plus the shake animation
-      // on the offending plan cards are the only feedback the user needs.
       setPlanErrors(errors);
       return;
     }
@@ -240,8 +232,6 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
           errors={planErrors}
           onChange={(next) => {
             setFormData((prev) => ({ ...prev, plans: next as ProfilePlan[] }));
-            // Clear stale errors as soon as the user edits anything in the
-            // plans list — re-validation runs again on the next Save click.
             if (Object.keys(planErrors).length > 0) setPlanErrors({});
           }}
         />

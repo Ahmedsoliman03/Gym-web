@@ -1,8 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
 
-// Wire shape mirrors postman/README.md → "Notifications → Get/Update Notification Settings".
-// The backend ignores unknown keys, so the type is closed to the documented set.
 export interface NotificationPreferences {
     post_vote: boolean;
     post_comment: boolean;

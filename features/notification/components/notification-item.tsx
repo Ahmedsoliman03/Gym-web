@@ -49,9 +49,6 @@ const styles = {
         "absolute top-2 end-2 p-1.5 rounded-lg text-foreground/30 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover/notif:opacity-100 transition-all",
 };
 
-// Two capital letters: first letter of the first two words, or — for a
-// single-word name — its first two characters. Used for the fallback avatar
-// when the actor has no uploaded photo.
 const initials = (name: string) => {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return "";
@@ -70,9 +67,6 @@ export const NotificationItem = ({
     notification: AppNotification;
     locale: string;
     onClick: () => void;
-    /** Fired when the actor avatar (a profile link) is clicked — lets the menu
-     *  close and mark the notification read without also running `onClick`
-     *  (which would navigate to the post instead of the profile). */
     onActorClick?: () => void;
     onDelete: () => void;
     deleteLabel: string;
@@ -82,8 +76,6 @@ export const NotificationItem = ({
     const accent = TYPE_ACCENT[type] ?? "bg-primary/20 text-primary";
     const name = actor?.fullName ?? "";
 
-    // Coach/gym → their public profile; clients (no public page) and missing
-    // actors resolve to null, leaving the avatar non-clickable.
     const { href: actorHref } = useProfileLink(actor?.profileId, actor?.userType);
 
     const avatarInner = actor?.photo ? (

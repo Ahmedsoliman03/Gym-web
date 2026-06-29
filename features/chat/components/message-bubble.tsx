@@ -27,9 +27,6 @@ const styles = {
         'p-0.5 rounded text-current opacity-60 hover:opacity-100 hover:bg-black/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed',
 };
 
-/** Split a message body into text + clickable links. Keeps the regex local
- *  (no shared `lastIndex` state) and tests each part with a non-global pattern
- *  so URLs — including shared map locations — render as anchors. */
 const URL_SPLIT_RE = /(https?:\/\/[^\s]+)/g;
 const isUrl = (part: string) => /^https?:\/\//.test(part);
 
@@ -140,8 +137,6 @@ export const MessageBubble = ({
         message.updatedAt &&
         new Date(message.updatedAt).getTime() - new Date(message.createdAt).getTime() > 1000;
 
-    // Copy is available on any message that has text — including the other
-    // person's — and sits inline next to edit/delete (mine-only).
     const canCopy = !!message.body && !isEditing;
 
     const handleCopy = async () => {

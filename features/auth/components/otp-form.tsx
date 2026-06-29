@@ -65,9 +65,6 @@ export default function OtpForm() {
     const handleResend = async () => {
         setIsResending(true);
         try {
-            // Since we don't have a direct resend mutation yet, we'll simulate it
-            // or if the backend supports it, we would call it here.
-            // For now, I'll assume we need to add this to the service.
             await new Promise(resolve => setTimeout(resolve, 1000));
             toast.success(t('Auth.otpSent'));
             setTimeLeft(300);
@@ -104,9 +101,6 @@ export default function OtpForm() {
         setFieldValue: (field: string, value: string) => void,
     ) => {
         e.preventDefault();
-        // Pull only the digits out of whatever was pasted (handles "123 456",
-        // "123-456", or a full code dropped onto any square) and spread them
-        // across all six boxes starting from the first.
         const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, otp.length);
         if (!digits) return;
 

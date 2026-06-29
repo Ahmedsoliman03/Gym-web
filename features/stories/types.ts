@@ -3,7 +3,6 @@ export interface StoryAuthor {
     profileId?: string;
     fullName: string;
     userType: 'coach' | 'gym' | 'client';
-    /** Older list responses use `profileImage`; the new detail response uses `photo`. */
     profileImage?: string | null;
     photo?: string | null;
     city?: string | null;
@@ -52,7 +51,6 @@ export interface StoryViewersResponse {
     viewers: StoryViewer[];
 }
 
-/** Used internally by StoriesBar to group stories by author. */
 export interface AuthorGroup {
     key: string;
     author: StoryAuthor;
@@ -66,11 +64,8 @@ export interface StoriesBarProps {
 export interface StoryAvatarBadgeProps {
     profileImage?: string;
     profileName?: string;
-    /** Defaults to true (own profile). Set to false when viewing someone else. */
     isOwner?: boolean;
-    /** Author id of the displayed profile (used to filter public stories). */
     authorId?: string;
-    /** Author userType for fallback matching when id is missing. */
     authorUserType?: StoryAuthor['userType'];
 }
 

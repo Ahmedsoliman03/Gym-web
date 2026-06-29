@@ -7,14 +7,8 @@ import { Link } from "@/i18n/routing";
 interface EmptySectionProps {
   /** Sentence shown to non-owners — e.g. `t('noPlansYet')`. */
   visitorMessage: string;
-  /** Sentence shown to the owner. Falls back to a generic "improve your
-   *  profile" prompt when not provided. */
   ownerMessage?: string;
-  /** When true, render the friendly CTA + "Edit profile" button. When false
-   *  (or omitted), show the visitor message instead. */
   isOwner?: boolean;
-  /** Optional override for the variant — useful when you already know which
-   *  message you want and don't want the component to switch automatically. */
   variant?: "compact" | "default";
 }
 
@@ -35,12 +29,6 @@ const styles = {
     "mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs hover:brightness-110 transition-all",
 };
 
-/**
- * Friendly placeholder for sections that have no data yet.
- *  - Non-owners see "No X yet."
- *  - The owner sees a softer "Add your X" prompt with an Edit-profile CTA so
- *    the empty section doubles as a nudge to fill it in.
- */
 export const EmptySection = ({
   visitorMessage,
   ownerMessage,

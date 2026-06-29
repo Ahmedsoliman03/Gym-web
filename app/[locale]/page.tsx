@@ -69,10 +69,6 @@ function headlineKeyFor(userType: UserType | undefined) {
   }
 }
 
-// JWT payload is the only trustworthy source for userType (the `user_type`
-// cookie is non-HttpOnly and exists for UI convenience only — see middleware.ts
-// comment around the same decode). We only need this for picking which CTA
-// set to render; access control still lives in middleware.
 function userTypeFromJwt(token: string | undefined): UserType | undefined {
   if (!token) return undefined;
   const parts = token.split(".");

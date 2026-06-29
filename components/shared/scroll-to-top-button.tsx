@@ -11,11 +11,6 @@ const styles = {
   visible: 'opacity-100 pointer-events-auto translate-y-0',
 };
 
-/**
- * Floating "scroll to top" button. Mounted once in the locale layout so it is
- * available on every page. Hidden until the user has scrolled past a small
- * threshold, then smoothly returns the page to the top on click.
- */
 export function ScrollToTopButton() {
   const t = useTranslations('Common');
   const [visible, setVisible] = useState(false);
@@ -23,8 +18,6 @@ export function ScrollToTopButton() {
   useEffect(() => {
     const SHOW_AFTER_PX = 320;
 
-    // Read once on mount so the button shows immediately on a back-navigation
-    // that lands the user mid-page.
     setVisible(window.scrollY > SHOW_AFTER_PX);
 
     const onScroll = () => {

@@ -55,8 +55,6 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
     });
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
-        // city = governorate-level (e.g. "Giza"); area = sub-area (e.g. "6th of October").
-        // Nominatim sometimes returns Cairo/Giza in result.city, so fall back accordingly.
         let city = '';
         if (result.governorate) {
             city = result.governorate;

@@ -39,8 +39,6 @@ const styles = {
     phoneInput: "w-full pl-10 pr-4 py-3.5 bg-[#0D121F] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium",
 };
 
-/** CV upload field with click-to-pick and drag-and-drop. Pulls form state from
- *  Formik context so the drop hook can live at component top level. */
 function CvField() {
     const t = useTranslations('Jobs');
     const { values, setFieldValue } = useFormikContext<{ cv: File | null }>();
@@ -57,8 +55,6 @@ function CvField() {
         <div>
             <label className={styles.label}>{t('uploadCv')}</label>
             {cv ? (
-                // Selected state — primary tint, file icon, name, and a clear
-                // button that doesn't trigger reupload.
                 <div
                     className={`${styles.uploadContainerSelected} ${isDragging ? styles.uploadContainerDragging : ''}`}
                     onClick={openPicker}
@@ -128,9 +124,6 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
             title={t('applyPopupTitle')}
         >
             <Formik
-                // Pre-populate from /api/me so coaches don't retype name / email /
-                // phone they already gave us. `enableReinitialize` re-syncs when
-                // the profile query resolves after the modal first mounts.
                 enableReinitialize
                 initialValues={{
                     name: profile?.fullName ?? '',

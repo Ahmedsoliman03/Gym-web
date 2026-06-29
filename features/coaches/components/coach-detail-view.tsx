@@ -18,8 +18,6 @@ const styles = {
 export function CoachDetailView({ id }: CoachDetailViewProps) {
   const router = useRouter();
   const { data: coach, isLoading, error } = useCoach(id);
-  // Dual-id self-check lives in the hook (matches user-id or inner profile id).
-  // We only act on it when the URL belongs to a coach detail page.
   const { isSelf } = useProfileLink(id, 'coach');
 
   useEffect(() => {
@@ -44,9 +42,6 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
 
 
   const mappedCoach: CoachProfileViewModel = {
-    // `data.id` carries the User.id (used for chat + story-author links).
-    // `/api/coaches/{id}` is keyed by profile id, so we read the dedicated
-    // `userId` field the backend exposes for messaging.
     id: coach.id,
     userId: coach.userId,
     type: "coach",
@@ -77,8 +72,6 @@ export function CoachDetailView({ id }: CoachDetailViewProps) {
     },
     plans: coach.plans ?? [],
     socialMedia: coach.socialMedia ?? [],
-    // Specialization-next-to-name indicator is intentionally left blank on
-    // the visitor-facing detail page; that chip is owner-profile-only.
   };
 
   return (

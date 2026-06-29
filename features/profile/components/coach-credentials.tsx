@@ -23,9 +23,6 @@ export const CoachCredentials = ({
   const t = useTranslations("Profile");
   const t_root = useTranslations();
 
-  // Look each value up in SPECIALIZATIONS so the chip text follows the
-  // current locale. Unknown values fall through as the raw API string so
-  // custom specializations the coach set up never disappear.
   const translated = specializations.map((spec) => {
     const match = SPECIALIZATIONS.find((s) => s.value === spec);
     return match ? t_root(match.label as any) : spec;

@@ -32,8 +32,6 @@ const fmtDate = (iso: string) => {
     : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-/** Fetch an app asset and return it as a data URL for jsPDF.addImage. Returns
- *  null (so the report still renders without the logo) if the asset can't load. */
 async function loadImageDataUrl(url: string): Promise<string | null> {
   try {
     const res = await fetch(url);

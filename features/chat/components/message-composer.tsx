@@ -38,9 +38,6 @@ import { useChatSocket } from '../socket/chat-socket-provider';
 import type { ChatMessage, ChatUser } from '../types';
 
 const styles = {
-    // `relative z-50` lifts the input bar (and its emoji/attach popovers) above
-    // the z-40 backdrop. Required because `backdrop-blur-md` here creates a
-    // stacking context that would otherwise trap the popovers under the backdrop.
     wrap: 'relative z-50 border-t border-white/10 bg-surface/50 backdrop-blur-md p-3 flex items-end gap-2',
     input:
         'flex-1 resize-none max-h-32 min-h-[40px] rounded-2xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-colors',
@@ -64,11 +61,6 @@ const styles = {
         'absolute -top-5 left-3 text-[10px] text-foreground/40 uppercase tracking-wide pointer-events-none',
 };
 
-/** Map emoji-picker-react's CSS variables onto the app's design tokens
- *  (`--surface`, `--foreground`, `--primary` from globals.css) so the picker
- *  matches the rest of the site instead of the library's stock dark palette.
- *  Both the base and `--epr-dark-*` variants are set because the dark theme
- *  reassigns the base ones at runtime. */
 const emojiThemeVars = {
     '--epr-bg-color': 'var(--surface)',
     '--epr-dark-bg-color': 'var(--surface)',
@@ -96,9 +88,6 @@ const emojiThemeVars = {
     '--epr-picker-border-radius': '1rem',
 } as CSSProperties;
 
-/** Browser-safe UUID — falls back to a timestamp-based id for older runtimes
- *  that don't expose `crypto.randomUUID`. Only the socket echo cares about
- *  this matching, so uniqueness within the tab is enough. */
 const newClientMessageId = (): string => {
     if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
         return crypto.randomUUID();
@@ -106,9 +95,6 @@ const newClientMessageId = (): string => {
     return `cmid-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-/** Build a `ChatUser` shape from `/api/me` so the optimistic message bubble
- *  has a real sender object — `MessageBubble` already only needs `id`, but
- *  this future-proofs us when we add sender avatars in threads. */
 const meAsChatUser = (
     profile: ReturnType<typeof useProfileUser>['profile'],
 ): ChatUser | undefined => {
@@ -147,8 +133,6 @@ export const MessageComposer = ({
     const [locating, setLocating] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Typing indicator: emit `typing.start` on the first keystroke, then
-    // `typing.stop` either after a short idle window or on send/blur/unmount.
     const isTypingRef = useRef(false);
     const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -186,10 +170,6 @@ export const MessageComposer = ({
         setShowAttach(false);
     }, []);
 
-    // While the emoji picker or attachment menu is open, treat it like a modal:
-    // lock page scrolling and close on Escape. A full-screen backdrop (rendered
-    // in the JSX) swallows every other click/tap and closes the panel first, so
-    // no background action can fire while a panel is open.
     const panelOpen = showEmoji || showAttach;
     useEffect(() => {
         if (!panelOpen) return;
@@ -205,9 +185,6 @@ export const MessageComposer = ({
         };
     }, [panelOpen, closePanels]);
 
-    // Hide both popovers when switching threads. Uses React's "adjust state on
-    // prop change during render" pattern (state, not a ref/effect) so it stays
-    // compiler-safe and avoids a redundant commit.
     const [prevConversation, setPrevConversation] = useState(conversationId);
     if (prevConversation !== conversationId) {
         setPrevConversation(conversationId);
@@ -235,9 +212,6 @@ export const MessageComposer = ({
     const canSend = trimmed.length > 0 && status === 'open' && !!profile;
     const showSocketStatusHint = status === 'connecting' || status === 'closed';
 
-    /** Send an arbitrary message body (typed text or a generated link such as
-     *  a shared location) through the same optimistic + socket path. Returns
-     *  `true` when the message was dispatched. */
     const sendBody = useCallback(
         (raw: string): boolean => {
             const body = raw.trim();
@@ -248,9 +222,6 @@ export const MessageComposer = ({
             const clientMessageId = newClientMessageId();
             const now = new Date().toISOString();
 
-            // Optimistic insert. The socket provider's `applyMessageNew` will
-            // reconcile this same entry by `clientMessageId` when the server
-            // echoes the message back (see chat-socket-provider.tsx:118-138).
             const optimistic: ChatMessage = {
                 // Temporary id — replaced by the server-assigned UUID on echo.
                 id: `tmp:${clientMessageId}`,
@@ -279,9 +250,6 @@ export const MessageComposer = ({
         if (sendBody(trimmed)) setValue('');
     };
 
-    /** Share the current device location as a Google Maps link. This is the one
-     *  attachment type the backend supports today — it rides the normal text
-     *  message channel (no upload endpoint needed). */
     const handleSendLocation = () => {
         setShowAttach(false);
         if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
@@ -321,8 +289,6 @@ export const MessageComposer = ({
     };
 
     const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-        // Enter sends; Shift+Enter inserts a newline. Matches the standard
-        // pattern across major chat UIs (Slack, Discord, etc.).
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSend();

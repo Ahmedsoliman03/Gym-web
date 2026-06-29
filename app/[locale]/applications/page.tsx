@@ -34,9 +34,6 @@ export default function ApplicationsPage() {
 
     const { data: applications = [], isLoading } = useMyJobsApplications();
 
-    // A job-application notification deep-links here as `?jobId=<id>`. Once the
-    // applications load, resolve that id to its job title and pre-select the
-    // title filter so the gym lands straight on the relevant applications.
     const searchParams = useSearchParams();
     const jobIdParam = searchParams.get('jobId');
     const autoFilteredJobIdRef = useRef<string | null>(null);
@@ -50,8 +47,6 @@ export default function ApplicationsPage() {
         }
     }, [jobIdParam, applications]);
 
-    // Distinct job titles present in the incoming applications, each with its
-    // applicant count, for the "filter by job title" select.
     const titleOptions = useMemo(() => {
         const counts = new Map<string, number>();
         applications.forEach((app) => {
@@ -69,9 +64,6 @@ export default function ApplicationsPage() {
         return opts;
     }, [applications, t]);
 
-    // Build the specialization options from the disciplines that actually
-    // appear in the incoming applications — no point offering "Yoga" if no
-    // open post is yoga-related. Each option carries its applicant count.
     const specOptions = useMemo(() => {
         const counts = new Map<string, number>();
         applications.forEach((app) => {

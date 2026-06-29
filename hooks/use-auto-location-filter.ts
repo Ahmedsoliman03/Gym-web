@@ -42,10 +42,6 @@ const safeSessionStorage = {
 };
 
 export interface UseAutoLocationFilterOptions {
-    /**
-     * Message shown via toast after a successful detection. Pass an i18n'd
-     * string so the hook stays UI-agnostic.
-     */
     successMessage?: string;
 }
 
@@ -63,21 +59,6 @@ export interface UseAutoLocationFilterReturn {
     isDetecting: boolean;
 }
 
-/**
- * Shared location-filter logic for listings (gyms, coaches, ...).
- *
- * Behavior:
- *   - Owns `city` / `area` state.
- *   - Detection runs only when the caller invokes `detect()` (e.g. via a
- *     "Filter by my location" button) — never automatically on mount.
- *   - Restores previously-detected values from sessionStorage on mount so
- *     same-session navigations and language switches don't lose them.
- *   - Persists user edits to sessionStorage and surfaces a success toast on
- *     a completed detection.
- *
- * Multiple pages call this hook with the same sessionStorage keys, so a
- * detection performed on /gyms also pre-fills the same filters on /coaches.
- */
 export function useAutoLocationFilter(
     options: UseAutoLocationFilterOptions = {},
 ): UseAutoLocationFilterReturn {
@@ -129,8 +110,6 @@ export function useAutoLocationFilter(
         ),
     );
 
-    // Persist user edits to sessionStorage so language/route changes don't lose
-    // their filter selection.
     useEffect(() => {
         if (!isRestoredRef.current) return;
         if (city) {
@@ -149,8 +128,6 @@ export function useAutoLocationFilter(
         }
     }, [area]);
 
-    // On first mount: restore prior session values. Do NOT auto-detect — the
-    // caller must trigger detect() explicitly (e.g. via a button click).
     useEffect(() => {
         const storedCity = safeSessionStorage.getItem(STORAGE_KEYS.city);
         const storedArea = safeSessionStorage.getItem(STORAGE_KEYS.area);

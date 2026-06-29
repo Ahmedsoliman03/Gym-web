@@ -12,8 +12,6 @@ const styles = {
   innerEmbedded: 'max-w-4xl mx-auto',
 };
 
-/** `embedded` renders the list without the full-page chrome (top padding +
- *  PageHeader) so it can sit inside the profile page's tabbed layout. */
 export function SavedJobsView({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('Jobs');
   const { data: jobs, isLoading, isError } = useSavedJobs();

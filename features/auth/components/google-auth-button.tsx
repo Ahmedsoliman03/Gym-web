@@ -128,9 +128,6 @@ export function GoogleAuthButton({
     const searchParams = useSearchParams();
     const googleAuth = useGoogleAuthMutation();
     const [loading, setLoading] = useState(false);
-    // Set once the popup returns (with a code or an error) so the window-focus
-    // safety net below knows the flow is being handled and shouldn't clear the
-    // spinner out from under it.
     const codeReceivedRef = useRef(false);
 
     const safeNext = normalizeAuthNextPath(searchParams.get('next'));
@@ -188,10 +185,6 @@ export function GoogleAuthButton({
             if (!client) throw new Error('google_unavailable');
             client.requestCode();
 
-            // Safety net: Google's `error_callback` doesn't reliably fire when
-            // the user dismisses the popup, which would leave the button
-            // spinning forever. The window regains focus when the popup closes —
-            // if no auth code arrived by then, stop the spinner.
             const onWindowFocus = () => {
                 window.removeEventListener('focus', onWindowFocus);
                 setTimeout(() => {

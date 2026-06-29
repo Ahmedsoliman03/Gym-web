@@ -55,17 +55,10 @@ export const ChatWidget = () => {
     const panelRef = useRef<HTMLDivElement>(null);
     const pendingIncoming = usePendingIncomingCount();
 
-    // Drop the open thread when the panel closes so reopening starts on the
-    // list. We don't clear on tab change — switching to Incoming and back to
-    // Conversations should NOT auto-reopen the thread either.
     useEffect(() => {
         if (!isOpen) setSelectedConversationId(null);
     }, [isOpen]);
 
-    // Lock page scrolling while the panel is open so only the chat content
-    // (message list / conversation list) scrolls — the page behind stays put.
-    // Inner scroll containers keep working because the lock is on <body>, not
-    // on the panel.
     useEffect(() => {
         if (!isOpen) return;
         const prevOverflow = document.body.style.overflow;
@@ -75,10 +68,6 @@ export const ChatWidget = () => {
         };
     }, [isOpen]);
 
-    // Honor an externally-requested tab (e.g. from a profile "Chat" button
-    // that wants the panel to land on a specific tab). When no tab was
-    // requested but there are pending incoming requests, default to Incoming
-    // so the recipient sees the actionable items first.
     useEffect(() => {
         if (!isOpen) return;
         if (requestedTab) {
@@ -95,8 +84,6 @@ export const ChatWidget = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, requestedTab]);
 
-    // Open straight into a specific conversation when one was requested (e.g.
-    // from a chat notification). Runs after the open handler has set state.
     useEffect(() => {
         if (!isOpen || !requestedConversationId) return;
         setTab('conversations');
@@ -104,9 +91,6 @@ export const ChatWidget = () => {
         clearRequestedConversation();
     }, [isOpen, requestedConversationId, clearRequestedConversation]);
 
-    // Close when clicking outside the panel. The mobile overlay handles this
-    // case via its onClick, but on desktop (sm:hidden) there's no element
-    // catching the click — so we listen at the document level instead.
     useEffect(() => {
         if (!isOpen) return;
         const onDocumentPointerDown = (event: MouseEvent) => {
@@ -115,8 +99,6 @@ export const ChatWidget = () => {
             if (panel.contains(event.target as Node)) return;
             setIsOpen(false);
         };
-        // `mousedown` (not `click`) so we close before any nested click handler
-        // (e.g. the "Chat" button that just opened us) re-toggles state.
         document.addEventListener('mousedown', onDocumentPointerDown);
         return () =>
             document.removeEventListener('mousedown', onDocumentPointerDown);

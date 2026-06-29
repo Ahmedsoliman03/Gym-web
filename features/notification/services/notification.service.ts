@@ -36,11 +36,6 @@ export const useNotificationsQuery = (limit = DEFAULT_LIMIT) =>
         queryFn: () => getNotifications(limit),
     });
 
-// ── Cache helpers ─────────────────────────────────────────────────────────────
-// All cache mutations funnel through these so the REST mutations and the
-// realtime socket events (chat-socket-provider) stay consistent. They patch
-// every cached list page (keyed by limit) via a partial-key match. 
-
 type ListUpdater = (prev: NotificationListResponse) => NotificationListResponse;
 
 const patchLists = (qc: QueryClient, update: ListUpdater) => {
@@ -53,8 +48,6 @@ const patchLists = (qc: QueryClient, update: ListUpdater) => {
 const recountUnread = (notifications: AppNotification[]) =>
     notifications.reduce((acc, n) => (n.isRead ? acc : acc + 1), 0);
 
-/** Prepend (or move-to-top) an incoming notification and bump unread.
- *  `unreadCount` from the server is authoritative when provided. */
 export const applyNotificationNew = (
     qc: QueryClient,
     notification: AppNotification,
@@ -115,8 +108,6 @@ export const useMarkNotificationReadMutation = () => {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: markNotificationRead,
-        // Optimistic: flip read immediately; the socket's notification.read
-        // (with authoritative unreadCount) reconciles right after.
         onMutate: (id: string) => applyNotificationRead(qc, id),
     });
 };

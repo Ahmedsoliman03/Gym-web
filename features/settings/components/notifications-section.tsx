@@ -14,8 +14,6 @@ import { settingsStyles as s } from './styles';
 
 type PrefKey = keyof NotificationPreferences;
 
-// Chat messages are surfaced in the chat widget, not the notifications flow,
-// so they are not shown as a toggle here.
 const ROW_KEYS: PrefKey[] = [
     'post_vote',
     'post_comment',

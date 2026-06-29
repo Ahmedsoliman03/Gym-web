@@ -36,11 +36,7 @@ interface TransformationGalleryProps {
   title?: string;
   hideOverlay?: boolean;
   isOwner?: boolean;
-  /** Sentence shown to non-owners when the gallery is empty (e.g.
-   *  `t('noTransformationsYet')`). Defaults to the transformations label. */
   emptyVisitorMessage?: string;
-  /** Sentence shown to the owner when empty. Falls back to the generic
-   *  "improve your profile" prompt when omitted. */
   emptyOwnerMessage?: string;
 }
 

@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-/**
- * /api/location
- * Proxies Nominatim reverse-geocoding so the browser never touches
- * Nominatim directly (avoids CORS and User-Agent restrictions).
- *
- * Query params:
- *   lat  – latitude  (required)
- *   lon  – longitude (required)
- *   lang – "ar" | "en"  (optional, default "en")
- */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get('lat');
@@ -50,11 +40,6 @@ export async function GET(request: NextRequest) {
     const data = await nominatimRes.json();
     const addr = data?.address ?? {};
 
-    /*
-     * governorate → county / state_district / state  (e.g. "Giza")
-     * city        → city / town / village             (e.g. "6th of October")
-     * area        → suburb / neighbourhood / quarter  (e.g. "12th District")
-     */
     const result = {
       governorate:
         addr.county ??

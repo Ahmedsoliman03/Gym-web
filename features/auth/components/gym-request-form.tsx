@@ -36,9 +36,6 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
             onSubmit={async (values) => {
                 try {
                     const { governorate, city, area, gymAddress, ...rest } = values;
-                    // Build one human-readable address by collecting every
-                    // location-related text from finest to coarsest detail.
-                    // Empty inputs are dropped so we don't produce stray commas.
                     const friendlyAddress = [gymAddress, area, city, governorate]
                         .map((part) => (part ?? '').toString().trim())
                         .filter(Boolean)

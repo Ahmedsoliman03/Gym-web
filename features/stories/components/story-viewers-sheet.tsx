@@ -35,19 +35,7 @@ const styles = {
     sub: "text-[11px] text-foreground/50 uppercase",
 };
 
-/**
- * Format a viewer's timestamp as a friendly "month-name day, year, h:mm AM/PM"
- * string instead of the locale's raw all-numeric default — e.g. `Jun 7, 2026,
- * 6:34 PM` in English or `٧ يونيو ٢٠٢٦، ٦:٣٤ م` in Arabic. The locale is read
- * from `next-intl` so the month name follows whichever language the user is
- * currently browsing in.
- */
-/**
- * Build the public profile href for a viewer. Coaches, gyms, and clients each
- * have a detail page keyed by `profileId`; a missing `profileId` makes the row
- * render as plain (non-clickable) text. Mirrors the routing rule already used
- * by the comment upvoters sheet.
- */
+
 function getViewerHref(user: StoryViewerUser | undefined): string | null {
     if (!user?.profileId) return null;
     if (user.userType === 'coach') return `/coaches/${user.profileId}`;

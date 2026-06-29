@@ -66,8 +66,6 @@ export default function proxy(request: NextRequest) {
         }
     }
 
-    // 5. If there is NO token and user is NOT on an auth or public page, send to
-    //    login with `next` so the user is bounced back here after authenticating.
     if (!token && !isAuthPath && !isPublicPath) {
         const loginUrl = new URL(`/${locale}/login`, request.url);
         loginUrl.searchParams.set('next', pathname);
@@ -86,9 +84,6 @@ export default function proxy(request: NextRequest) {
         const jwtPayload = decodeJwt(token);
         const userType = jwtPayload?.userType || jwtPayload?.user_type || jwtPayload?.role;
 
-        // Apply access restrictions:
-        // /jobs is an allowlist: only gyms and coaches may enter. Any other
-        // role (client, unknown/future userTypes, missing claim) is bounced.
         const isJobsPath =
             pathnameWithoutLocale === '/jobs' ||
             pathnameWithoutLocale.startsWith('/jobs/');
@@ -105,8 +100,6 @@ export default function proxy(request: NextRequest) {
                 return NextResponse.redirect(homeUrl);
             }
         }
-        // Client: can only access /gyms, /coaches, /about (blocked from /applications;
-        // /jobs is already handled by the allowlist above)
         else if (userType === 'client') {
             const isBlocked =
                 pathnameWithoutLocale === '/applications' ||

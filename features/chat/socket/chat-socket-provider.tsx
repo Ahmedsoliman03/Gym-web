@@ -46,16 +46,9 @@ export interface ChatSocketContextValue extends ChatSocketActions {
     status: ChatSocketStatus;
     typingByConversation: Record<string, ReadonlySet<string>>;
     presenceByUser: Record<string, PresenceStatus>;
-    /** Locally-tracked unread counts, keyed by conversation id. Survives
-     *  `/api/chat/conversations` refetches (which would otherwise clobber the
-     *  optimistic increment with a stale/zero server value). Reconcile against
-     *  the server's `unreadCount` with `Math.max` at the display site. */
     unreadByConversation: Record<string, number>;
     /** Drop a conversation's local unread tally — call alongside markRead. */
     clearUnread: (conversationId: string) => void;
-    /** Tell the provider which conversation thread is currently open on screen.
-     *  Used to suppress the new-message sound for a conversation the user is
-     *  already looking at. Pass `null` when no thread is open. */
     setActiveConversation: (conversationId: string | null) => void;
     lastError: { code?: number; reason?: string; at: number } | null;
     gaveUp: boolean;
@@ -67,10 +60,6 @@ const ChatSocketContext = createContext<ChatSocketContextValue | null>(null);
 const HEARTBEAT_MS = 30_000;
 const STALE_INBOUND_MS = 75_000;
 const TYPING_AUTOCLEAR_MS = 6_000;
-// Exponential backoff between reconnect attempts:
-//   delay = min(RECONNECT_BASE_MS * 2^(attempt-1), RECONNECT_MAX_MS)
-// Spaced out so a flaky/offline server isn't hammered with rapid retries.
-// Schedule: 3s → 6s → 12s → 24s → 48s → 60s → 60s …
 const RECONNECT_BASE_MS = 3_000;
 const RECONNECT_MAX_MS = 60_000;
 const RECONNECT_MAX_ATTEMPTS = 10;
@@ -115,10 +104,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const connectGenRef = useRef(0);
 
     const lastInboundAtRef = useRef<number>(0);
-    // Conversation whose thread is open on screen — read in applyMessageNew to
-    // skip the alert sound for a chat the user is already viewing. A ref (not
-    // state) so the message handler always sees the latest value without
-    // re-creating the callback.
     const activeConversationIdRef = useRef<string | null>(null);
     const outboundQueueRef = useRef<ChatClientEvent[]>([]);
     const pendingCatchupRef = useRef(false);
@@ -158,9 +143,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             const me = qc.getQueryData<UserProfile>(['profile']);
             const isMine = !!me && message.sender?.id === me.id;
 
-            // Is the user already looking at this exact conversation (its thread
-            // is open AND the tab is in the foreground)? Then the message is
-            // effectively "seen" — it must not ding or bump any unread count.
             const isViewingThisChat =
                 activeConversationIdRef.current === conversationId &&
                 typeof document !== 'undefined' &&
@@ -201,10 +183,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                 return [updated, ...prev.slice(0, idx), ...prev.slice(idx + 1)];
             });
 
-            // Track unread locally too. The cache write above gets clobbered by
-            // the next `/api/chat/conversations` refetch (which may return a
-            // stale/zero `unreadCount`); this tally does not, so the badge
-            // survives until the user actually opens the thread.
             if (countsAsUnread) {
                 setUnreadByConversation((prev) => ({
                     ...prev,

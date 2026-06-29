@@ -36,8 +36,6 @@ export function ChatSettingsSection() {
     const updateMutation = useUpdateChatSettingsMutation();
     const { setPresence } = useChatSocket();
 
-    // Local draft so the user can tweak multiple toggles and commit them all
-    // with one Save call. We resync whenever the server value updates.
     const [draft, setDraft] = useState<ChatSettings | null>(settings ?? null);
 
     useEffect(() => {
@@ -60,9 +58,6 @@ export function ChatSettingsSection() {
         const presenceChanged = draft.manualStatus !== settings.manualStatus;
         updateMutation.mutate(draft, {
             onSuccess: () => {
-                // Persisted via REST; also broadcast the new status live over
-                // the socket so other users' presence dots update immediately
-                // instead of waiting on the backend to apply the saved value.
                 if (presenceChanged) setPresence(draft.manualStatus);
                 toast.success(t('chatUpdateSuccess'));
             },

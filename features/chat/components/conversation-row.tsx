@@ -18,8 +18,6 @@ const styles = {
     wrap: 'relative group',
     conversationCard:
         'w-full rounded-2xl border border-white/10 bg-surface/40 p-3 pe-10 flex items-center gap-3 hover:bg-surface/70 transition-colors',
-    // The conversation-open hit area (everything except the avatar, which links
-    // to the participant's profile instead).
     openArea: 'flex-1 min-w-0 flex items-center gap-3 text-left',
     rowInfo: 'flex-1 min-w-0',
     rowName: 'text-sm font-bold truncate',
@@ -41,21 +39,14 @@ export const ConversationRow = ({
 }) => {
     const t = useTranslations('Chat');
     const locale = useLocale();
-    // Conversation endpoint doesn't flag which participant is the current
-    // user, so we match against `/api/me`'s id.
     const { profile } = useProfileUser();
     const { unreadByConversation, presenceByUser } = useChatSocket();
     const deleteMutation = useDeleteConversationsMutation();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     const other = pickOtherUser(conversation, profile?.id);
-    // Prefer the live socket presence; fall back to the status baked into the
-    // REST payload (may be stale or missing until the socket delivers one).
     const status = other ? (presenceByUser[other.id] ?? other.status) : undefined;
 
-    // Reconcile the server's count with our local tally: the socket increment
-    // lives in the local tally and survives conversation-list refetches, so
-    // take whichever is higher.
     const unreadCount = Math.max(
         conversation.unreadCount,
         unreadByConversation[conversation.id] ?? 0,

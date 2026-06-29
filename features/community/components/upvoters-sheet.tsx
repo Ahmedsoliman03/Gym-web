@@ -50,18 +50,6 @@ function VoterRow({ voter, onClick }: { voter: CommentVoter; onClick: () => void
     );
 }
 
-/**
- * Bottom-sheet style modal listing the people who upvoted a comment or post.
- * Shared between the post card and the comments list so the "Liked by" UI
- * stays consistent in both places. When `isLoading` is true, a spinner is
- * shown in place of the list.
- */
-/**
- * Inner contents of the upvoters sheet. Lives in its own component so the
- * `query` state is unmounted whenever the modal closes — that way the next
- * open starts with an empty search instead of needing a setState-in-effect
- * reset hook (which the project's lint config rejects).
- */
 function UpvotersSheetBody({
     voters,
     isLoading,

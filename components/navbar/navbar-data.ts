@@ -3,8 +3,6 @@ import type { AccountLink, NavEntry, NavItem, UserType } from './types';
 
 type Translate = (key: string) => string;
 
-// A labelled group only makes sense with 2+ destinations. With exactly one it
-// collapses to a plain top-level link (like Plans); with none it disappears.
 const groupOrLink = (label: string, items: NavItem[]): NavEntry[] => {
   if (items.length === 0) return [];
   if (items.length === 1)
@@ -12,13 +10,6 @@ const groupOrLink = (label: string, items: NavItem[]): NavEntry[] => {
   return [{ type: 'group', label, items }];
 };
 
-/**
- * Top-level navbar entries, role-aware. Mirrors the middleware restriction
- * table so a user never sees a link they can't open:
- *   - /applications: gym-only   - /jobs: gyms + coaches only
- * Clients are treated like guests and get the flat default navbar; gyms and
- * coaches get the grouped Explore/Careers navbar. Plans is shown to everyone.
- */
 export function buildNavEntries(
   t: Translate,
   { isLoggedIn, userType }: { isLoggedIn: boolean; userType: UserType },
@@ -57,16 +48,6 @@ export function buildNavEntries(
   ];
 }
 
-/**
- * Secondary account links for signed-in users — rendered both in the desktop
- * avatar dropdown and the mobile "More" section, so they live in one place.
- * (Profile and Logout are handled separately by each surface.)
- *
- * The "my stuff" items deep-link into the profile page's tabs (the canonical
- * home for a user's content) rather than standalone routes — keep these in
- * sync with `tabsForUserType` in features/profile/components/profile-tabs.tsx.
- * Chat Requests intentionally lives only in the chat widget, not here.
- */
 export function buildAccountLinks(t: Translate, userType: UserType): AccountLink[] {
   return [
     // Posts is author-only (clients can't publish posts).

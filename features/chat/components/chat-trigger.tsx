@@ -15,9 +15,6 @@ interface ChatTriggerProps {
     dotClassName: string;
 }
 
-/** Navbar chat icon — opens the side chat widget and surfaces two signals:
- *  a numeric badge for pending incoming requests, and a pulsing red dot when
- *  any conversation has unread messages. */
 export const ChatTrigger = ({ buttonClassName, badgeClassName, dotClassName }: ChatTriggerProps) => {
     const t = useTranslations('Chat');
     const pending = usePendingIncomingCount();

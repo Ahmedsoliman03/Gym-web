@@ -26,13 +26,6 @@ interface AuthorPostsViewProps {
   profileId: string;
 }
 
-/**
- * Full list of community posts authored by a specific coach or gym profile.
- * Used by `/coaches/{id}/posts` and `/gyms/{id}/posts` (the "See all posts"
- * destination from the inline strip on each detail page). The header pulls
- * the author's display name from the matching coach/gym detail endpoint so
- * visitors see "Posts of {name}" instead of a generic title.
- */
 export function AuthorPostsView({ authorType, profileId }: AuthorPostsViewProps) {
   const t = useTranslations('Community');
   const tProfile = useTranslations('Profile');
@@ -41,8 +34,6 @@ export function AuthorPostsView({ authorType, profileId }: AuthorPostsViewProps)
   const gymQuery = useGymPosts(authorType === 'gym' ? profileId : null);
   const { data, isLoading, isError } = authorType === 'coach' ? coachQuery : gymQuery;
 
-  // Pull the author profile in parallel — gives us the fullName / gymName for
-  // the page header without the caller having to thread it through.
   const coachDetailQuery = useCoach(authorType === 'coach' ? profileId : '');
   const gymDetailQuery = useGym(authorType === 'gym' ? profileId : '');
   const ownerName =

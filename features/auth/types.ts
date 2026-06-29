@@ -72,7 +72,6 @@ export interface RequestAccessRequest {
     area?: string;
     gymAddress?: string;
     memberCount?: string | number;
-    /** Coach-only: how many clients the coach currently trains. */
     numberOfClients?: string | number;
     gymLicense?: File | null;
     gymPhoto?: File | null;
@@ -93,8 +92,6 @@ export interface AuthResponse {
     token?: string;
     user?: AuthUser;
 }
-
-// ─── Component Props Interfaces ──────────────────────────────────────────────
 
 export interface GymRequestFormProps {
     onSuccess: () => void;

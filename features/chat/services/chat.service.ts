@@ -58,10 +58,6 @@ export const startChat = async (values: StartChatRequest): Promise<StartChatResu
 };
 
 
-/** Prepend a conversation into the cached list, deduping by id and moving an
- *  existing entry to the top. Used by start-chat and approve so the
- *  Conversations tab shows the row instantly — without waiting on (or
- *  depending on) a `/api/chat/conversations` refetch. */
 const upsertConversationToTop = (
     queryClient: ReturnType<typeof useQueryClient>,
     conversation: ChatConversation,
@@ -82,12 +78,7 @@ export const useStartChatMutation = () => {
         mutationFn: startChat,
         onSuccess: (result) => {
             if (result.status === 'conversation') {
-                // 1. Seed the cache so the new row appears instantly when the
-                //    panel opens — no refetch round-trip required.
                 upsertConversationToTop(queryClient, result.conversation);
-                // 2. Force a refetch (not just invalidate) so the server's
-                //    authoritative list overwrites our optimistic seed and a
-                //    `/api/chat/conversations` request is guaranteed to fire.
                 queryClient.refetchQueries({ queryKey: chatKeys.conversations });
             } else {
                 queryClient.refetchQueries({ queryKey: chatKeys.requests('outgoing') });
@@ -123,9 +114,6 @@ export const useApproveChatRequestMutation = () => {
     return useMutation({
         mutationFn: approveChatRequest,
         onSuccess: (conversation) => {
-            // Same pattern as `useStartChatMutation`: seed the new conversation
-            // into the cache for instant UI, then force a refetch so the
-            // network call actually happens and we resync with the server.
             upsertConversationToTop(queryClient, conversation);
             queryClient.refetchQueries({ queryKey: chatKeys.requests('incoming') });
             queryClient.refetchQueries({ queryKey: chatKeys.conversations });
@@ -175,11 +163,6 @@ export const useConversations = () => {
     });
 };
 
-/**
- * DELETE /api/chat/conversations/bulk-delete — removes one or more full
- * conversations. The API takes a raw JSON array of conversation IDs (a single
- * id still goes inside an array) and deletes nothing if any id is invalid.
- */
 export const deleteConversations = async (ids: string[]): Promise<void> => {
     await api.delete('/api/chat/conversations/bulk-delete', { data: ids });
 };
@@ -227,8 +210,6 @@ export const getConversationMessages = async ({
         `/api/chat/conversations/${conversationId}/messages`,
         { params: { limit, ...(before ? { before } : {}) } }
     );
-    // The endpoint returns newest-first; reverse to oldest-first so the thread
-    // reads top→bottom and socket/optimistic appends land at the bottom.
     return [...data].reverse();
 };
 
@@ -249,8 +230,6 @@ export const useMarkConversationReadMutation = () => {
     return useMutation({
         mutationFn: markConversationRead,
         onMutate: async (conversationId: string) => {
-            // Zero out unreadCount in the cached list right away — the socket
-            // will deliver the authoritative count later via notification.*.
             await queryClient.cancelQueries({ queryKey: chatKeys.conversations });
             const previous = queryClient.getQueryData<ChatConversation[]>(chatKeys.conversations);
             if (previous) {

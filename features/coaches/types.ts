@@ -25,18 +25,10 @@ export interface CoachCertification {
 
 export interface CoachDetail {
     id: string;
-    /** Owner's `User.id` — the same id `/api/me` returns at top level.
-     *  The detail endpoint is keyed by profile id, but chat/messaging
-     *  must use the User.id, so the backend exposes it as `userId`. */
     userId: string;
     fullName: string;
     experienceYears: number;
-    /** Number of clients the coach is currently training. Surfaced in the
-     *  detail header stats alongside experience. */
     numberOfClients?: number;
-    /** The detail endpoint returns the singular field `specialization`
-     *  (even though /me uses the plural `specializations`). Mirror the
-     *  actual wire shape so consumers don't read `undefined`. */
     specialization: string[];
     description: string;
     photo: string | null;

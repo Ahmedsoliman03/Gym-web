@@ -35,9 +35,6 @@ const styles = {
 const externalHref = (url: string) =>
   /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
-// Map a link to its brand icon by scanning the URL (and platform name as a
-// secondary hint) for a known keyword. Anything unrecognized keeps the generic
-// arrow icon so the link still renders.
 const SOCIAL_ICON_RULES: { keywords: string[]; icon: LucideIcon }[] = [
   { keywords: ["youtube", "youtu.be"], icon: Youtube },
   { keywords: ["instagram", "instagr.am"], icon: Instagram },

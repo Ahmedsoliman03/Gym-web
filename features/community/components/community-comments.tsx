@@ -31,13 +31,9 @@ import { UpvotersSheet } from './upvoters-sheet';
 
 interface CommunityCommentsProps {
   postId: string;
-  /** Author id of the post these comments belong to. When the viewer matches,
-   *  every comment / reply gets a Delete action. */
   postAuthorId?: string;
   /** Comment id to scroll to and flash (from a post-comment notification). */
   highlightCommentId?: string;
-  /** Reply id to scroll to and flash (from a comment-reply notification). The
-   *  parent comment's reply thread is auto-opened so the reply is in the DOM. */
   highlightReplyId?: string;
 }
 
@@ -100,8 +96,6 @@ function CommentRow({
   comment: CommunityComment;
   postId: string;
   currentUserId?: string;
-  /** True when the signed-in user authored the post — they can delete any
-   *  comment or reply under it. */
   isPostOwner?: boolean;
   isReply?: boolean;
   highlightCommentId?: string;
@@ -113,14 +107,9 @@ function CommentRow({
   const deleteMutation = useDeleteCommentMutation();
   const reportMutation = useReportCommentMutation();
 
-  // This row is the deep-link target when it matches the requested reply id
-  // (reply rows) or the requested comment id (top-level rows, only when no
-  // reply was requested — a reply anchor wins over its parent comment).
   const isTarget = isReply
     ? !!highlightReplyId && comment.id === highlightReplyId
     : !highlightReplyId && !!highlightCommentId && comment.id === highlightCommentId;
-  // This top-level comment owns the reply we need to flash — open its thread
-  // up front so the reply row mounts and can be scrolled to.
   const containsTargetReply =
     !isReply &&
     !!highlightReplyId &&
@@ -135,8 +124,6 @@ function CommentRow({
   const rowRef = useRef<HTMLDivElement>(null);
   const didHighlight = useRef(false);
 
-  // Scroll the targeted comment/reply into view and play a one-shot flash.
-  // Deferred a frame so any just-opened reply thread has laid out first.
   useEffect(() => {
     if (!isTarget || didHighlight.current) return;
     const el = rowRef.current;
@@ -173,8 +160,6 @@ function CommentRow({
   const canDelete = isMine || !!isPostOwner;
   const photo = comment.author?.photo;
 
-  // Shared self-aware link resolver — clients return null so the name stays
-  // un-clickable, coaches/gyms go to their detail page, self → /profile.
   const { href: authorHref } = useProfileLink(
     comment.author?.profileId,
     comment.author?.userType,
@@ -424,15 +409,11 @@ export function CommunityComments({
   const { data: comments, isLoading } = useComments(postId);
   const createMutation = useCreateCommentMutation();
   const [draft, setDraft] = useState('');
-  // Show the first six comments by default; "Show more" reveals six more
-  // at a time so very chatty posts don't blow up the scroll length.
   const [visibleCount, setVisibleCount] = useState(COMMENTS_PAGE_SIZE);
 
   const isPostOwner =
     !!profile?.id && !!postAuthorId && profile.id === postAuthorId;
 
-  // If the deep-link target sits past the current "page" of comments, reveal
-  // enough comments so its row mounts (and can then scroll itself into view).
   useEffect(() => {
     if (!comments || (!highlightCommentId && !highlightReplyId)) return;
     const idx = comments.findIndex((c) =>
@@ -450,18 +431,10 @@ export function CommunityComments({
     e.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed || createMutation.isPending) return;
-    // The mutation's `onMutate` inserts the comment optimistically into the
-    // list so the user sees it right away. We keep the draft (and button
-    // disabled via `isPending`) until the server confirms — on success we
-    // clear the input, on failure we leave it filled so the user can retry.
     try {
       await createMutation.mutateAsync({ postId, body: trimmed });
       setDraft('');
     } catch (err) {
-      // A rejection here is one of two things: the optimistic `onMutate` threw
-      // (in which case `api.post` was never sent — no request in the network
-      // tab), or the backend rejected the request. Log the real error and, when
-      // the server returned a message, surface it instead of the generic copy.
       console.error('Failed to create comment', err);
       const serverMessage =
         typeof err === 'object' && err !== null

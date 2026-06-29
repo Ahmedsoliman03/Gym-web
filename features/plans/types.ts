@@ -1,12 +1,5 @@
-
-
 export type PlanAudience = 'gym' | 'coach';
 
-/**
- * Known platform feature codes. Typed as a union for autocomplete while still
- * accepting any string the backend may add later (`string & {}` keeps the
- * literal suggestions without collapsing the type to plain `string`).
- */
 export type FeatureCode =
   | 'job_post'
   | 'see_applicants'
@@ -32,7 +25,6 @@ export interface PlanFeature {
 export interface PlatformPlan {
   id: string;
   name: string;
-  /** Backend slug, e.g. `warm_up_gym` / `power_set_coach`. Optional. */
   code?: string;
   plan_type: 'COACH' | 'GYM';
   trial_days?: number;
@@ -56,10 +48,6 @@ export interface FeatureUsage {
 
 export type PlatformUsageResponse = FeatureUsage[];
 
-// ── Current subscription ──────────────────────────────────────────────────────
-// GET /api/v1/platform/subscriptions/current/ — the user's active subscription.
-// Only the keys the UI reads are typed; `plan` reuses {@link PlatformPlan}.
-
 export interface CurrentSubscription {
   id: string;
   plan: PlatformPlan;
@@ -69,10 +57,6 @@ export interface CurrentSubscription {
   trial_end_date: string | null;
 }
 
-
-// ── Invoices ──────────────────────────────────────────────────────────────────
-// GET /api/v1/platform/invoices/ — billing history for the user. Each invoice
-// embeds the full subscription snapshot (same shape as {@link CurrentSubscription}).
 
 export type InvoiceStatus = 'PAID' | 'PENDING' | 'FAILED' | 'REFUNDED';
 
@@ -103,11 +87,6 @@ export interface SubscribeArgs {
   applyReferralDiscount?: boolean;
 }
 
-// ── Validate promo ────────────────────────────────────────────────────────────
-// POST /api/v1/platform/subscriptions/validate-promo/ — checks a promo code
-// against a plan before subscribing. The backend's exact response keys aren't
-// documented, so both the valid flag and the discount value are read leniently.
-
 export interface ValidatePromoArgs {
   planId: string;
   promoCode: string;
@@ -124,8 +103,6 @@ export interface ValidatePromoResponse {
   discount_amount?: string | number;
 }
 
-// ── Component props ───────────────────────────────────────────────────────────
-
 export interface PlanCardProps {
   name: string;
   tagline?: string;
@@ -141,11 +118,8 @@ export interface PlanCardProps {
   freeLabel?: string;
   popular?: boolean;
   popularLabel?: string;
-  /** Highlight this card as the user's active subscription. */
   isCurrent?: boolean;
-  /** Badge text shown when {@link isCurrent} is true. */
   currentLabel?: string;
-  /** CTA text for the cancel-subscription button on the active paid plan. */
   cancelLabel?: string;
 
   showCta?: boolean;

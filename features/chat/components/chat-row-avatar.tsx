@@ -24,8 +24,6 @@ export const ChatRowAvatar = ({
 }: {
     photo: string | null | undefined;
     name: string;
-    /** Realtime presence. Defaults to `offline` so every avatar shows a dot
-     *  until the socket reports a live status. */
     status?: PresenceStatus;
 }) => (
     <div className={styles.wrap}>

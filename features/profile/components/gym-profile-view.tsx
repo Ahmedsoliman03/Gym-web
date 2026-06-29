@@ -28,8 +28,6 @@ import { sectionDomId } from "../checklist-sections";
 const styles = {
   container: "space-y-8",
   header: "bg-surface p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row gap-8 items-start md:items-center",
-  // Avatar block — mirrors the coach profile header so the gym avatar shares
-  // the same round photo + primary ring + story-state overlay UI.
   avatarWrapper: "relative",
   avatarBorder: "w-40 h-40 rounded-full border-4 border-primary p-1 overflow-hidden",
   avatarInner: "w-full h-full rounded-full overflow-hidden relative",
@@ -81,12 +79,7 @@ export const GymProfileView = ({
   data: GymProfileViewModel;
   isOwner?: boolean;
   stories?: Story[];
-  /** The role-specific GymProfile.id used to fetch authored community posts.
-   *  Distinct from `data.id`, which holds the User.id for chat/messaging. */
   profileId?: string;
-  /** Where the inline "See all posts" link points. Defaults inside
-   *  `ProfilePosts` to `/my-posts` (right for the owner's own /profile page);
-   *  detail pages should pass e.g. `/gyms/{id}/posts`. */
   postsViewAllHref?: string;
   /** Owner-only referral promocode, rendered in the header as a copy chip. */
   promocode?: string;
@@ -120,9 +113,6 @@ export const GymProfileView = ({
       { userId: data.userId },
       {
         onSuccess: (result) => {
-          // Land on the tab that shows what just happened: Outgoing for a
-          // pending request the target still needs to approve, Conversations
-          // for an open chat that's ready to use.
           if (result.status === "request_pending") {
             toast.success(tChat("requestSentToast"));
             triggerChatOpen('outgoing');
@@ -190,9 +180,6 @@ export const GymProfileView = ({
     image: img
   }));
 
-  // Translate each program by looking it up in SPECIALIZATIONS. Anything the
-  // table doesn't know about falls through as the raw API value so we don't
-  // accidentally hide custom programs the gym set up.
   const translatedPrograms = (data.programs ?? []).map((program) => {
     const match = SPECIALIZATIONS.find((s) => s.value === program);
     if (!match) return program;

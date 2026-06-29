@@ -156,8 +156,6 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
 
     const openCv = () => {
         if (!app.cv) return;
-        // Fire-and-forget: gym-only endpoint flips `cvViewed` server-side. The
-        // optimistic cache update keeps the badge state coherent across views.
         if (!app.cvViewed) markCvViewed.mutate(app.id);
         window.open(app.cv, '_blank', 'noopener,noreferrer');
     };

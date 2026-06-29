@@ -3,19 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { useFormikContext } from 'formik';
 
-/**
- * Drop inside any Formik `<Form>` to give it **Save & Resume**: the form's
- * text values are mirrored to `localStorage` as the user types and restored the
- * next time the form mounts, so a refresh / accidental navigation / coming back
- * later doesn't lose a half-filled application.
- *
- * What is intentionally NOT persisted:
- *  - `File` / `Blob` fields (uploads can't be serialized) — they're skipped.
- *  - Anything listed in `exclude` (pass passwords / OTP codes here).
- *
- * Call {@link clearFormDraft} with the same `storageKey` in the form's
- * `onSubmit` success path to drop the draft once it has been submitted.
- */
 interface FormPersistProps {
     /** Unique key for this form, e.g. `"draft:gym-request"`. */
     storageKey: string;

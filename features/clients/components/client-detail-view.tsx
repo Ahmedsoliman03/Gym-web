@@ -46,8 +46,6 @@ export function ClientDetailView({ id }: ClientDetailViewProps) {
   const router = useRouter();
   const { data: client, isLoading, error, refetch, isFetching } = useClient(id);
 
-  // Self-check: a client viewing their own public profile is redirected to the
-  // editable /profile page (matches coach/gym detail behaviour).
   const { isSelf } = useProfileLink(id, 'client');
 
   const startChat = useStartChatMutation();

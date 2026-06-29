@@ -1,6 +1,3 @@
-// Shared style atoms for the Settings accordions. Kept in one place so the
-// three section components stay visually consistent without duplicating the
-// long Tailwind class strings.
 export const settingsStyles = {
     formWrapper: 'space-y-5',
     input: 'w-full px-4 py-3.5 bg-[#0D121F] border border-white/5 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground text-sm font-medium',

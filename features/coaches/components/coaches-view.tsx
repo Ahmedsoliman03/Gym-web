@@ -64,9 +64,6 @@ export function CoachesView() {
           ? coach.experienceYears > 8
           : coach.experienceYears === parseInt(experience, 10));
 
-      // Coach.city / Coach.area may be absent on the API today; when present,
-      // apply the filter; when absent and the user has set a filter, keep the
-      // record (be lenient so we don't hide all coaches by accident).
       const matchesCity =
         !city ||
         (coach.city ? coach.city.toLowerCase().includes(city.toLowerCase()) : true);

@@ -77,8 +77,6 @@ const styles = {
         'px-4 sm:px-6 md:px-8 pb-3 flex flex-wrap items-center gap-2 mt-3',
     statChip:
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/5 text-foreground/60 font-bold text-[11px] uppercase tracking-wider',
-    // Owner-only clickable variant of the applications chip — routes to the
-    // applications list pre-filtered to this job.
     statChipLink:
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/5 text-foreground/60 font-bold text-[11px] uppercase tracking-wider hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer',
     statNum:
@@ -111,8 +109,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
     const [contentExpanded, setContentExpanded] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Show the "see more" button only when the body is long enough that the
-    // clamp will hide something. Cheap heuristic: character count threshold.
     const CONTENT_TRUNCATE_AT = 240;
     const contentNeedsToggle = (job.content?.length ?? 0) > CONTENT_TRUNCATE_AT;
 
@@ -120,10 +116,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
         ? `${window.location.origin}/${locale}/jobs/${job.id}`
         : `/${locale}/jobs/${job.id}`;
 
-    // The job's author IS the gym record on the response. The user account id
-    // (`profile.id`) and the gym profile id (`profile.profile.id`) are different
-    // values, so accept either match — backends differ on which one they echo
-    // back in `job.gym.id`. Only gyms can own jobs in the first place.
     const myGymProfileId =
         profile?.userType === 'gym' ? profile.profile?.id : undefined;
     const isMine =
@@ -134,8 +126,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
     const sharesCount = job.sharesCount ?? 0;
     const savesCount = job.savesCount ?? 0;
     const applicationsCount = job.applicationsCount ?? 0;
-    // `closedAt` is the source of truth: any non-null timestamp means the job
-    // is closed for applications, regardless of the legacy `status` field.
     const isClosed = !!job.closedAt;
     const myUserType = profile?.userType;
     const canApply = myUserType === 'coach';
@@ -374,8 +364,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                     shares totals. */}
                 <div className={styles.statsRow}>
                     {isMine ? (
-                        // Owner: tapping the applications chip opens their
-                        // applications list filtered to this job.
                         <Link
                             href={`/applications?jobId=${job.id}` as any}
                             className={styles.statChipLink}
@@ -406,8 +394,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
 
                 {/* Footer actions */}
                 {isClosed ? (
-                    // Closed jobs replace the entire action bar with a notice —
-                    // no apply / save / share once a job is closed.
                     <div className={styles.closedNotice}>
                         <div className={styles.closedNoticeRow}>
                             <Power size={16} />

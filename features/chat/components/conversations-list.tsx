@@ -32,8 +32,6 @@ export const ConversationsList = ({
     const [search, setSearch] = useState('');
 
     const items = query.data ?? [];
-    // Filter by the other participant's name. `pickOtherUser` matches the same
-    // logic the rows use, so the search field always reflects the visible name.
     const filtered = useMemo(() => {
         const needle = search.trim().toLowerCase();
         if (!needle) return items;

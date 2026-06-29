@@ -31,7 +31,6 @@ export interface SocialMediaLink {
 export interface CoachTransformation {
     id: string;
     clientName: string;
-    /** Free-form duration label returned by the API, e.g. `"8 years"`. */
     duration: string;
     image: string;
     createdAt?: string;
@@ -51,12 +50,8 @@ export interface CoachProfileData {
     type: 'coach';
     name: string;
     experienceYears?: number;
-    /** Number of active clients the coach is currently training; surfaced
-     *  in the profile header stats. */
     numberOfClients?: number;
     specializations?: string[];
-    /** Backend also returns the singular `specialization` alongside
-     *  `specializations` — kept here so the view layer can fall back. */
     specialization?: string[];
     description?: string;
     socialMedia?: SocialMediaLink[];
@@ -66,8 +61,6 @@ export interface CoachProfileData {
     plans?: ProfilePlan[];
     transformations?: CoachTransformation[];
     editCount?: number;
-    /** Referral promocode the backend assigns to the coach. Rendered as a
-     *  copy chip on the owner's own profile only. */
     promoCode?: string;
 }
 
@@ -95,7 +88,6 @@ export interface GymProfileData {
     createdAt?: string;
     updatedAt?: string;
     editCount?: number;
-    /** Referral promocode the backend assigns to the gym. */
     promoCode?: string;
 }
 
@@ -128,27 +120,15 @@ export interface GymProfile {
 
 export type UserProfile = ClientProfile | CoachProfile | GymProfile;
 
-// ── Edit Profile value shapes ─────────────────────────────────────────────────
-// Used by `buildEditProfileFormData` in services/profile.service.ts to
-// translate form state into the multipart contract `PATCH /api/me` expects.
-
-/** A gallery / certification item the user is editing.
- *  - `id` present  → keep this existing item.
- *  - `file` present → upload it as a new file.
- *  Items with neither are silently dropped. */
 export interface EditableImage {
     id?: string;
     url?: string;
     file?: File;
 }
 
-/** Transformation row mid-edit. `image` is either a URL (existing) or a
- *  File (newly picked); the builder maps File entries into repeated
- *  `transformation_images` slots and tags each meta row with `imageIndex`. */
 export interface EditableTransformation {
     id: string;
     clientName: string;
-    /** Free-form duration label, e.g. `"8 years"`. Matches the API contract. */
     duration: string;
     image: string | File;
 }
@@ -185,11 +165,6 @@ export type EditProfileValues =
     | { role: 'coach';  values: CoachEditValues }
     | { role: 'gym';    values: GymEditValues };
 
-// ── View models ──────────────────────────────────────────────────────────────
-// Shapes the profile/coach/gym view components consume. They're flattened,
-// translated, and image-defaulted versions of the wire types above — each
-// detail/profile page maps API responses into these before rendering.
-
 export type ProfileViewType = 'coach' | 'gym' | 'client';
 
 export interface ProfileViewBase {
@@ -211,8 +186,6 @@ export interface CoachProfileViewModel extends ProfileViewBase {
     transformations: { clientName: string; duration: string; image: string }[];
     credentials: { certifications: string[]; specializations: string[] };
     plans?: ProfilePlan[];
-    /** Flat list of specialization tags surfaced next to the coach's name
-     *  in the profile header (chip / indicator UI). */
     specializations?: string[];
 }
 
@@ -233,8 +206,6 @@ export interface ClientProfileViewModel extends ProfileViewBase {
     stats: { label: string; value: string }[];
     recentActivity: { activity: string; time: string }[];
 }
-
-// ── Component props ──────────────────────────────────────────────────────────
 
 export interface EditProfileFormProps {
     profile: UserProfile;
@@ -276,15 +247,9 @@ export interface CoachProfileHeaderProps {
     isOwner?: boolean;
     coachId?: string;
     coachUserId?: string;
-    /** Active stories carried on the detail response; rendered through the
-     *  story-avatar badge if present. */
     stories?: import('@/features/stories/types').Story[];
-    /** Owner-only referral code, displayed as a copy-to-clipboard chip in
-     *  the header when present. */
     promocode?: string;
-    /** Specialization tags rendered as an indicator chip beside the name. */
     specializations?: string[];
-    /** Owner-only email address surfaced under the name. */
     email?: string;
     status?: PresenceStatus;
 }
@@ -292,10 +257,7 @@ export interface CoachProfileHeaderProps {
 export interface TransformationItem {
     id: string;
     name: string;
-    /** Free-form duration label, e.g. "8 years". Sent as-is to the API. */
     duration: string;
-    /** Either a server-hosted URL (existing transformation) or a freshly
-     *  picked File that will be uploaded on save. */
     image: string | File;
 }
 
@@ -306,13 +268,8 @@ export interface TransformationEditorProps {
 
 export interface ProfilePostsProps {
     profileType: 'coach' | 'gym';
-    /** The coach/gym **profile id** (CoachProfile.id / GymProfile.id). */
     profileId: string;
-    /** Owner display name — used in the section header ("Posts of {name}"). */
     ownerName?: string;
     isOwner?: boolean;
-    /** Where the "See all posts" link points. Defaults to `/my-posts` for the
-     *  owner's own profile page; pass an explicit href when reusing this on
-     *  someone else's coach/gym detail page. */
     viewAllHref?: string;
 }

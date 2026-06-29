@@ -5,15 +5,10 @@ import { useCallback, useState, useEffect } from "react";
 // Simple global event-based state for opening the chat panel
 const CHAT_OPEN_EVENT = "gymspot-chat-open";
 
-/** Tab the widget should display when it opens. Mirrors `WidgetTab` in
- *  `components/chat-tabs.tsx` — kept loose here so this hook doesn't import
- *  a component module. */
 export type ChatOpenTab = 'conversations' | 'incoming' | 'outgoing';
 
 export interface ChatOpenDetail {
     tab?: ChatOpenTab;
-    /** When set, the widget opens straight into this conversation's thread
-     *  (e.g. from a chat notification). */
     conversationId?: string;
 }
 
@@ -45,8 +40,6 @@ export const useChat = () => {
 
     const closeChat = () => setIsOpen(false);
 
-    /** Acknowledge that the consumer applied the requested tab — prevents
-     *  the same value from re-triggering a tab change on later renders. */
     const clearRequestedTab = useCallback(() => setRequestedTab(undefined), []);
 
     /** Acknowledge the requested conversation so it doesn't re-open later. */

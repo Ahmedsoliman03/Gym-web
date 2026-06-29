@@ -54,7 +54,6 @@ export interface CommunityComment {
     upVotes?: number;
     downVotes?: number;
     score?: number;
-    /** Present on newer backend responses; rendered in the upvoters sheet. */
     upVoters?: CommentVoter[];
     downVoters?: CommentVoter[];
     myVote: VoteValue;

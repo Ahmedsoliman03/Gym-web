@@ -2,8 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
 import type { GoalMode, WeightLog } from '../components/WeightProgress/types';
 
-/** Body Analytics tracker as returned by GET /api/me/weight-tracker. Weights
- *  are numbers; `goalWeight` is null until the client sets a goal. */
 export interface WeightTracker {
     goalWeight: number | null;
     goalMode: GoalMode;

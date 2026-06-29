@@ -75,8 +75,6 @@ export const NotificationsMenu = ({
         if (!notification.isRead) markRead.mutate(notification.id);
         setIsOpen(false);
 
-        // The destination is derived from type + data because the server
-        // `link` can use a different URL scheme than this app's routes.
         const target = resolveNotificationTarget(notification);
         if (!target) return;
         router.push(target.href);
@@ -155,9 +153,6 @@ export const NotificationsMenu = ({
                                         locale={locale}
                                         onClick={() => handleItemClick(notif)}
                                         onActorClick={() => {
-                                            // Avatar links straight to the actor's
-                                            // profile — just close the menu and mark
-                                            // read; the Link handles navigation.
                                             if (!notif.isRead) markRead.mutate(notif.id);
                                             setIsOpen(false);
                                         }}

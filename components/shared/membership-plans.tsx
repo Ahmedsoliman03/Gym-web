@@ -31,14 +31,6 @@ interface PlansProps {
   pendingPlanId?: string | null;
 }
 
-/** Append " EGP" to a price string when the API didn't already include the
- *  currency. The check is case-insensitive so "egp", "EGP", "Egp" all skip
- *  re-adding the suffix. Empty strings are returned unchanged so callers can
- *  decide how to handle "no price set". */
-/** Treat a plan as "renderable" only when it has at least one of the
- *  user-facing fields filled. Empty rows are silently dropped from the view
- *  so a junk row returned by the API (all-empty placeholder) doesn't render
- *  an empty card. */
 const isPlanRenderable = (p: ProfilePlan): boolean =>
   !!p.name?.trim() ||
   !!p.duration?.trim() ||

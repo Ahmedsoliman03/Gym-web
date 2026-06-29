@@ -39,12 +39,6 @@ const styles = {
     'w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin',
 };
 
-/**
- * Reusable confirmation modal — used for destructive or otherwise
- * confirmation-worthy actions (delete post, delete job, close job, ...).
- * All labels are passed in so the caller can localize from any next-intl
- * namespace.
- */
 export function ConfirmDialog({
   isOpen,
   title,

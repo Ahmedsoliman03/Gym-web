@@ -22,8 +22,6 @@ export default function ProfilePage() {
   const searchParams = useSearchParams();
   const focus = searchParams.get("focus");
 
-  // When the floating checklist links here with ?focus=<section>, wait for the
-  // profile to render then smooth-scroll that section into view.
   useEffect(() => {
     if (!focus || isLoading || !profile) return;
     const id = sectionDomId(focus as ChecklistKey);

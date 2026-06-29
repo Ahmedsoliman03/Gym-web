@@ -18,17 +18,12 @@ export interface Job {
     image: string | null;
     status: JobStatus;
     gym: JobGym;
-    /** Increments when anyone calls the share endpoint. */
     sharesCount?: number;
-    /** Excludes the author. */
     savesCount?: number;
-    /** Total applications submitted to this job. */
     applicationsCount?: number;
     isSaved?: boolean;
-    /** Coach-side: whether the current user already applied. */
     isApplied?: boolean;
     createdAt?: string;
-    /** Non-null timestamp means the job is closed for applications. */
     closedAt?: string | null;
     updatedAt?: string;
 }
@@ -42,7 +37,6 @@ export interface CreateJobInput {
 
 export interface EditJobInput {
     jobId: string;
-    /** Only the editable fields per the README. */
     content: string;
 }
 

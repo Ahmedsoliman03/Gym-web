@@ -8,9 +8,6 @@ import { Modal } from '@/components/ui/modal';
 import { useEditPostMutation } from '../services/community.service';
 import type { CommunityPost, PostMedia } from '../types';
 
-// Fetch an existing media URL and convert it to a File so it can be re-sent in
-// the PATCH multipart payload. We must re-send the current media — without a
-// `media` field, the server treats the edit as media-removal.
 const fetchMediaAsFile = async (m: PostMedia): Promise<File> => {
   const response = await fetch(m.file);
   const blob = await response.blob();
@@ -52,16 +49,10 @@ export function EditPostModal({ isOpen, post, onClose }: EditPostModalProps) {
   const [isPreparingMedia, setIsPreparingMedia] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Re-sync the textarea each time the modal opens for a (possibly different)
-  // post. Without this, switching posts would keep the previous draft. Also
-  // place the caret at the end of the existing text so the user can keep
-  // typing after their content instead of overwriting from position zero.
   useEffect(() => {
     if (!isOpen) return;
     setContent(post.content);
     reset();
-    // Defer focus + caret-to-end until after the textarea is mounted and the
-    // value is committed by React.
     requestAnimationFrame(() => {
       const el = textareaRef.current;
       if (!el) return;
@@ -71,8 +62,6 @@ export function EditPostModal({ isOpen, post, onClose }: EditPostModalProps) {
     });
   }, [isOpen, post.content, post.id, reset]);
 
-  // Real-time dirty check — compared as-typed, so reverting to the original
-  // text immediately disables the save button again.
   const isDirty = content !== post.content;
   const isBusy = isPending || isPreparingMedia;
 
@@ -85,8 +74,6 @@ export function EditPostModal({ isOpen, post, onClose }: EditPostModalProps) {
     e.preventDefault();
     if (!isDirty || isBusy) return;
     try {
-      // Re-upload the existing media so the server keeps it. Without the
-      // `media` field the backend treats the edit as a media removal.
       setIsPreparingMedia(true);
       const mediaFiles = post.media.length
         ? await Promise.all(post.media.map(fetchMediaAsFile))

@@ -34,8 +34,6 @@ export function MobileMenu({
   const t = useTranslations('Navbar');
   const [moreOpen, setMoreOpen] = useState(false);
 
-  // Lock body scroll while the drawer is open; collapse "More" once closed so
-  // the next open starts tidy.
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -103,8 +101,6 @@ export function MobileMenu({
                 );
               }
 
-              // Grouped entry: a section label with its links listed beneath it
-              // (always expanded on mobile for one-tap reach).
               return (
                 <div key={entry.label} className="flex flex-col gap-4">
                   <span className={styles.mobileGroupLabel}>{entry.label}</span>

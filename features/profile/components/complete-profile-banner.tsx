@@ -9,12 +9,6 @@ import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 // Delay before the banner slides in after the profile is known (ms).
 const APPEAR_DELAY = 5000;
 
-/**
- * Nudges coaches and gyms who have never edited their profile (`editCount === 0`)
- * to fill it out. Surfaces ~5s after login/load and links to /profile/edit.
- * Dismissing only hides it for the current view — it reappears on the next load
- * as long as `editCount` is still 0. Renders nothing for clients or once edited.
- */
 export function CompleteProfileBanner() {
   const t = useTranslations('Profile');
   const locale = useLocale();

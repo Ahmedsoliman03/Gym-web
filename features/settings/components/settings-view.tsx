@@ -26,17 +26,11 @@ const PANELS = ['password', 'chat', 'notifications', 'blocked'] as const;
 
 export function SettingsView() {
     const t = useTranslations('Settings');
-    // Allow deep-linking a panel open via `?section=` (e.g. blocking a user
-    // redirects to `/settings?section=blocked` with the Blocked Users panel
-    // already expanded).
     const searchParams = useSearchParams();
     const initialPanel: Panel =
         PANELS.find((p) => p === searchParams.get('section')) ?? null;
     const [open, setOpen] = useState<Panel>(initialPanel);
 
-    // Which sections the backend permits for this user type — the single source
-    // of truth (apps/accounts/settings_sections.py). While loading, fall back to
-    // showing all so the page never flashes empty for the common all-allowed case.
     const { data: allowed } = useSettingsSections();
     const canSee = (section: Exclude<Panel, null>) => !allowed || allowed.includes(section);
 

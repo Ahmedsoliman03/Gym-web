@@ -24,8 +24,6 @@ const styles = {
   previewBtn: "p-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-lg text-white hover:bg-white/20 transition-all",
 };
 
-/** Resolve a preview URL for a transformation row: keep server URLs as-is,
- *  build a temporary blob URL for freshly picked Files. */
 const previewSrc = (image: string | File): string => {
   if (!image) return '';
   if (image instanceof File) return URL.createObjectURL(image);
@@ -52,8 +50,6 @@ export const TransformationEditor = ({
   };
 
   const handleAdd = () => {
-    // `temp_` prefix lets the server-side builder tell new rows from rows
-    // it already has on file. Existing rows keep their real id.
     const newItem: TransformationItem = {
       id: `temp_${Math.random().toString(36).slice(2, 11)}`,
       name: "",
@@ -90,8 +86,6 @@ export const TransformationEditor = ({
     setLightbox({ isOpen: true, index });
   };
 
-  // Memoize previews so blob URLs created for picked Files can be cleaned up
-  // when the list changes.
   const previews = useMemo(
     () => transformations.map((tr) => previewSrc(tr.image)),
     [transformations],

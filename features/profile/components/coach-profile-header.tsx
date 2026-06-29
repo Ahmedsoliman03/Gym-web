@@ -37,8 +37,6 @@ const styles = {
   presenceDot: (status: 'online' | 'busy' | 'offline') =>
     `h-2.5 w-2.5 rounded-full ${status === 'online' ? 'bg-green-500' : status === 'busy' ? 'bg-amber-500' : 'bg-gray-500'
     }`,
-  // Single specialization badge next to the name. The full list is revealed in
-  // a tooltip on hover/focus instead of rendering a chip per specialization.
   specBadgeWrapper: "relative inline-flex group",
   specBadge:
     "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-wider cursor-default focus:outline-none focus:ring-2 focus:ring-primary/40",
@@ -97,9 +95,6 @@ export const CoachProfileHeader = ({
       { userId: coachUserId },
       {
         onSuccess: (result) => {
-          // Land on the tab that shows what just happened: Outgoing for a
-          // pending request the target still needs to approve, Conversations
-          // for an open chat that's ready to use.
           if (result.status === "request_pending") {
             toast.success(tChat("requestSentToast"));
             triggerChatOpen('outgoing');

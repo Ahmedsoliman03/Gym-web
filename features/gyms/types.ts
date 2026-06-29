@@ -14,9 +14,6 @@ export interface Gym {
 
 export interface GymDetail {
     id: string;
-    /** Owner's `User.id` — the same id `/api/me` returns at top level.
-     *  The detail endpoint is keyed by profile id, but chat/messaging
-     *  must use the User.id, so the backend exposes it as `userId`. */
     userId: string;
     gymName: string;
     location: string;
@@ -31,7 +28,6 @@ export interface GymDetail {
     specializations?: string[];
     images?: GalleryImage[];
     plans?: ProfilePlan[];
-    /** Per postman README: gym detail responses include the gym's active stories. */
     stories?: Story[];
     status?: PresenceStatus;
     socialMedia?: SocialMediaLink[];

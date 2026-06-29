@@ -87,11 +87,6 @@ interface SharePostModalProps {
   onClose: () => void;
   url: string;
   title: string;
-  /**
-   * Fired exactly once per modal session, the first time the user actually
-   * shares (copies the link OR clicks a platform button). Callers use this to
-   * ping their `/share` analytics endpoint in the background.
-   */
   onShared?: () => void;
 }
 
@@ -141,8 +136,6 @@ export function SharePostModal({ isOpen, onClose, url, title, onShared }: ShareP
         document.execCommand('copy');
         document.body.removeChild(ta);
       } catch {
-        // Swallow — copy may have silently failed but the user clicked,
-        // which is the action we report to the backend.
       }
     }
     setCopied(true);
@@ -160,8 +153,6 @@ export function SharePostModal({ isOpen, onClose, url, title, onShared }: ShareP
       await navigator.share({ title, text: title, url });
       fireShared();
     } catch (err) {
-      // AbortError = user dismissed the sheet without sharing — don't count it.
-      // Any other failure is silent; the user can still copy/pick a platform.
       void err;
     }
   };

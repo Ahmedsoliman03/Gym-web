@@ -18,8 +18,6 @@ const styles = {
     'p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center',
 };
 
-/** `embedded` renders the list without the full-page chrome (top padding +
- *  PageHeader) so it can sit inside the profile page's tabbed layout. */
 export function SavedPostsView({ embedded = false }: { embedded?: boolean }) {
   const t = useTranslations('Community');
   const { data, isLoading, isError } = useSavedPosts();

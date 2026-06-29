@@ -14,11 +14,6 @@ const styles = {
         'p-1 rounded-full text-primary/70 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer disabled:cursor-default',
 };
 
-/**
- * Renders the current user's referral promocode as a green chip with a
- * one-tap copy-to-clipboard button. Falls back to the legacy `execCommand`
- * path when the Clipboard API isn't available (e.g. older Safari over http).
- */
 export function PromocodeChip({ code }: { code: string }) {
     const t = useTranslations('Profile');
     const [copied, setCopied] = useState(false);

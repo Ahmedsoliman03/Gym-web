@@ -13,9 +13,6 @@ interface DesktopNavProps {
 }
 
 export function DesktopNav({ entries, pathname }: DesktopNavProps) {
-  // Which group dropdown is open (by label). State-driven (not pure CSS hover)
-  // so selecting a page closes it instead of leaving it open under the cursor
-  // on the new route.
   const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,8 +40,6 @@ export function DesktopNav({ entries, pathname }: DesktopNavProps) {
           );
         }
 
-        // Grouped entry: label + chevron revealing a dropdown of related pages.
-        // Opens on hover/click; selecting an item closes it.
         const groupActive = entry.items.some((i) => pathname === i.href);
         const isGroupOpen = openGroup === entry.label;
         return (

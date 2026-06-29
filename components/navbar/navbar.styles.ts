@@ -1,5 +1,3 @@
-// Shared Tailwind class sets for the navbar and its sub-components. Kept in one
-// place so the visual language stays consistent across desktop/mobile pieces.
 export const styles = {
   nav: (scrolled: boolean) => `
     fixed top-0 left-0 right-0 z-[100] transition-all duration-300 px-4 sm:px-6 md:px-12 py-3 sm:py-4
@@ -24,8 +22,6 @@ export const styles = {
   `,
   navGroupChevron: (isOpen: boolean) =>
     `transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`,
-  // pt-3 keeps the trigger and panel within one hover region so the dropdown
-  // doesn't vanish while the cursor crosses the gap.
   navDropdownWrap: "absolute left-1/2 -translate-x-1/2 top-full pt-3 min-w-[210px] z-[120] animate-in fade-in slide-in-from-top-1 duration-200",
   navDropdownPanel: "bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2",
   navDropdownItem: (isActive: boolean) => `
@@ -40,8 +36,6 @@ export const styles = {
   notifBadge: "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-black rounded-full border-2 border-background flex items-center justify-center tabular-nums",
   chatButton: "relative p-2.5 text-foreground/40 hover:text-foreground hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10",
   chatBadge: "absolute -bottom-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-black rounded-full border-2 border-background flex items-center justify-center tabular-nums",
-  // Unread-messages indicator — a static red dot. Sits at the top corner so it
-  // never collides with the (bottom-corner) request count badge.
   chatDot: "absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background",
   divider: "h-8 w-[1px] bg-white/5 mx-2 hidden sm:block",
   profileLink: (isActive: boolean, isRtl: boolean) => `

@@ -67,18 +67,12 @@ export const ConversationThread = ({
         useChatSocket();
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Subscribe to the conversations cache (reactive) — NOT a one-off
-    // `getQueryData` read — so the thread re-renders when the other
-    // participant's `lastReadAt` advances and the read receipt can flip live.
     const conversationsQuery = useConversations();
     const conversation = conversationsQuery.data?.find((c) => c.id === conversationId);
     const meId = profile?.id;
     const other = conversation ? pickOtherUser(conversation, meId) : undefined;
     const otherStatus = other ? (presenceByUser[other.id] ?? other.status) : undefined;
 
-    // Read receipts: a message I sent is "read" once the other participant's
-    // last-read timestamp catches up to it. Derived from the conversation's
-    // participants (the backend has no per-message read event).
     const otherParticipant = conversation?.participants.find(
         (p) => p.user?.id !== meId,
     );
@@ -90,27 +84,17 @@ export const ConversationThread = ({
     const typers = typingByConversation[conversationId];
     const someoneTyping = !!typers && Array.from(typers).some((id) => id !== meId);
 
-    // Mark as read when the thread mounts (or when switching between threads).
-    // The mutation's onMutate already zeroes the unread badge optimistically.
     useEffect(() => {
         markRead.mutate(conversationId);
         clearUnread(conversationId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationId]);
 
-    // Register this thread as the on-screen conversation so the socket provider
-    // can skip the new-message sound while the user is viewing it. Cleared on
-    // unmount (panel closed / back to the list / thread switched).
     useEffect(() => {
         setActiveConversation(conversationId);
         return () => setActiveConversation(null);
     }, [conversationId, setActiveConversation]);
 
-    // Read receipts have no backend WS event, so while the thread is open we
-    // refetch the conversation list on a short interval to pick up the other
-    // participant's advancing `lastReadAt`. Combined with the reactive
-    // `useConversations` above, the sent → read check flips within one tick of
-    // them opening the message. Paused while the tab is hidden.
     useEffect(() => {
         const id = setInterval(() => {
             if (document.visibilityState === 'visible') {
@@ -120,18 +104,11 @@ export const ConversationThread = ({
         return () => clearInterval(id);
     }, [queryClient]);
 
-    // Jump to the bottom on initial load, on new messages, and when the typing
-    // indicator appears.
     const messageCount = messagesQuery.data?.length ?? 0;
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ block: 'end' });
     }, [messageCount, someoneTyping]);
 
-    // A message can arrive over the socket while this thread is already open.
-    // The socket provider keeps its local count at zero, but the server may
-    // still have counted it — so re-mark the conversation read on each new
-    // message (while the tab is visible) to stop the badge resurfacing on the
-    // next periodic refetch.
     useEffect(() => {
         if (messageCount === 0) return;
         if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
@@ -206,9 +183,6 @@ export const ConversationThread = ({
                                 updateMessage.variables?.messageId === m.id;
                             return (
                                 <MessageBubble
-                                    // Prefer clientMessageId so the optimistic
-                                    // bubble keeps its mount when the server echo
-                                    // swaps in the real id — no flicker on send.
                                     key={m.clientMessageId || m.id}
                                     message={m}
                                     mine={mine}

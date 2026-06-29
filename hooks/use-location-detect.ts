@@ -21,12 +21,6 @@ export interface UseLocationDetectReturn {
   detect: () => void;
 }
 
-/**
- * Requests the browser's geolocation then calls our /api/location proxy
- * (which in turn calls Nominatim) to resolve city, area, and address details.
- *
- * @param onSuccess  Callback invoked with the resolved location data.
- */
 export function useLocationDetect(
   onSuccess: (result: LocationResult) => void
 ): UseLocationDetectReturn {

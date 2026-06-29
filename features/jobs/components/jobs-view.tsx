@@ -12,15 +12,9 @@ const styles = {
 };
 
 export function JobsView() {
-  // Fetch once at the view level so the header count and the feed stay in
-  // sync — TanStack Query dedupes the second consumer (JobFeed) via the
-  // shared ['jobs'] query key, so this isn't a duplicate request.
   const { data: jobs } = useJobs();
   const { profile } = useProfileUser();
 
-  // Only gyms can author job posts, so the "Post a Job" CTA is gym-only.
-  // Coaches see the feed but no compose entry; clients are blocked at the
-  // middleware before they get here.
   const canPostJob = profile?.userType === 'gym';
 
   return (
