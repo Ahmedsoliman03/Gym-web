@@ -39,7 +39,7 @@ export default function proxy(request: NextRequest) {
         pathnameWithoutLocale === path || pathnameWithoutLocale.startsWith(`${path}/`)
     );
 
-    const publicPaths = ['/', '/gyms', '/coaches', '/about', '/plans'];
+    const publicPaths = ['/', '/gyms', '/coaches', '/about' /* , '/plans' */];
     const isPublicPath = publicPaths.includes(pathnameWithoutLocale);
 
     // Get current locale or default to 'en'

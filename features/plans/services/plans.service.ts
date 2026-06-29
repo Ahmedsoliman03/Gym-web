@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/utils/axios';
+// API calls disabled — see commented-out request lines below.
+// import { api } from '@/utils/axios';
 import type {
   CurrentSubscription,
   InvoicesResponse,
@@ -19,10 +20,12 @@ export const plansKeys = {
 };
 
 export const getPlatformPlans = async (): Promise<PlatformPlansResponse> => {
-  const { data } = await api.get<PlatformPlansResponse>(
-    '/api/v1/platform/plans/',
-  );
-  return data;
+  // API call disabled.
+  // const { data } = await api.get<PlatformPlansResponse>(
+  //   '/api/v1/platform/plans/',
+  // );
+  // return data;
+  return [];
 };
 
 export const usePlatformPlansQuery = () => {
@@ -43,19 +46,24 @@ export const subscribeToPlan = async ({
     ? { plan_id: planId, promo_code: trimmedPromo }
     : { plan_id: planId, apply_referral_discount: Boolean(applyReferralDiscount) };
 
-  const { data } = await api.post(
-    '/api/v1/platform/subscriptions/subscribe/',
-    body,
-  );
-  return data;
+  // API call disabled.
+  // const { data } = await api.post(
+  //   '/api/v1/platform/subscriptions/subscribe/',
+  //   body,
+  // );
+  // return data;
+  void body;
+  return null;
 };
 
 
 export const getCurrentSubscription = async (): Promise<CurrentSubscription> => {
-  const { data } = await api.get<CurrentSubscription>(
-    '/api/v1/platform/subscriptions/current/',
-  );
-  return data;
+  // API call disabled.
+  // const { data } = await api.get<CurrentSubscription>(
+  //   '/api/v1/platform/subscriptions/current/',
+  // );
+  // return data;
+  return null as unknown as CurrentSubscription;
 };
 
 export const useCurrentSubscriptionQuery = (enabled = true) => {
@@ -69,10 +77,12 @@ export const useCurrentSubscriptionQuery = (enabled = true) => {
 };
 
 export const getSubscriptionUsage = async (): Promise<PlatformUsageResponse> => {
-  const { data } = await api.get<PlatformUsageResponse>(
-    '/api/v1/platform/subscriptions/usage/',
-  );
-  return data;
+  // API call disabled.
+  // const { data } = await api.get<PlatformUsageResponse>(
+  //   '/api/v1/platform/subscriptions/usage/',
+  // );
+  // return data;
+  return [];
 };
 
 export const useSubscriptionUsageQuery = (enabled = true) => {
@@ -86,8 +96,10 @@ export const useSubscriptionUsageQuery = (enabled = true) => {
 };
 
 export const getInvoices = async (): Promise<InvoicesResponse> => {
-  const { data } = await api.get<InvoicesResponse>('/api/v1/platform/invoices/');
-  return data;
+  // API call disabled.
+  // const { data } = await api.get<InvoicesResponse>('/api/v1/platform/invoices/');
+  // return data;
+  return [];
 };
 
 export const useInvoicesQuery = (enabled = true) => {
@@ -104,11 +116,14 @@ export const validatePromoCode = async ({
   planId,
   promoCode,
 }: ValidatePromoArgs): Promise<ValidatePromoResponse> => {
-  const { data } = await api.post<ValidatePromoResponse>(
-    '/api/v1/platform/subscriptions/validate-promo/',
-    { plan_id: planId, promo_code: promoCode.trim() },
-  );
-  return data;
+  // API call disabled.
+  // const { data } = await api.post<ValidatePromoResponse>(
+  //   '/api/v1/platform/subscriptions/validate-promo/',
+  //   { plan_id: planId, promo_code: promoCode.trim() },
+  // );
+  // return data;
+  void { planId, promoCode };
+  return {} as ValidatePromoResponse;
 };
 
 /** Lenient read of the "is this code valid" flag across possible key names. */

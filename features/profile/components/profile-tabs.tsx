@@ -4,7 +4,6 @@ import {
     Bookmark,
     Briefcase,
     FileText,
-    Gauge,
     Receipt,
     User,
     type LucideIcon,
@@ -72,8 +71,9 @@ const tabsForUserType = (userType: ProfileUserType): TabDef[] => {
     }
     // Platform subscriptions (and thus usage + billing) exist only for gyms and coaches.
     if (userType !== 'client') {
-        base.push({ key: 'usage', labelKey: 'tabUsage', icon: Gauge });
-        base.push({ key: 'invoices', labelKey: 'tabInvoices', icon: Receipt });
+        // Usage tab is temporarily disabled.
+        // base.push({ key: 'usage', labelKey: 'tabUsage', icon: Gauge });
+        // base.push({ key: 'invoices', labelKey: 'tabInvoices', icon: Receipt });
     }
     return base;
 };

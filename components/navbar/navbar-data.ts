@@ -1,4 +1,4 @@
-import { Bookmark, Briefcase, FileText, Gauge, Settings } from 'lucide-react';
+import { Bookmark, Briefcase, FileText, Settings } from 'lucide-react';
 import type { AccountLink, NavEntry, NavItem, UserType } from './types';
 
 type Translate = (key: string) => string;
@@ -31,7 +31,7 @@ export function buildNavEntries(
       { type: 'link', label: t('community'), href: '/community' },
       { type: 'link', label: t('coaches'), href: '/coaches' },
       { type: 'link', label: t('gyms'), href: '/gyms' },
-      { type: 'link', label: t('plans'), href: '/plans' },
+      // { type: 'link', label: t('plans'), href: '/plans' },
       { type: 'link', label: t('about'), href: '/about' },
     ];
   }
@@ -43,7 +43,7 @@ export function buildNavEntries(
       { label: t('community'), href: '/community' },
     ]),
     ...groupOrLink(t('careers'), careersItems),
-    { type: 'link', label: t('plans'), href: '/plans' },
+    // { type: 'link', label: t('plans'), href: '/plans' },
     { type: 'link', label: t('about'), href: '/about' },
   ];
 }
@@ -68,9 +68,10 @@ export function buildAccountLinks(t: Translate, userType: UserType): AccountLink
       ? [{ href: '/profile?tab=saved-jobs', label: t('savedJobs'), icon: Bookmark }]
       : []),
     // Usage exists only for gyms and coaches (platform subscriptions).
-    ...(userType !== 'client'
-      ? [{ href: '/profile?tab=usage', label: t('usage'), icon: Gauge }]
-      : []),
+    // Usage tab is temporarily disabled.
+    // ...(userType !== 'client'
+    //   ? [{ href: '/profile?tab=usage', label: t('usage'), icon: Gauge }]
+    //   : []),
     { href: '/settings', label: t('settings'), icon: Settings },
   ];
 }
