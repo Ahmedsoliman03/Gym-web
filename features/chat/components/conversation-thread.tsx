@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import {
@@ -43,9 +43,19 @@ const styles = {
     name: 'text-sm font-bold truncate',
     userType: 'text-[11px] text-foreground/50 uppercase tracking-wider',
     body: 'flex-1 overflow-y-auto p-4 space-y-2',
+    dayDivider: 'flex justify-center my-3',
+    dayChip:
+        'px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-wider text-foreground/60',
 };
 
 const MESSAGE_DELETE_WINDOW_MS = 15 * 60 * 1000;
+
+// Local midnight (ms) for a given timestamp — used to group messages by day.
+const startOfDay = (ms: number) => {
+    const d = new Date(ms);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+};
 
 export const ConversationThread = ({
     conversationId,
@@ -66,6 +76,9 @@ export const ConversationThread = ({
     const { clearUnread, setActiveConversation, typingByConversation, presenceByUser } =
         useChatSocket();
     const bottomRef = useRef<HTMLDivElement>(null);
+    // Ticks every 30s so the edit/delete window expires and the day labels
+    // (Today → date at midnight) update without needing another re-render.
+    const [now, setNow] = useState(() => Date.now());
 
     const conversationsQuery = useConversations();
     const conversation = conversationsQuery.data?.find((c) => c.id === conversationId);
@@ -94,6 +107,26 @@ export const ConversationThread = ({
         setActiveConversation(conversationId);
         return () => setActiveConversation(null);
     }, [conversationId, setActiveConversation]);
+
+    useEffect(() => {
+        const id = setInterval(() => setNow(Date.now()), 30_000);
+        return () => clearInterval(id);
+    }, []);
+
+    const dayLabel = (iso: string) => {
+        const diff = Math.round((startOfDay(now) - startOfDay(new Date(iso).getTime())) / 86_400_000);
+        if (diff === 0) return t('today');
+        if (diff === 1) return t('yesterday');
+        try {
+            return new Intl.DateTimeFormat(locale, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            }).format(new Date(iso));
+        } catch {
+            return '';
+        }
+    };
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -163,7 +196,7 @@ export const ConversationThread = ({
                     />
                 ) : (
                     <>
-                        {messagesQuery.data?.map((m) => {
+                        {messagesQuery.data?.map((m, i) => {
                             const mine = !!meId && m.sender?.id === meId;
                             const read =
                                 mine &&
@@ -172,9 +205,14 @@ export const ConversationThread = ({
                             const canDelete =
                                 mine &&
                                 !m.id.startsWith('tmp:') &&
-                                Date.now() - new Date(m.createdAt).getTime() <=
+                                now - new Date(m.createdAt).getTime() <=
                                     MESSAGE_DELETE_WINDOW_MS;
                             const canEdit = canDelete && m.body.trim().length > 0;
+                            const prev = i > 0 ? messagesQuery.data?.[i - 1] : undefined;
+                            const showDayDivider =
+                                !prev ||
+                                startOfDay(new Date(prev.createdAt).getTime()) !==
+                                    startOfDay(new Date(m.createdAt).getTime());
                             const deleting =
                                 deleteMessage.isPending &&
                                 deleteMessage.variables?.messageId === m.id;
@@ -182,8 +220,15 @@ export const ConversationThread = ({
                                 updateMessage.isPending &&
                                 updateMessage.variables?.messageId === m.id;
                             return (
-                                <MessageBubble
-                                    key={m.clientMessageId || m.id}
+                                <Fragment key={m.clientMessageId || m.id}>
+                                    {showDayDivider && (
+                                        <div className={styles.dayDivider}>
+                                            <span className={styles.dayChip}>
+                                                {dayLabel(m.createdAt)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <MessageBubble
                                     message={m}
                                     mine={mine}
                                     read={read}
@@ -226,7 +271,8 @@ export const ConversationThread = ({
                                             },
                                         )
                                     }
-                                />
+                                    />
+                                </Fragment>
                             );
                         })}
                         {someoneTyping && <TypingIndicator />}

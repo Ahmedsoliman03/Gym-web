@@ -4,7 +4,6 @@ import {
     Bookmark,
     Briefcase,
     FileText,
-    Receipt,
     User,
     type LucideIcon,
 } from 'lucide-react';

@@ -839,6 +839,8 @@
         "emptyOutgoing": "لم ترسل أي طلبات بعد.",
         "emptyConversations": "لا توجد محادثات بعد.",
         "noMessagesYet": "لا توجد رسائل بعد.",
+        "today": "اليوم",
+        "yesterday": "أمس",
         "back": "رجوع",
         "threadComingSoon": "ستظهر الرسائل هنا.",
         "send": "إرسال",
