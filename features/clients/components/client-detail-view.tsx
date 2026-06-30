@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useProfileLink } from "@/features/profile/hooks/useProfileLink";
 import toast from "react-hot-toast";
 import { useClient } from "../services/clients.service";
+import { ClientWeightChart } from "./client-weight-chart";
 import type { ClientDetailViewProps } from "../types";
 
 const styles = {
@@ -165,6 +166,9 @@ export function ClientDetailView({ id }: ClientDetailViewProps) {
             </div>
           </div>
         </div>
+
+        {/* Body-analytics weight chart */}
+        {client.weightTracker && <ClientWeightChart tracker={client.weightTracker} />}
       </div>
 
       <ConfirmDialog

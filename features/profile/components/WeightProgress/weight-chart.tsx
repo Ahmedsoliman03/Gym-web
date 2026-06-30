@@ -183,24 +183,37 @@ export function WeightChart({
         })}
       </svg>
 
-      {/* HTML Tooltip */}
-      {tooltipPos && (
-        <div
-          className="absolute z-20 pointer-events-none -translate-x-1/2 bg-surface border border-white/10 px-3 py-1.5 rounded-xl shadow-2xl backdrop-blur-md flex flex-col items-center gap-0.5 text-center transition-all duration-200"
-          style={{
-            left: `${(tooltipPos.x / svgWidth) * 100}%`,
-            top: `${(tooltipPos.y / svgHeight) * 100 - 52}px`,
-          }}
-        >
-          <span className="text-[10px] text-foreground/50 font-bold whitespace-nowrap">
-            {formatDate(tooltipPos.date)}
-          </span>
-          <span className="text-xs font-black text-white whitespace-nowrap">
-            {tooltipPos.weight.toFixed(1)} {t('unit')}
-          </span>
-          <div className="w-1.5 h-1.5 bg-surface border-r border-b border-white/10 rotate-45 mt-[-1px]" />
-        </div>
-      )}
+      {/* HTML Tooltip — positioned over the hovered dot. For points near the top
+          we flip it *below* the dot so the box isn't clipped by the container's
+          overflow-hidden (which is what cut off the highest point's tooltip). */}
+      {tooltipPos && (() => {
+        const leftPct = (tooltipPos.x / svgWidth) * 100;
+        const topPct = (tooltipPos.y / svgHeight) * 100;
+        const below = topPct < 28;
+        return (
+          <div
+            className="absolute z-20 pointer-events-none bg-surface border border-white/10 px-3 py-1.5 rounded-xl shadow-2xl backdrop-blur-md flex flex-col items-center gap-0.5 text-center transition-all duration-200"
+            style={{
+              left: `${leftPct}%`,
+              top: `${topPct}%`,
+              transform: `translateX(-50%) translateY(${below ? '16px' : 'calc(-100% - 14px)'})`,
+            }}
+          >
+            {below && (
+              <div className="w-1.5 h-1.5 bg-surface border-l border-t border-white/10 rotate-45 mb-[-1px]" />
+            )}
+            <span className="text-[10px] text-foreground/50 font-bold whitespace-nowrap">
+              {formatDate(tooltipPos.date)}
+            </span>
+            <span className="text-xs font-black text-white whitespace-nowrap">
+              {tooltipPos.weight.toFixed(1)} {t('unit')}
+            </span>
+            {!below && (
+              <div className="w-1.5 h-1.5 bg-surface border-r border-b border-white/10 rotate-45 mt-[-1px]" />
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

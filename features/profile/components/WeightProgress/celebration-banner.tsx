@@ -1,11 +1,13 @@
 'use client';
 
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 
 interface CelebrationBannerProps {
   isRtl: boolean;
   goalWeight: number;
   goalMode: 'lose' | 'gain';
+  /** While true, the download button shows a spinner and is disabled. */
+  isExporting?: boolean;
   onCelebrateAgain: () => void;
   onDownloadPdf: () => void;
 }
@@ -14,6 +16,7 @@ export function CelebrationBanner({
   isRtl,
   goalWeight,
   goalMode,
+  isExporting = false,
   onCelebrateAgain,
   onDownloadPdf,
 }: CelebrationBannerProps) {
@@ -46,10 +49,17 @@ export function CelebrationBanner({
         <button
           type="button"
           onClick={onDownloadPdf}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 text-white text-[10px] font-black uppercase tracking-wider rounded-xl border border-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
+          disabled={isExporting}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 text-white text-[10px] font-black uppercase tracking-wider rounded-xl border border-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <Download size={13} />
-          {isRtl ? 'تحميل PDF' : 'Download PDF'}
+          {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+          {isExporting
+            ? isRtl
+              ? 'جارٍ الإنشاء…'
+              : 'Generating…'
+            : isRtl
+              ? 'تحميل PDF'
+              : 'Download PDF'}
         </button>
         <button
           type="button"

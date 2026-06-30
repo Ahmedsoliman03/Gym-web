@@ -12,7 +12,9 @@ import { CelebrationBanner } from './celebration-banner';
 import { WeightChart } from './weight-chart';
 import { LogsForm } from './logs-form';
 import { LogsHistory } from './logs-history';
-import { downloadWeightProgressPdf } from './weight-progress-pdf';
+import { WeightReport } from './weight-report';
+import { usePdfExport } from '@/hooks/use-pdf-export';
+import toast from 'react-hot-toast';
 import {
   useWeightTracker,
   useUpsertWeightLogMutation,
@@ -32,8 +34,13 @@ export function WeightProgress() {
   const clearLogsMutation = useClearWeightLogsMutation();
   const updateGoalMutation = useUpdateWeightGoalMutation();
 
+  // Generic, ref-based PDF export (capture the off-screen <WeightReport/>).
+  const reportRef = React.useRef<HTMLDivElement>(null);
+  const { isExporting, error: pdfError, exportToPdf } = usePdfExport();
+
   // Server-backed data (replaces the old localStorage state).
-  const logs = tracker?.logs ?? [];
+  // Memoize so the empty-array fallback keeps a stable identity while loading.
+  const logs = React.useMemo(() => tracker?.logs ?? [], [tracker?.logs]);
   const goalWeight = tracker?.goalWeight ?? 0;
   const goalMode: GoalMode = tracker?.goalMode ?? 'lose';
 
@@ -61,6 +68,9 @@ export function WeightProgress() {
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
 
   useEffect(() => {
+    // Set "today" only after mount so the SSR/client markup can't disagree on the
+    // date (would otherwise be a hydration mismatch on the date input).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNewDate(new Date().toISOString().split('T')[0]);
   }, []);
 
@@ -135,8 +145,10 @@ export function WeightProgress() {
     goalMode === 'lose' ? currentWeight <= goalWeight : currentWeight >= goalWeight
   );
 
-  const handleDownloadPdf = () => {
-    void downloadWeightProgressPdf({
+  // Stable props for the off-screen report so it doesn't re-render on unrelated
+  // parent state changes (chart hover, input typing). Memoized + React.memo'd.
+  const reportData = React.useMemo(
+    () => ({
       logs,
       goalWeight,
       goalMode,
@@ -144,8 +156,22 @@ export function WeightProgress() {
       currentWeight,
       weightDifference,
       isGoalAchieved,
+    }),
+    [logs, goalWeight, goalMode, initialWeight, currentWeight, weightDifference, isGoalAchieved],
+  );
+
+  const handleDownloadPdf = () => {
+    void exportToPdf(reportRef, {
+      fileName: `gymspot-analytics${isRtl ? '-ar' : ''}.pdf`,
+      scale: 2,
     });
   };
+
+  useEffect(() => {
+    if (pdfError) {
+      toast.error(isRtl ? 'تعذّر إنشاء ملف PDF' : 'Could not generate the PDF.');
+    }
+  }, [pdfError, isRtl]);
 
   // Confetti Particle Celebration effect
   useEffect(() => {
@@ -262,7 +288,7 @@ export function WeightProgress() {
         month: 'short',
         day: 'numeric',
       });
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };
@@ -280,6 +306,7 @@ export function WeightProgress() {
           isRtl={isRtl}
           goalWeight={goalWeight}
           goalMode={goalMode}
+          isExporting={isExporting}
           onCelebrateAgain={() => setConfettiTrigger((prev) => prev + 1)}
           onDownloadPdf={handleDownloadPdf}
         />
@@ -445,6 +472,24 @@ export function WeightProgress() {
         onClose={() => setShowClearConfirm(false)}
         onConfirm={handleConfirmClear}
       />
+
+      {/* Off-screen, laid-out report captured by the PDF exporter — only mounted
+          when the download is actually reachable (goal achieved → banner shown). */}
+      {isGoalAchieved && (
+        <div
+          aria-hidden
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: '-10000px',
+            width: 794,
+            pointerEvents: 'none',
+            zIndex: -1,
+          }}
+        >
+          <WeightReport ref={reportRef} isRtl={isRtl} data={reportData} />
+        </div>
+      )}
     </div>
   );
 }
