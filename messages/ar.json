@@ -1134,7 +1134,7 @@
             "sets": "4 × 8",
             "description": "قف معتدلًا والبار عند مستوى الكتف. ادفعه لأعلى حتى تستقيم ذراعك بالكامل، ثم انزل بتحكم لمقدمة الكتف.",
             "failureTip": "اختر وزنًا تقدر تعمل بيه 8 عدات نظيفة. في آخر مجموعة استمر في الدفع لحد ما متقدرش تكمل عدة بأداء سليم — ده الفشل الحقيقي.",
-            "image": "/images/exercises/front/shoulder/overhead-press.png"
+            "image": "/images/exercises/front/shoulder/overhead-press.webp"
           },
           {
             "slug": "lateral-raise",
@@ -1143,7 +1143,7 @@
             "sets": "3 × 12",
             "description": "امسك دمبل في كل يد بجانب جسمك. ارفعهم للجانبين حتى مستوى الكتف مع ثني بسيط في الكوع، ثم انزل ببطء.",
             "failureTip": "استخدم وزن خفيف وعدات كتير. استمر في الرفع لحد ما تحس بحرقان في الكتف الجانبي ومتقدرش توصل لمستوى الكتف، وبعدها اعصر 2-3 عدات جزئية.",
-            "image": "/images/exercises/front/shoulder/lateral-raise.png"
+            "image": "/images/exercises/front/shoulder/lateral-raise.webp"
           },
           {
             "slug": "front-raise",
@@ -1152,7 +1152,7 @@
             "sets": "3 × 12",
             "description": "امسك الوزن أمام فخذيك. ارفعه للأمام ولأعلى حتى مستوى العين بذراع مستقيمة، ثم انزل بتحكم بدون تأرجح.",
             "failureTip": "استمر لحد ما متقدرش ترفع الوزن لمستوى العين من غير ما تستعين بزخم الجسم. أوقف المجموعة بمجرد ما يتكسر أداؤك.",
-            "image": "/images/exercises/front/shoulder/Front-raise.png"
+            "image": "/images/exercises/front/shoulder/Front-raise.webp"
           }
         ]
       },
@@ -1167,7 +1167,7 @@
             "sets": "4 × 8",
             "description": "استلقِ على البنش وامسك البار أوسع قليلًا من كتفك. انزل بالبار لمنتصف الصدر ثم ادفعه لأعلى مع تثبيت قدميك وظهرك.",
             "failureTip": "درّب الصدر الثقيل دايمًا مع مساعد (سبوتر). ادفع لحد ما متقدرش تكمل عدة، وخلي المساعد يساعدك في آخر عدة أو اتنين.",
-            "image": "/images/exercises/front/chest/chest-press.png"
+            "image": "/images/exercises/front/chest/chest-press.webp"
           },
           {
             "slug": "incline-dumbbell-press",
@@ -1176,7 +1176,7 @@
             "sets": "3 × 10",
             "description": "اضبط البنش على حوالي 30 درجة. ادفع الدمبل لأعلى وللداخل فوق أعلى صدرك، ثم انزل ببطء حتى تحس بالشد.",
             "failureTip": "في آخر مجموعة، انزل بالدمبل ببطء (3 ثواني) واستمر في الدفع لحد ما متقدرش تمد ذراعك بالكامل.",
-            "image": "/images/exercises/front/chest/Incline-Dumbbell-Press.png"
+            "image": "/images/exercises/front/chest/Incline-Dumbbell-Press.webp"
           },
           {
             "slug": "push-ups",
@@ -1185,7 +1185,7 @@
             "sets": "3 × 15",
             "description": "خلي يديك تحت كتفك وجسمك في خط مستقيم. انزل بصدرك ناحية الأرض ثم ادفع لأعلى مع شد عضلات بطنك.",
             "failureTip": "اعمل أكبر عدد من العدات الكاملة. لما متقدرش تعمل عدة كاملة، انزل على ركبتيك وكمّل كام عدة لحد الفشل.",
-            "image": "/images/exercises/front/chest/Push-ups.png"
+            "image": "/images/exercises/front/chest/Push-ups.webp"
           }
         ]
       },
@@ -1200,7 +1200,7 @@
             "sets": "4 × 10",
             "description": "امسك البار بقبضة سفلية. ارفعه بثني الكوع فقط، اعصر في الأعلى، ثم انزل ببطء حتى الاستطالة الكاملة.",
             "failureTip": "لما متقدرش ترفع عدة نظيفة، اعمل عدات بزخم بسيط ثم انزل ببطء شديد — ده بيدفع العضلة لما بعد الفشل بأمان.",
-            "image": "/images/exercises/front/biceps/Barbell Curl.png"
+            "image": "/images/exercises/front/biceps/Barbell Curl.webp"
           },
           {
             "slug": "hammer-curl",
@@ -1209,7 +1209,7 @@
             "sets": "3 × 12",
             "description": "امسك الدمبل والكفين متقابلين. ارفع مع الحفاظ على القبضة المحايدة ثم انزل بتحكم. ممتاز لسُمك الذراع.",
             "failureTip": "اوصل للفشل على ذراع ثم الأخرى، ثم اختم بكام عدة سالبة بطيئة تقاوم فيها الوزن وهو نازل.",
-            "image": "/images/exercises/front/biceps/Hammer Curl.png"
+            "image": "/images/exercises/front/biceps/Hammer Curl.webp"
           },
           {
             "slug": "incline-cable-curl",
@@ -1218,7 +1218,7 @@
             "sets": "3 × 12",
             "description": "اجلس على بنش مائل وامسك مقبض الكابل السفلي في كل يد. مع تعليق الذراعين للخلف، ارفع بثني الكوع فقط، اعصر بقوة، ثم انزل بتحكم كامل حتى استطالة عميقة.",
             "failureTip": "في آخر مجموعة استمر لحد ما تقف، ثم اترك الكابل يشد ذراعيك لاستطالة بطيئة واعمل كام عدة جزئية في الأسفل.",
-            "image": "/images/exercises/front/biceps/Incline Biceps Cable Curls.png"
+            "image": "/images/exercises/front/biceps/Incline Biceps Cable Curls.webp"
           }
         ]
       },
@@ -1233,7 +1233,7 @@
             "sets": "3 × 12",
             "description": "امسك البار بقبضة علوية. ارفعه مع تثبيت الرسغ ثم انزل ببطء. يبني أعلى الساعد وقوة القبضة.",
             "failureTip": "استخدم وزن يبقى صعب عند العدة العاشرة. ادفع لحد ما تبدأ قبضتك تخور، ثم اعصر 2-3 عدات جزئية.",
-            "image": "/images/exercises/front/forearms/Reverse Curl.png"
+            "image": "/images/exercises/front/forearms/Reverse Curl.webp"
           },
           {
             "slug": "farmers-walk",
@@ -1242,7 +1242,7 @@
             "sets": "3 × 30 ث",
             "description": "ارفع دمبل ثقيل في كل يد، قف معتدلًا، وامشِ بخطوات محكومة. ممتاز للقبضة والساعد والقوة العامة.",
             "failureTip": "امشِ لحد ما قبضتك تخور وتضطر تنزل الوزن — انهيار القبضة ده بالظبط هو هدف التمرين.",
-            "image": "/images/exercises/front/forearms/Farmer's Walk.png"
+            "image": "/images/exercises/front/forearms/Farmer's Walk.webp"
           }
         ]
       },
@@ -1257,7 +1257,7 @@
             "sets": "3 × 45 ث",
             "description": "ارتكز على ساعديك وأطراف قدميك وجسمك في خط مستقيم. اشد بطنك ومؤخرتك واثبت من غير ما ينزل أو يرتفع الورك.",
             "failureTip": "اثبت لحد ما يتكسر أداؤك ويبدأ الورك ينزل — الرعشة دي معناها إن عضلات جذعك وصلت للفشل. سجّل الوقت وحاول تكسره المرة الجاية.",
-            "image": "/images/exercises/front/abs/Plank.png"
+            "image": "/images/exercises/front/abs/Plank.webp"
           },
           {
             "slug": "hanging-leg-raise",
@@ -1266,7 +1266,7 @@
             "sets": "3 × 12",
             "description": "اتعلّق من البار. مع إبقاء رجليك مستقيمة تقريبًا، ارفعهم ناحية الأفقي باستخدام أسفل البطن، ثم انزل ببطء بدون تأرجح.",
             "failureTip": "لما متقدرش ترفع رجليك للأفقي، حوّل لرفع بثني الركبة وكمّل لحد ما عضلات بطنك تخور.",
-            "image": "/images/exercises/front/abs/Hanging Leg Raise.png"
+            "image": "/images/exercises/front/abs/Hanging Leg Raise.webp"
           },
           {
             "slug": "crunches",
@@ -1275,7 +1275,7 @@
             "sets": "3 × 20",
             "description": "استلقِ على ظهرك والركبتين مثنيتين. ارفع كتفيك عن الأرض بانقباض البطن، اثبت في الأعلى، ثم انزل ببطء.",
             "failureTip": "اعمل عدات بطيئة مع عصرة ثانية في الأعلى لحد ما متقدرش ترفع، ثم اختم بعدات بطن جزئية قصيرة.",
-            "image": "/images/exercises/front/abs/Crunches.png"
+            "image": "/images/exercises/front/abs/Crunches.webp"
           }
         ]
       },
@@ -1290,7 +1290,7 @@
             "sets": "4 × 8",
             "description": "البار على أعلى ظهرك والقدمين بعرض الكتف. ارجع بالورك للخلف وانزل لحد ما يبقى فخذك موازي تقريبًا، ثم ادفع من كعبك.",
             "failureTip": "اعمل سكوات ثقيل جوه قفص أمان بمساند فقط. ادفع لحد ما متقدرش تقف بالعدة، ثم سيب البار على المساند — متوصلش للانهيار من غير أمان.",
-            "image": "/images/exercises/front/quads/Squat.png"
+            "image": "/images/exercises/front/quads/Squat.webp"
           },
           {
             "slug": "leg-press",
@@ -1299,7 +1299,7 @@
             "sets": "3 × 12",
             "description": "اجلس في الجهاز والقدمين بعرض الكتف على المنصة. انزل لحد ما توصل ركبتك لحوالي 90 درجة، ثم ادفع من غير قفل كامل.",
             "failureTip": "ضغط الأرجل أأمن طريقة لتدريب الرجل للفشل الحقيقي — كمّل لحد ما الفخذ يعجز يمد المنصة، ثم اعمل كام عدة جزئية.",
-            "image": "/images/exercises/front/quads/Leg Press machiene.png"
+            "image": "/images/exercises/front/quads/Leg Press machiene.webp"
           },
           {
             "slug": "lunges",
@@ -1308,7 +1308,7 @@
             "sets": "3 × 12",
             "description": "اخطُ خطوة طويلة للأمام، انزل بركبتك الخلفية ناحية الأرض، ثم ادفع للوقوف. بدّل الرجل كل عدة.",
             "failureTip": "كمّل لحد ما رجلك تحرق ويبدأ توازنك يروح، ثم اختم المجموعة بعدات بوزن الجسم فقط.",
-            "image": "/images/exercises/front/quads/Lunges.png"
+            "image": "/images/exercises/front/quads/Lunges.webp"
           }
         ]
       },
@@ -1323,7 +1323,7 @@
             "sets": "4 × 15",
             "description": "امسك وزن ثقيل بجانبك. ارفع كتفيك لأعلى ناحية أذنيك، اثبت على العصرة ثانية، ثم انزل ببطء.",
             "failureTip": "استخدم حمل ثقيل وكمّل الهز لحد ما تعجز ترفع كتفك، ثم اثبت على عصرة قوية في الأعلى 15-20 ثانية.",
-            "image": "/images/exercises/back/traps/Shrugs.png"
+            "image": "/images/exercises/back/traps/Shrugs.webp"
           },
           {
             "slug": "face-pull",
@@ -1332,7 +1332,7 @@
             "sets": "3 × 15",
             "description": "باستخدام حبل على بكرة عالية، اسحب المقبضين ناحية جبهتك مع تفريقهم وعصر أعلى ظهرك.",
             "failureTip": "استخدم وزن خفيف وطارد الحرقان — كمّل السحب والعصر لحد ما الكتف الخلفي والترابيس مايقدروش يثبتوا الانقباض.",
-            "image": "/images/exercises/back/traps/Face Pull.png"
+            "image": "/images/exercises/back/traps/Face Pull.webp"
           }
         ]
       },
@@ -1347,7 +1347,7 @@
             "sets": "4 × 8",
             "description": "اتعلّق من البار بقبضة علوية. اسحب صدرك ناحية البار بتنزيل الكوع، ثم انزل بتحكم كامل.",
             "failureTip": "اعمل عدات صارمة لحد الفشل، ثم استخدم قفزة بسيطة أو حبل مطاطي عشان تكمل عدات مساعدة وسالبة بطيئة بعد حدك.",
-            "image": "/images/exercises/back/back/Pull-ups.png"
+            "image": "/images/exercises/back/back/Pull-ups.webp"
           },
           {
             "slug": "bent-over-row",
@@ -1356,7 +1356,7 @@
             "sets": "4 × 10",
             "description": "انحنِ للأمام بظهر مستقيم وانت ماسك البار. اسحبه لأسفل بطنك بعصر الظهر، ثم انزل بتحكم.",
             "failureTip": "لما متقدرش تسحب البار لخصرك بالكامل، اسمح بحركة بسيطة من الجسم وكمّل عدات جزئية لإنهاء المجموعة.",
-            "image": "/images/exercises/back/back/t-bar machiene.png"
+            "image": "/images/exercises/back/back/t-bar machiene.webp"
           },
           {
             "slug": "lat-pulldown",
@@ -1365,7 +1365,7 @@
             "sets": "3 × 12",
             "description": "امسك البار أوسع من كتفك. اسحبه لأعلى صدرك بتنزيل الكوع، ثم سيبه يطلع ببطء لاستطالة كاملة.",
             "failureTip": "كمّل السحب لحد ما متقدرش توصّل البار لصدرك، ثم قلّل الوزن شوية (drop set) واطلع عدات تاني على طول.",
-            "image": "/images/exercises/back/back/Lat Pulldown.png"
+            "image": "/images/exercises/back/back/Lat Pulldown.webp"
           }
         ]
       },
@@ -1380,7 +1380,7 @@
             "sets": "3 × 12",
             "description": "اسند جسمك على متوازيين أو بنش. انزل بثني الكوع لحوالي 90 درجة، ثم ادفع لأعلى حتى الاستقامة.",
             "failureTip": "لما متقدرش تدفع من الأسفل، استعن برجليك (على البنش) للمساعدة البسيطة وكمّل بعدات سالبة بطيئة.",
-            "image": "/images/exercises/back/triceps/Triceps Dips.jpg"
+            "image": "/images/exercises/back/triceps/Triceps Dips.webp"
           },
           {
             "slug": "rope-pushdown",
@@ -1389,7 +1389,7 @@
             "sets": "3 × 15",
             "description": "باستخدام حبل على بكرة عالية، ثبّت كوعك وادفع الحبل لأسفل مع تفريق طرفيه في النهاية. ارجع ببطء.",
             "failureTip": "ثبّت كوعك وادفع لحد ما متقدرش تمد ذراعك بالكامل، ثم اعمل عدات جزئية في الأسفل لحد ما الترايسيبس يخلص تمامًا.",
-            "image": "/images/exercises/back/triceps/Rope Pushdown.png"
+            "image": "/images/exercises/back/triceps/Rope Pushdown.webp"
           },
           {
             "slug": "overhead-extension",
@@ -1398,7 +1398,7 @@
             "sets": "3 × 12",
             "description": "امسك دمبل فوق رأسك بكلتا يديك. انزله خلف رأسك بثني الكوع، ثم مُدّ لأعلى مع إبقاء الكوع مضموم.",
             "failureTip": "انزل ببطء لاستطالة عميقة وكمّل المد لحد ما متقدرش تقفل الذراع — وضع الاستطالة هو اللي الترايسيبس بيفشل فيه الأول.",
-            "image": "/images/exercises/back/triceps/Overhead Extension.png"
+            "image": "/images/exercises/back/triceps/Overhead Extension.webp"
           }
         ]
       },
@@ -1413,7 +1413,7 @@
             "sets": "4 × 10",
             "description": "أعلى ظهرك على بنش والبار على وركك. ادفع من كعبك لرفع وركك حتى يستوي جسمك، مع عصرة قوية في الأعلى.",
             "failureTip": "اثبت على عصرة قوية في قمة كل عدة وكمّل لحد ما مؤخرتك متقدرش تقفل بالكامل، ثم اعمل نبضات جزئية في الأعلى.",
-            "image": "/images/exercises/back/glutes/Hip Thrust.png"
+            "image": "/images/exercises/back/glutes/Hip Thrust.webp"
           },
           {
             "slug": "romanian-deadlift",
@@ -1422,7 +1422,7 @@
             "sets": "3 × 10",
             "description": "امسك البار أمام فخذيك. ادفع وركك للخلف وانزل بالبار على رجليك حتى تحس بشد في المؤخرة والفخذ الخلفي، ثم قف معتدلًا.",
             "failureTip": "أوقف المجموعة لما ظهرك السفلي مايقدرش يفضل مستقيم — حماية عمودك الفقري أهم من كام عدة زيادة هنا.",
-            "image": "/images/exercises/back/glutes/Romanian Deadlift.png"
+            "image": "/images/exercises/back/glutes/Romanian Deadlift.webp"
           },
           {
             "slug": "glute-bridge",
@@ -1431,7 +1431,7 @@
             "sets": "3 × 15",
             "description": "استلقِ على ظهرك والركبتين مثنيتين والقدمين مسطحتين. ارفع وركك لأعلى بعصر المؤخرة، ثم انزل ببطء.",
             "failureTip": "حط وزن على وركك وكمّل لحد ما متقدرش ترفعه بالكامل، ثم اختم بثبات طويل 20-30 ثانية في الأعلى.",
-            "image": "/images/exercises/back/glutes/Glute Bridge.png"
+            "image": "/images/exercises/back/glutes/Glute Bridge.webp"
           }
         ]
       },
@@ -1446,7 +1446,7 @@
             "sets": "3 × 12",
             "description": "استلقِ أو اجلس في الجهاز. اثنِ الوسادة ناحيتك بثني ركبتك، اعصر الفخذ الخلفي بقوة، ثم انزل ببطء بتحكم.",
             "failureTip": "كمّل لحد ما متقدرش توصّل الوسادة بالكامل، ثم قاوم النزول ببطء في كل عدة باقية لحد ما الفخذ الخلفي يخور.",
-            "image": "/images/exercises/back/hamstrings/Leg Curl.png"
+            "image": "/images/exercises/back/hamstrings/Leg Curl.webp"
           },
           {
             "slug": "romanian-deadlift",
@@ -1455,7 +1455,7 @@
             "sets": "4 × 8",
             "description": "اثنِ من الورك وانزل بالبار على مقدمة رجليك حتى تحس بشد عميق في الفخذ الخلفي، ثم ادفع وركك للأمام للوقوف.",
             "failureTip": "ادفع لحد ما متقدرش تحافظ على ظهر مستقيم — متقوّسش ظهرك عشان عدات زيادة أبدًا. الشد تحت الحمل هو اللي بيبني، مش العند.",
-            "image": "/images/exercises/back/hamstrings/Romanian Deadlift.png"
+            "image": "/images/exercises/back/hamstrings/Romanian Deadlift.webp"
           }
         ]
       },
@@ -1470,7 +1470,7 @@
             "sets": "4 × 15",
             "description": "قف بمشط قدميك على درجة. اطلع لأعلى قدر الإمكان على أصابعك، اثبت، ثم انزل كعبك لاستطالة عميقة.",
             "failureTip": "السمانة عنيدة — كمّل الرفع لحد ما متقدرش تطلع على أصابعك، ثم اعمل عدات جزئية بطيئة واستطالة طويلة في الأسفل.",
-            "image": "/images/exercises/back/calves/Standing Calf Raise.jpg"
+            "image": "/images/exercises/back/calves/Standing Calf Raise.webp"
           },
           {
             "slug": "seated-calf-raise",
@@ -1479,7 +1479,7 @@
             "sets": "3 × 15",
             "description": "اجلس والوزن على ركبتيك ومشط قدميك على المنصة. ارفع كعبك لأعلى قدر الإمكان، ثم انزل ببطء لاستطالة.",
             "failureTip": "استخدم عصرة ثانيتين في الأعلى واستطالة ثانيتين في الأسفل، وكمّل لحد ما السمانة متقدرش ترفع الوزن خالص.",
-            "image": "/images/exercises/back/calves/Seated Calf Raise.png"
+            "image": "/images/exercises/back/calves/Seated Calf Raise.webp"
           },
           {
             "slug": "jump-rope",
@@ -1488,7 +1488,7 @@
             "sets": "3 × 60 ث",
             "description": "انطّ خفيف على مشط قدميك مع لف الحبل بمعصمك. ممتاز لتحمل السمانة وكختام للتمرين.",
             "failureTip": "انطّ باستمرار لحد ما السمانة تتعب ومتقدرش تحافظ على إيقاع ثابت — التعب الحارق ده هو هدف فشل التحمل.",
-            "image": "/images/exercises/back/calves/Jump Rope.png"
+            "image": "/images/exercises/back/calves/Jump Rope.webp"
           }
         ]
       }

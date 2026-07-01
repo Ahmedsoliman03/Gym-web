@@ -1134,7 +1134,7 @@
             "sets": "4 x 8",
             "description": "Stand tall with the bar at shoulder height. Press straight overhead until your arms lock out, then lower under control to the front of your shoulders.",
             "failureTip": "Choose a weight you can press for 8 clean reps. On the final set keep pressing until you can't lock out a rep with good form — that is true failure.",
-            "image": "/images/exercises/front/shoulder/overhead-press.png"
+            "image": "/images/exercises/front/shoulder/overhead-press.webp"
           },
           {
             "slug": "lateral-raise",
@@ -1143,7 +1143,7 @@
             "sets": "3 x 12",
             "description": "Hold a dumbbell in each hand at your sides. Raise them out to the sides up to shoulder height with a slight bend in the elbows, then lower slowly.",
             "failureTip": "Use a light weight and high reps. Keep raising until your side delts burn and you can't reach shoulder height, then squeeze out 2-3 partial reps.",
-            "image": "/images/exercises/front/shoulder/lateral-raise.png"
+            "image": "/images/exercises/front/shoulder/lateral-raise.webp"
           },
           {
             "slug": "front-raise",
@@ -1152,7 +1152,7 @@
             "sets": "3 x 12",
             "description": "Hold the weight in front of your thighs. Lift it forward and up to eye level with straight arms, then lower with control. No swinging or leaning back.",
             "failureTip": "Go until you can't raise the weight to eye level without using momentum. Stop the set the moment your form breaks.",
-            "image": "/images/exercises/front/shoulder/Front-raise.png"
+            "image": "/images/exercises/front/shoulder/Front-raise.webp"
           }
         ]
       },
@@ -1167,7 +1167,7 @@
             "sets": "4 x 8",
             "description": "Lie on the bench, grip slightly wider than your shoulders. Lower the bar to mid-chest, then drive it back up while keeping your feet planted and back stable.",
             "failureTip": "Always train heavy chest with a spotter. Push until you can't lock out a rep, then let the spotter help you grind out the final 1-2 reps.",
-            "image": "/images/exercises/front/chest/chest-press.png"
+            "image": "/images/exercises/front/chest/chest-press.webp"
           },
           {
             "slug": "incline-dumbbell-press",
@@ -1176,7 +1176,7 @@
             "sets": "3 x 10",
             "description": "Set the bench to about 30 degrees. Press the dumbbells up and together over your upper chest, then lower slowly until you feel a stretch.",
             "failureTip": "On your last set, lower the dumbbells slowly (3 seconds) and keep pressing until you can't fully extend your arms anymore.",
-            "image": "/images/exercises/front/chest/Incline-Dumbbell-Press.png"
+            "image": "/images/exercises/front/chest/Incline-Dumbbell-Press.webp"
           },
           {
             "slug": "push-ups",
@@ -1185,7 +1185,7 @@
             "sets": "3 x 15",
             "description": "Hands under your shoulders, body in a straight line. Lower your chest to the floor, then push back up while keeping your core braced.",
             "failureTip": "Do as many strict reps as you can. When you can't complete another full rep, drop to your knees and squeeze out a few more to hit failure.",
-            "image": "/images/exercises/front/chest/Push-ups.png"
+            "image": "/images/exercises/front/chest/Push-ups.webp"
           }
         ]
       },
@@ -1200,7 +1200,7 @@
             "sets": "4 x 10",
             "description": "Hold the bar with an underhand grip. Curl it up by bending only at the elbows, squeeze at the top, then lower slowly to a full stretch.",
             "failureTip": "When you can't curl another clean rep, do a couple of 'cheat' reps with a tiny swing, then lower super slowly — this pushes the muscle safely past failure.",
-            "image": "/images/exercises/front/biceps/Barbell Curl.png"
+            "image": "/images/exercises/front/biceps/Barbell Curl.webp"
           },
           {
             "slug": "hammer-curl",
@@ -1209,7 +1209,7 @@
             "sets": "3 x 12",
             "description": "Hold dumbbells with palms facing each other. Curl up keeping the neutral grip, then lower with control. Great for overall arm thickness.",
             "failureTip": "Reach failure on one arm, then the other, then finish with a few slow negatives where you fight the weight on the way down.",
-            "image": "/images/exercises/front/biceps/Hammer Curl.png"
+            "image": "/images/exercises/front/biceps/Hammer Curl.webp"
           },
           {
             "slug": "incline-cable-curl",
@@ -1218,7 +1218,7 @@
             "sets": "3 x 12",
             "description": "Sit back on an incline bench holding a low-pulley cable handle in each hand. With arms hanging back, curl up by bending only at the elbows, squeeze hard, then lower under full control to a deep stretch.",
             "failureTip": "On the last set curl until you stall, then let the cable pull your arms into a slow stretch and grind out a few partial reps at the bottom.",
-            "image": "/images/exercises/front/biceps/Incline Biceps Cable Curls.png"
+            "image": "/images/exercises/front/biceps/Incline Biceps Cable Curls.webp"
           }
         ]
       },
@@ -1233,7 +1233,7 @@
             "sets": "3 x 12",
             "description": "Hold the bar with an overhand grip. Curl it up keeping your wrists firm, then lower slowly. Builds the top of the forearm and grip strength.",
             "failureTip": "Use a weight that's hard by rep 10. Push until your grip starts to fail, then squeeze out 2-3 partial reps.",
-            "image": "/images/exercises/front/forearms/Reverse Curl.png"
+            "image": "/images/exercises/front/forearms/Reverse Curl.webp"
           },
           {
             "slug": "farmers-walk",
@@ -1242,7 +1242,7 @@
             "sets": "3 x 30s",
             "description": "Pick up a heavy dumbbell in each hand, stand tall, and walk with controlled steps. Brilliant for grip, forearms and overall toughness.",
             "failureTip": "Walk until your grip gives out and you have to set the weights down — that grip failure is exactly the point of the exercise.",
-            "image": "/images/exercises/front/forearms/Farmer's Walk.png"
+            "image": "/images/exercises/front/forearms/Farmer's Walk.webp"
           }
         ]
       },
@@ -1257,7 +1257,7 @@
             "sets": "3 x 45s",
             "description": "Rest on your forearms and toes, body in a straight line. Squeeze your abs and glutes and hold without letting your hips drop or rise.",
             "failureTip": "Hold until your form breaks and your hips start to sag — that shaking is your core reaching failure. Note the time and beat it next session.",
-            "image": "/images/exercises/front/abs/Plank.png"
+            "image": "/images/exercises/front/abs/Plank.webp"
           },
           {
             "slug": "hanging-leg-raise",
@@ -1266,7 +1266,7 @@
             "sets": "3 x 12",
             "description": "Hang from a bar. Keeping your legs fairly straight, raise them up toward parallel using your lower abs, then lower slowly without swinging.",
             "failureTip": "When you can't lift your legs to parallel anymore, switch to bent-knee raises and keep going until your abs give out.",
-            "image": "/images/exercises/front/abs/Hanging Leg Raise.png"
+            "image": "/images/exercises/front/abs/Hanging Leg Raise.webp"
           },
           {
             "slug": "crunches",
@@ -1275,7 +1275,7 @@
             "sets": "3 x 20",
             "description": "Lie on your back, knees bent. Curl your shoulders off the floor by contracting your abs, pause at the top, then lower slowly.",
             "failureTip": "Do slow reps with a 1-second squeeze at the top until you can't curl up anymore, then finish with short partial crunches.",
-            "image": "/images/exercises/front/abs/Crunches.png"
+            "image": "/images/exercises/front/abs/Crunches.webp"
           }
         ]
       },
@@ -1290,7 +1290,7 @@
             "sets": "4 x 8",
             "description": "Bar on your upper back, feet shoulder-width. Sit back and down until your thighs are about parallel, then drive up through your heels.",
             "failureTip": "Squat heavy only inside a rack with safety pins. Push until you can't stand a rep up, then set it on the pins — never grind to collapse without safeties.",
-            "image": "/images/exercises/front/quads/Squat.png"
+            "image": "/images/exercises/front/quads/Squat.webp"
           },
           {
             "slug": "leg-press",
@@ -1299,7 +1299,7 @@
             "sets": "3 x 12",
             "description": "Sit in the machine, feet shoulder-width on the platform. Lower until your knees reach about 90 degrees, then press back without locking out.",
             "failureTip": "Leg press is the safest way to train legs to true failure — keep pressing until your quads can't extend the platform, then do a few partial reps.",
-            "image": "/images/exercises/front/quads/Leg Press machiene.png"
+            "image": "/images/exercises/front/quads/Leg Press machiene.webp"
           },
           {
             "slug": "lunges",
@@ -1308,7 +1308,7 @@
             "sets": "3 x 12",
             "description": "Step forward into a long stride, lower your back knee toward the floor, then push back to standing. Alternate legs each rep.",
             "failureTip": "Keep lunging until your legs are burning and your balance starts to go, then finish the set with bodyweight-only reps.",
-            "image": "/images/exercises/front/quads/Lunges.png"
+            "image": "/images/exercises/front/quads/Lunges.webp"
           }
         ]
       },
@@ -1323,7 +1323,7 @@
             "sets": "4 x 15",
             "description": "Hold a heavy weight at your sides. Shrug your shoulders straight up toward your ears, hold the squeeze for a second, then lower slowly.",
             "failureTip": "Use a heavy load and keep shrugging until you can barely lift your shoulders, then hold a hard squeeze at the top for 15-20 seconds.",
-            "image": "/images/exercises/back/traps/Shrugs.png"
+            "image": "/images/exercises/back/traps/Shrugs.webp"
           },
           {
             "slug": "face-pull",
@@ -1332,7 +1332,7 @@
             "sets": "3 x 15",
             "description": "Using a rope on a high pulley, pull the handles toward your forehead while spreading them apart and squeezing your upper back.",
             "failureTip": "Use light weight and chase the burn — keep pulling and squeezing until your rear delts and traps can't hold the contraction.",
-            "image": "/images/exercises/back/traps/Face Pull.png"
+            "image": "/images/exercises/back/traps/Face Pull.webp"
           }
         ]
       },
@@ -1347,7 +1347,7 @@
             "sets": "4 x 8",
             "description": "Hang from the bar with an overhand grip. Pull your chest up toward the bar by driving your elbows down, then lower under full control.",
             "failureTip": "Do strict reps to failure, then use a small jump or a band to keep doing assisted reps and slow negatives past your limit.",
-            "image": "/images/exercises/back/back/Pull-ups.png"
+            "image": "/images/exercises/back/back/Pull-ups.webp"
           },
           {
             "slug": "bent-over-row",
@@ -1356,7 +1356,7 @@
             "sets": "4 x 10",
             "description": "Hinge forward with a flat back, holding the bar. Pull it to your lower stomach by squeezing your back, then lower under control.",
             "failureTip": "When you can't pull the bar all the way to your waist, allow a tiny bit of body english and keep rowing partial reps to finish the set.",
-            "image": "/images/exercises/back/back/t-bar machiene.png"
+            "image": "/images/exercises/back/back/t-bar machiene.webp"
           },
           {
             "slug": "lat-pulldown",
@@ -1365,7 +1365,7 @@
             "sets": "3 x 12",
             "description": "Grip the bar wider than your shoulders. Pull it down to your upper chest by driving your elbows down, then let it rise slowly to a full stretch.",
             "failureTip": "Keep pulling until you can't bring the bar to your chest, then drop the weight a little (drop set) and immediately rep out again.",
-            "image": "/images/exercises/back/back/Lat Pulldown.png"
+            "image": "/images/exercises/back/back/Lat Pulldown.webp"
           }
         ]
       },
@@ -1380,7 +1380,7 @@
             "sets": "3 x 12",
             "description": "Support yourself on parallel bars or a bench. Lower your body by bending your elbows to about 90 degrees, then press back up to lockout.",
             "failureTip": "When you can't press back up from the bottom, use your legs (on a bench) to assist slightly and keep going with slow negatives.",
-            "image": "/images/exercises/back/triceps/Triceps Dips.jpg"
+            "image": "/images/exercises/back/triceps/Triceps Dips.webp"
           },
           {
             "slug": "rope-pushdown",
@@ -1389,7 +1389,7 @@
             "sets": "3 x 15",
             "description": "Using a rope on a high pulley, keep your elbows pinned and push the rope down, spreading the ends apart at the bottom. Return slowly.",
             "failureTip": "Pin your elbows and push until you can't fully straighten your arms, then do partial reps at the bottom until the triceps are fully spent.",
-            "image": "/images/exercises/back/triceps/Rope Pushdown.png"
+            "image": "/images/exercises/back/triceps/Rope Pushdown.webp"
           },
           {
             "slug": "overhead-extension",
@@ -1398,7 +1398,7 @@
             "sets": "3 x 12",
             "description": "Hold a dumbbell overhead with both hands. Lower it behind your head by bending the elbows, then extend back up, keeping your elbows tucked.",
             "failureTip": "Lower slowly for a deep stretch and keep extending until you can't lock out — the stretch position is where the triceps fail first.",
-            "image": "/images/exercises/back/triceps/Overhead Extension.png"
+            "image": "/images/exercises/back/triceps/Overhead Extension.webp"
           }
         ]
       },
@@ -1413,7 +1413,7 @@
             "sets": "4 x 10",
             "description": "Upper back on a bench, bar across your hips. Drive through your heels to lift your hips until your body is flat, squeezing hard at the top.",
             "failureTip": "Hold a hard squeeze at the top of every rep and keep thrusting until your glutes can't fully lock out, then pulse a few partials at the top.",
-            "image": "/images/exercises/back/glutes/Hip Thrust.png"
+            "image": "/images/exercises/back/glutes/Hip Thrust.webp"
           },
           {
             "slug": "romanian-deadlift",
@@ -1422,7 +1422,7 @@
             "sets": "3 x 10",
             "description": "Hold the bar in front of your thighs. Push your hips back and lower the bar along your legs until you feel a glute/hamstring stretch, then stand tall.",
             "failureTip": "Stop the set when your lower back can no longer stay flat — protecting your spine matters more than chasing a few extra reps here.",
-            "image": "/images/exercises/back/glutes/Romanian Deadlift.png"
+            "image": "/images/exercises/back/glutes/Romanian Deadlift.webp"
           },
           {
             "slug": "glute-bridge",
@@ -1431,7 +1431,7 @@
             "sets": "3 x 15",
             "description": "Lie on your back, knees bent, feet flat. Lift your hips toward the ceiling by squeezing your glutes, then lower slowly.",
             "failureTip": "Add a weight on your hips and rep out until you can't fully raise them, then finish with a long 20-30 second hold at the top.",
-            "image": "/images/exercises/back/glutes/Glute Bridge.png"
+            "image": "/images/exercises/back/glutes/Glute Bridge.webp"
           }
         ]
       },
@@ -1446,7 +1446,7 @@
             "sets": "3 x 12",
             "description": "Lie or sit in the machine. Curl the pad toward you by bending your knees, squeeze the hamstrings hard, then lower slowly under control.",
             "failureTip": "Curl until you can't bring the pad all the way in, then fight the negative slowly on each remaining rep until the hamstrings give out.",
-            "image": "/images/exercises/back/hamstrings/Leg Curl.png"
+            "image": "/images/exercises/back/hamstrings/Leg Curl.webp"
           },
           {
             "slug": "romanian-deadlift",
@@ -1455,7 +1455,7 @@
             "sets": "4 x 8",
             "description": "Hinge at the hips and lower the bar down the front of your legs until you feel a deep hamstring stretch, then drive your hips forward to stand.",
             "failureTip": "Push until you can't keep a flat back — never round your spine for extra reps. The loaded stretch is what drives growth, not grinding.",
-            "image": "/images/exercises/back/hamstrings/Romanian Deadlift.png"
+            "image": "/images/exercises/back/hamstrings/Romanian Deadlift.webp"
           }
         ]
       },
@@ -1470,7 +1470,7 @@
             "sets": "4 x 15",
             "description": "Stand with the balls of your feet on a step. Rise up as high as you can onto your toes, pause, then lower your heels for a deep stretch.",
             "failureTip": "Calves are stubborn — keep raising until you can't rise onto your toes anymore, then do slow partial reps and a long stretch at the bottom.",
-            "image": "/images/exercises/back/calves/Standing Calf Raise.jpg"
+            "image": "/images/exercises/back/calves/Standing Calf Raise.webp"
           },
           {
             "slug": "seated-calf-raise",
@@ -1479,7 +1479,7 @@
             "sets": "3 x 15",
             "description": "Sit with the weight on your knees and the balls of your feet on the platform. Raise your heels as high as possible, then lower slowly into a stretch.",
             "failureTip": "Use a 2-second squeeze at the top and a 2-second stretch at the bottom, and keep going until your calves can't lift the weight at all.",
-            "image": "/images/exercises/back/calves/Seated Calf Raise.png"
+            "image": "/images/exercises/back/calves/Seated Calf Raise.webp"
           },
           {
             "slug": "jump-rope",
@@ -1488,7 +1488,7 @@
             "sets": "3 x 60s",
             "description": "Bounce lightly on the balls of your feet, turning the rope with your wrists. A great calf endurance and conditioning finisher.",
             "failureTip": "Jump continuously until your calves are too fatigued to keep a steady rhythm — that burning fatigue is the goal for endurance failure.",
-            "image": "/images/exercises/back/calves/Jump Rope.png"
+            "image": "/images/exercises/back/calves/Jump Rope.webp"
           }
         ]
       }
