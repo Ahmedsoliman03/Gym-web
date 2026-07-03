@@ -24,6 +24,21 @@ export function DesktopNav({ entries, pathname }: DesktopNavProps) {
       {entries.map((entry) => {
         if (entry.type === 'link') {
           const isActive = pathname === entry.href;
+          if (entry.disabled) {
+            return (
+              <div
+                key={entry.href}
+                className={`${styles.navLink(false)} opacity-40 cursor-not-allowed pointer-events-none flex items-center gap-1.5`}
+              >
+                {entry.label}
+                {entry.badge && (
+                  <span className="bg-primary/20 text-primary border border-primary/30 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider scale-[0.85] origin-left">
+                    {entry.badge}
+                  </span>
+                )}
+              </div>
+            );
+          }
           return (
             <Link
               key={entry.href}
@@ -67,17 +82,34 @@ export function DesktopNav({ entries, pathname }: DesktopNavProps) {
             {isGroupOpen && (
               <div className={styles.navDropdownWrap}>
                 <div className={styles.navDropdownPanel} role="menu">
-                  {entry.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href as never}
-                      className={styles.navDropdownItem(pathname === item.href)}
-                      role="menuitem"
-                      onClick={() => setOpenGroup(null)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  {entry.items.map((item) => {
+                    if (item.disabled) {
+                      return (
+                        <div
+                          key={item.href}
+                          className={`${styles.navDropdownItem(false)} opacity-40 cursor-not-allowed pointer-events-none flex items-center justify-between gap-2`}
+                        >
+                          {item.label}
+                          {item.badge && (
+                            <span className="bg-primary/20 text-primary border border-primary/30 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href as never}
+                        className={styles.navDropdownItem(pathname === item.href)}
+                        role="menuitem"
+                        onClick={() => setOpenGroup(null)}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}

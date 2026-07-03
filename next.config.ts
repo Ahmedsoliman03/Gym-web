@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
         port: '8001',
+      },
+      {
+        // wger exercise images (exercise DB integration)
+        protocol: 'https',
+        hostname: 'wger.de',
       }
     ],
   },

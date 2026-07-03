@@ -32,6 +32,7 @@ export function buildNavEntries(
       { type: 'link', label: t('coaches'), href: '/coaches' },
       { type: 'link', label: t('gyms'), href: '/gyms' },
       { type: 'link', label: t('exercises'), href: '/exercises' },
+      { type: 'link', label: t('nutrition'), href: '/nutrition', disabled: true, badge: t('comingSoon') },
       // { type: 'link', label: t('plans'), href: '/plans' },
       { type: 'link', label: t('about'), href: '/about' },
     ];
@@ -43,6 +44,7 @@ export function buildNavEntries(
       { label: t('gyms'), href: '/gyms' },
       { label: t('community'), href: '/community' },
       { label: t('exercises'), href: '/exercises' },
+      { label: t('nutrition'), href: '/nutrition', disabled: true, badge: t('comingSoon') },
     ]),
     ...groupOrLink(t('careers'), careersItems),
     // { type: 'link', label: t('plans'), href: '/plans' },

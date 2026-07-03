@@ -88,6 +88,22 @@ export function MobileMenu({
           <div className={styles.mobileNav}>
             {entries.map((entry) => {
               if (entry.type === 'link') {
+                if (entry.disabled) {
+                  return (
+                    <div
+                      key={entry.href}
+                      className={`${styles.mobileNavLink(false)} opacity-40 cursor-not-allowed pointer-events-none flex items-center gap-2`}
+                    >
+                      <div className={styles.mobileLinkDot} />
+                      {entry.label}
+                      {entry.badge && (
+                        <span className="bg-primary/20 text-primary border border-primary/30 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                          {entry.badge}
+                        </span>
+                      )}
+                    </div>
+                  );
+                }
                 return (
                   <Link
                     key={entry.href}
@@ -104,17 +120,35 @@ export function MobileMenu({
               return (
                 <div key={entry.label} className="flex flex-col gap-4">
                   <span className={styles.mobileGroupLabel}>{entry.label}</span>
-                  {entry.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href as never}
-                      className={styles.mobileNavLink(pathname === item.href)}
-                      onClick={onClose}
-                    >
-                      <div className={styles.mobileLinkDot} />
-                      {item.label}
-                    </Link>
-                  ))}
+                  {entry.items.map((item) => {
+                    if (item.disabled) {
+                      return (
+                        <div
+                          key={item.href}
+                          className={`${styles.mobileNavLink(false)} opacity-40 cursor-not-allowed pointer-events-none flex items-center gap-2`}
+                        >
+                          <div className={styles.mobileLinkDot} />
+                          {item.label}
+                          {item.badge && (
+                            <span className="bg-primary/20 text-primary border border-primary/30 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href as never}
+                        className={styles.mobileNavLink(pathname === item.href)}
+                        onClick={onClose}
+                      >
+                        <div className={styles.mobileLinkDot} />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               );
             })}
