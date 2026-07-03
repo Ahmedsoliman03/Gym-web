@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { PageHeader } from "@/components/ui/page-header";
 import { ExerciseExplorer } from "@/features/exercises/components/exercise-explorer";
@@ -20,14 +20,14 @@ export default function ExercisesPage() {
   const tCalc = useTranslations("Calculator");
   const [activeTab, setActiveTab] = useState<"explorer" | "calculator">("explorer");
 
-  useState(() => {
-    if (typeof window !== "undefined") {
-      const savedTab = localStorage.getItem("gymspot_exercises_active_tab");
-      if (savedTab === "explorer" || savedTab === "calculator") {
-        setActiveTab(savedTab);
-      }
+  // Restore the saved tab AFTER mount so the server and first client render
+  // agree (reading localStorage during render causes a hydration mismatch).
+  useEffect(() => {
+    const savedTab = localStorage.getItem("gymspot_exercises_active_tab");
+    if (savedTab === "explorer" || savedTab === "calculator") {
+      setActiveTab(savedTab);
     }
-  });
+  }, []);
 
   const handleTabChange = (tab: "explorer" | "calculator") => {
     setActiveTab(tab);
