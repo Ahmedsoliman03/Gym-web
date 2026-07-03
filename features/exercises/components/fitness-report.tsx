@@ -94,8 +94,17 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
         textAlign: align,
       }}
     >
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 26 }}>
+      {/* Header — brand always pinned left, even in RTL */}
+      <div
+        style={{
+          display: "flex",
+          direction: "ltr",
+          justifyContent: "flex-start",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 26,
+        }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={LOGO_URL} width={34} height={34} alt="GymSpot" style={{ borderRadius: 8 }} />
         <span style={{ fontSize: 22, fontWeight: 800, color: C.primary }}>{APP_NAME}</span>
