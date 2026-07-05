@@ -1,13 +1,11 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import {
-    chatKeys,
     useConversationMessages,
     useConversations,
     useDeleteChatMessageMutation,
@@ -68,7 +66,6 @@ export const ConversationThread = ({
     const locale = useLocale();
     const isRtl = locale === 'ar';
     const { profile } = useProfileUser();
-    const queryClient = useQueryClient();
     const messagesQuery = useConversationMessages(conversationId);
     const markRead = useMarkConversationReadMutation();
     const deleteMessage = useDeleteChatMessageMutation();
@@ -128,15 +125,9 @@ export const ConversationThread = ({
         }
     };
 
-    useEffect(() => {
-        const id = setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
-            }
-        }, 4000);
-        return () => clearInterval(id);
-    }, [queryClient]);
-
+    // The conversations list is kept fresh by the WebSocket (message.new /
+    // message.updated update the cache in ChatProvider, and the provider
+    // invalidates on reconnect) — no polling interval needed here.
     const messageCount = messagesQuery.data?.length ?? 0;
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ block: 'end' });

@@ -1,6 +1,3 @@
-import { toPng } from 'html-to-image';
-import { PDFDocument } from 'pdf-lib';
-
 /**
  * Generic, fully client-side PDF export.
  *
@@ -104,6 +101,14 @@ export async function generatePDF(
 ): Promise<void> {
   if (typeof window === 'undefined') throw new Error('generatePDF must run in the browser');
   if (!element) throw new Error('generatePDF: target element is missing');
+
+  // Load the heavy raster + PDF libs only when an export actually runs, so
+  // html-to-image (~8 KB gz) + pdf-lib (~110 KB gz) stay out of every route
+  // chunk that merely imports this module at the top level.
+  const [{ toPng }, { PDFDocument }] = await Promise.all([
+    import('html-to-image'),
+    import('pdf-lib'),
+  ]);
 
   const {
     fileName = 'document.pdf',

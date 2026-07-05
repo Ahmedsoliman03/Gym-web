@@ -450,25 +450,46 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
         [send],
     );
 
+    // Memoize the context value so a typing/presence tick doesn't recreate the
+    // object and force every useChatSocket() consumer (navbar, triggers, …) to
+    // re-render. All callbacks below are already useCallback-stabilized.
+    const value = useMemo<ChatSocketContextValue>(
+        () => ({
+            status,
+            typingByConversation,
+            presenceByUser,
+            unreadByConversation,
+            clearUnread,
+            setActiveConversation,
+            lastError,
+            gaveUp,
+            retry,
+            sendMessage,
+            startTyping,
+            stopTyping,
+            setPresence,
+            watchPresence,
+        }),
+        [
+            status,
+            typingByConversation,
+            presenceByUser,
+            unreadByConversation,
+            clearUnread,
+            setActiveConversation,
+            lastError,
+            gaveUp,
+            retry,
+            sendMessage,
+            startTyping,
+            stopTyping,
+            setPresence,
+            watchPresence,
+        ],
+    );
+
     return (
-        <ChatSocketContext.Provider
-            value={{
-                status,
-                typingByConversation,
-                presenceByUser,
-                unreadByConversation,
-                clearUnread,
-                setActiveConversation,
-                lastError,
-                gaveUp,
-                retry,
-                sendMessage,
-                startTyping,
-                stopTyping,
-                setPresence,
-                watchPresence,
-            }}
-        >
+        <ChatSocketContext.Provider value={value}>
             {children}
         </ChatSocketContext.Provider>
     );

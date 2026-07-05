@@ -124,9 +124,10 @@ export async function getNutritionPlans(): Promise<NutritionPlan[]> {
     const data = await response.json();
     const wgerPlans = data.results || [];
 
-    // Formulate into our structure
-    const plans: NutritionPlan[] = [];
-    for (const wPlan of wgerPlans) {
+    // Formulate into our structure. Each plan's detail is fetched in parallel
+    // (previously a serial 1+N waterfall — one blocking round-trip per plan).
+    const plans: NutritionPlan[] = await Promise.all(
+      wgerPlans.map(async (wPlan: { id: number; name?: string; description?: string }): Promise<NutritionPlan> => {
       // Fetch plan meals (wger has nutritionplaninfo which includes detailed plan)
       // or we can query nutritionplaninfo detail
       let meals: Meal[] = [];
@@ -178,7 +179,7 @@ export async function getNutritionPlans(): Promise<NutritionPlan[]> {
         }
       }
 
-      plans.push({
+      return {
         id: `wger-${wPlan.id}`,
         wgerId: wPlan.id,
         name: wPlan.name || "Unnamed Plan",
@@ -189,8 +190,9 @@ export async function getNutritionPlans(): Promise<NutritionPlan[]> {
         targetFat,
         meals,
         createdAt: new Date().toISOString(), // wger doesn't always expose creation date directly
-      });
-    }
+      };
+      }),
+    );
 
     // Merge wger plans and local plans (avoiding duplicates)
     const merged = [...plans];

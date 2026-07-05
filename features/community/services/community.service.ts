@@ -13,50 +13,18 @@ import type {
     PostAuthor,
     VoteValue,
 } from '../types';
+import {
+    toFeedPage,
+    unwrapPostList,
+    type RawFeedResponse,
+    type RawPostListResponse,
+} from './community.transforms';
 
 // ─── Feed ─────────────────────────────────────────────────────────────────────
 
-type RawFeedResponse =
-    | CommunityPost[]
-    | {
-        items?: CommunityPost[];
-        results?: CommunityPost[];
-        data?: CommunityPost[];
-        posts?: CommunityPost[];
-        nextCursor?: string | null;
-        next?: string | null;
-        cursor?: string | null;
-    };
-
-const extractNextCursor = (
-    body: Exclude<RawFeedResponse, CommunityPost[]>,
-): string | null => {
-    if (body.nextCursor !== undefined) return body.nextCursor ?? null;
-    if (body.cursor !== undefined) return body.cursor ?? null;
-    const next = body.next;
-    if (!next) return null;
-    try {
-        const url = new URL(next, 'http://x');
-        return url.searchParams.get('cursor') ?? next;
-    } catch {
-        return next;
-    }
-};
-
 export const getFeed = async(): Promise<FeedPage> => {
-    const { data } = await api.get<RawFeedResponse>(
-        `/api/community/feed`,
-    );
-
-    if (Array.isArray(data)) {
-        return { items: data.filter(Boolean), nextCursor: null };
-    }
-
-    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
-    return {
-        items: items.filter(Boolean),
-        nextCursor: extractNextCursor(data),
-    };
+    const { data } = await api.get<RawFeedResponse>(`/api/community/feed`);
+    return toFeedPage(data);
 };
 
 export const useFeed = (enabled = true) =>
@@ -71,20 +39,9 @@ export const useFeed = (enabled = true) =>
 
 // ─── Saved posts ──────────────────────────────────────────────────────────────
 
-type RawSavedPostsResponse =
-    | CommunityPost[]
-    | {
-        items?: CommunityPost[];
-        results?: CommunityPost[];
-        data?: CommunityPost[];
-        posts?: CommunityPost[];
-    };
-
 export const getSavedPosts = async (): Promise<CommunityPost[]> => {
-    const { data } = await api.get<RawSavedPostsResponse>('/api/community/posts/saved');
-    if (Array.isArray(data)) return data.filter(Boolean);
-    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
-    return items.filter(Boolean);
+    const { data } = await api.get<RawPostListResponse>('/api/community/posts/saved');
+    return unwrapPostList(data);
 };
 
 export const useSavedPosts = (enabled = true) =>
@@ -95,10 +52,8 @@ export const useSavedPosts = (enabled = true) =>
     });
 
 export const getMyPosts = async (): Promise<CommunityPost[]> => {
-    const { data } = await api.get<RawSavedPostsResponse>('/api/community/posts/mine');
-    if (Array.isArray(data)) return data.filter(Boolean);
-    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
-    return items.filter(Boolean);
+    const { data } = await api.get<RawPostListResponse>('/api/community/posts/mine');
+    return unwrapPostList(data);
 };
 
 export const useMyPosts = (enabled = true) =>
@@ -109,12 +64,10 @@ export const useMyPosts = (enabled = true) =>
     });
 
 export const getCoachPosts = async (coachProfileId: string): Promise<CommunityPost[]> => {
-    const { data } = await api.get<RawSavedPostsResponse>(
+    const { data } = await api.get<RawPostListResponse>(
         `/api/community/coaches/${coachProfileId}/posts`,
     );
-    if (Array.isArray(data)) return data.filter(Boolean);
-    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
-    return items.filter(Boolean);
+    return unwrapPostList(data);
 };
 
 export const useCoachPosts = (coachProfileId: string | null, enabled = true) =>
@@ -125,12 +78,10 @@ export const useCoachPosts = (coachProfileId: string | null, enabled = true) =>
     });
 
 export const getGymPosts = async (gymProfileId: string): Promise<CommunityPost[]> => {
-    const { data } = await api.get<RawSavedPostsResponse>(
+    const { data } = await api.get<RawPostListResponse>(
         `/api/community/gyms/${gymProfileId}/posts`,
     );
-    if (Array.isArray(data)) return data.filter(Boolean);
-    const items = data.items ?? data.results ?? data.data ?? data.posts ?? [];
-    return items.filter(Boolean);
+    return unwrapPostList(data);
 };
 
 export const useGymPosts = (gymProfileId: string | null, enabled = true) =>

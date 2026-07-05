@@ -5,6 +5,14 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
+  experimental: {
+    // Transform these barrel imports so only the icons/entrypoints actually used
+    // are pulled into the module graph. lucide-react is already covered by Next's
+    // built-in defaults; @fluentui/react-icons (a very large barrel) and the
+    // @tanstack/* packages are not — this cuts compile time and prevents
+    // over-inclusion in route bundles.
+    optimizePackageImports: ['@fluentui/react-icons', '@tanstack/react-query'],
+  },
   images: {
     remotePatterns: [
       {
