@@ -30,7 +30,6 @@ export const CoachProfileView = ({
   stories,
   profileId,
   postsViewAllHref,
-  promocode,
   email,
 }: {
   data: CoachProfileViewModel;
@@ -38,7 +37,6 @@ export const CoachProfileView = ({
   stories?: Story[];
   profileId?: string;
   postsViewAllHref?: string;
-  promocode?: string;
   email?: string;
 }) => {
   const t = useTranslations("Profile");
@@ -90,7 +88,6 @@ export const CoachProfileView = ({
         coachId={data.id}
         coachUserId={data.userId}
         stories={stories}
-        promocode={promocode}
         status={data.status}
         specializations={isOwner ? data.specializations : undefined}
         email={isOwner ? email : undefined}

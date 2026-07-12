@@ -20,7 +20,6 @@ import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-bad
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import type { Story } from "@/features/stories/types";
 import { ProfilePosts } from "./profile-posts";
-import { PromocodeChip } from "./promocode-chip";
 import type { PresenceStatus } from "@/features/chat/types";
 import { SocialMediaLinks } from "./social-media-links";
 import { sectionDomId } from "../checklist-sections";
@@ -73,7 +72,6 @@ export const GymProfileView = ({
   stories,
   profileId,
   postsViewAllHref,
-  promocode,
   email,
 }: {
   data: GymProfileViewModel;
@@ -81,8 +79,6 @@ export const GymProfileView = ({
   stories?: Story[];
   profileId?: string;
   postsViewAllHref?: string;
-  /** Owner-only referral promocode, rendered in the header as a copy chip. */
-  promocode?: string;
   /** Owner-only email, surfaced under the name in the header. */
   email?: string;
 }) => {
@@ -234,13 +230,6 @@ export const GymProfileView = ({
           </div>
         </div>
         <div className={styles.actionsWrapper}>
-          {/* Owner-only referral promocode chip with copy button, placed above
-              the edit-profile action to mirror the coach profile header. */}
-          {isOwner && promocode && (
-            <div className="mb-3 flex justify-center md:justify-start">
-              <PromocodeChip code={promocode} />
-            </div>
-          )}
           {/* Chat is only useful when viewing someone else's gym — the owner
               has no one to chat with on their own page. Mirrors the coach
               profile header, which already hides chat for the owner. */}

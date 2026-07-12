@@ -14,7 +14,6 @@ import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-bad
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import type { CoachProfileHeaderProps } from "../types";
-import { PromocodeChip } from "./promocode-chip";
 
 const styles = {
   // ... existing styles ...
@@ -65,7 +64,6 @@ export const CoachProfileHeader = ({
   coachId,
   coachUserId,
   stories,
-  promocode,
   specializations,
   email,
   status = 'offline',
@@ -223,13 +221,6 @@ export const CoachProfileHeader = ({
         {/* Actions */}
 
         <div className={styles.actionsWrapper}>
-          {/* Owner-only referral promocode chip with copy button. */}
-          {isOwner && promocode && (
-            <div className="mt-2 mb-3 flex justify-center md:justify-start">
-              <PromocodeChip code={promocode} />
-            </div>
-          )}
-
           {!isOwner ?
             <>
               <button

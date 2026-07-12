@@ -93,7 +93,6 @@ export default function ProfilePage() {
             data={mappedCoach}
             isOwner
             profileId={coachProfile.id}
-            promocode={coachProfile.promoCode}
             email={profile.email}
           />
         );
@@ -121,7 +120,6 @@ export default function ProfilePage() {
             data={mappedGym}
             isOwner
             profileId={gymProfile.id}
-            promocode={gymProfile.promoCode}
             email={profile.email}
           />
         );

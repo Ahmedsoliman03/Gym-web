@@ -248,7 +248,6 @@ export interface CoachProfileHeaderProps {
     coachId?: string;
     coachUserId?: string;
     stories?: import('@/features/stories/types').Story[];
-    promocode?: string;
     specializations?: string[];
     email?: string;
     status?: PresenceStatus;

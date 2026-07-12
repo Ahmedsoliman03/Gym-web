@@ -56,7 +56,7 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
   const cm = L("cm", "سم");
   const align = isRtl ? "right" : "left";
 
-  const { gender, weight, height, age, activity, goal, results, macros } = data;
+  const { gender, activity, goal, results, macros } = data;
 
   const getBmiColor = (cat: string) => {
     if (cat === "underweight") return C.accent;
@@ -116,7 +116,7 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
           {L("Fitness Assessment Report", "تقرير تقييم اللياقة البدنية")}
         </h2>
         <div style={{ fontSize: 12, color: C.gray, marginTop: 4 }}>
-          {L("Generated", "تاريخ الإنشاء")}: {fmtDate(new Date().toISOString(), isRtl)}
+          {`${L("Generated", "تاريخ الإنشاء")}: ${fmtDate(new Date().toISOString(), isRtl)}`}
         </div>
       </div>
 
@@ -141,15 +141,11 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("weight")}</div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.dark, marginTop: 3 }}>
-              {formatNumber(weight, isRtl)} {kg}
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: C.dark, marginTop: 3 }}>{kg}</div>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("height")}</div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.dark, marginTop: 3 }}>
-              {formatNumber(height, isRtl)} {cm}
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: C.dark, marginTop: 3 }}>{cm}</div>
           </div>
         </div>
 
@@ -157,9 +153,7 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("age")}</div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: C.dark, marginTop: 3 }}>
-              {formatNumber(age, isRtl)} {L("years", "سنة")}
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: C.dark, marginTop: 3 }}>{L("years", "سنة")}</div>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("activityLevel")}</div>
@@ -210,10 +204,10 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
         >
           <div style={{ fontSize: 10, fontWeight: 700, color: C.primary, textTransform: "uppercase" }}>{t("targetCalories")}</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: C.primary, marginTop: 4 }}>
-            {formatNumber(results.calories, isRtl)} <span style={{ fontSize: 13, fontWeight: 500, color: C.gray }}>kcal</span>
+            <span>{formatNumber(results.calories, isRtl)}</span> <span style={{ fontSize: 13, fontWeight: 500, color: C.gray }}>kcal</span>
           </div>
           <div style={{ fontSize: 11, fontWeight: 700, color: C.gray, marginTop: 4 }}>
-            {t("bmrLabel").split(" (")[0]}: {formatNumber(results.bmr, isRtl)} | {t("tdeeLabel").split(" (")[0]}: {formatNumber(results.tdee, isRtl)}
+            {`${t("bmrLabel").split(" (")[0]}: ${formatNumber(results.bmr, isRtl)} | ${t("tdeeLabel").split(" (")[0]}: ${formatNumber(results.tdee, isRtl)}`}
           </div>
         </div>
       </div>
@@ -235,23 +229,23 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
       >
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("protein")}</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: C.primary, marginTop: 4 }}>{formatNumber(macros.protein, isRtl)} g</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: C.primary, marginTop: 4 }}>{`${formatNumber(macros.protein, isRtl)} g`}</div>
           <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>
-            {formatNumber(Math.round(macros.pPct * 100), isRtl)}% split
+            {`${formatNumber(Math.round(macros.pPct * 100), isRtl)}% split`}
           </div>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("carbs")}</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: C.accent, marginTop: 4 }}>{formatNumber(macros.carbs, isRtl)} g</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: C.accent, marginTop: 4 }}>{`${formatNumber(macros.carbs, isRtl)} g`}</div>
           <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>
-            {formatNumber(Math.round(macros.cPct * 100), isRtl)}% split
+            {`${formatNumber(Math.round(macros.cPct * 100), isRtl)}% split`}
           </div>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.gray, textTransform: "uppercase" }}>{t("fat")}</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: C.warning, marginTop: 4 }}>{formatNumber(macros.fat, isRtl)} g</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: C.warning, marginTop: 4 }}>{`${formatNumber(macros.fat, isRtl)} g`}</div>
           <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>
-            {formatNumber(Math.round(macros.fPct * 100), isRtl)}% split
+            {`${formatNumber(Math.round(macros.fPct * 100), isRtl)}% split`}
           </div>
         </div>
       </div>
@@ -286,7 +280,7 @@ const FitnessReportBase = forwardRef<HTMLDivElement, FitnessReportProps>(functio
           justifyContent: "space-between",
         }}
       >
-        <span>GymSpot Fitness Tracker © {formatNumber(2026, isRtl)}</span>
+        <span>{`GymSpot Fitness Tracker © ${formatNumber(2026, isRtl)}`}</span>
         <span>{L("Assessment Report", "تقرير تقييم اللياقة")}</span>
       </div>
     </div>
