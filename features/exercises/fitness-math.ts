@@ -10,6 +10,7 @@ import type {
   CalculatorErrors,
   CalculatorInputs,
   CalculatorResults,
+  Gender,
   Goal,
   Macros,
   MacroSplit,
@@ -42,8 +43,15 @@ export const MACRO_SPLITS: Record<MacroSplit, { protein: number; carbs: number; 
 /** kcal per gram for each macronutrient. */
 const KCAL_PER_GRAM = { protein: 4, carbs: 4, fat: 9 } as const;
 
-/** Floor for target calories so weight-loss goals never go dangerously low. */
-const MIN_TARGET_CALORIES = 1200;
+/**
+ * Sex-aware floor for target calories so weight-loss goals never go dangerously
+ * low. 1200 kcal is the accepted minimum for women, but guidelines put the male
+ * floor at 1500 kcal (2013 AHA/ACC/TOS Obesity Guidelines).
+ */
+const MIN_TARGET_CALORIES: Record<Gender, number> = {
+  male: 1500,
+  female: 1200,
+};
 
 /** Validation bounds for the numeric inputs. */
 export const AGE_MAX = 100;
@@ -101,7 +109,7 @@ export function calculateResults(inputs: CalculatorInputs): CalculatorResults {
   const bmr = Math.round(10 * weight + 6.25 * height - 5 * age + genderOffset);
 
   const tdee = Math.round(bmr * ACTIVITY_MULTIPLIERS[inputs.activity]);
-  const calories = Math.max(MIN_TARGET_CALORIES, tdee + GOAL_CALORIE_DELTA[inputs.goal]);
+  const calories = Math.max(MIN_TARGET_CALORIES[inputs.gender], tdee + GOAL_CALORIE_DELTA[inputs.goal]);
 
   return { bmi, bmiCategory: classifyBmi(bmi), bmr, tdee, calories };
 }

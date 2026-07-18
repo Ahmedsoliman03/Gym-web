@@ -9,6 +9,8 @@ import {
     GoogleAuthRequest,
     GoogleAuthResponse,
     GoogleSignupCompleteRequest,
+    ResendOtpRequest,
+    ResendActivationRequest,
 } from '../types';
 
 const syncAuthenticatedUser = (
@@ -76,11 +78,33 @@ export const useVerifyOTPMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (values: VerifyOTPRequest) => {
-            const { data } = await api.post('/api/auth/verify-otp', values);
+            const { data } = await api.post('/api/auth/verify-otp', {
+                type: 'whatsapp',
+                ...values,
+            });
             return data;
         },
         onSuccess: (data) => {
             syncAuthenticatedUser(queryClient, data.user);
+        },
+    });
+};
+
+
+export const useResendOtpMutation = () => {
+    return useMutation({
+        mutationFn: async (values: ResendOtpRequest) => {
+            const { data } = await api.post('/api/auth/resend-otp', values);
+            return data;
+        },
+    });
+};
+
+export const useResendActivationMutation = () => {
+    return useMutation({
+        mutationFn: async (values: ResendActivationRequest) => {
+            const { data } = await api.post('/api/auth/resend-activation', values);
+            return data;
         },
     });
 };

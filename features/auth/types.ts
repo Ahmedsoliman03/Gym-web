@@ -78,10 +78,29 @@ export interface RequestAccessRequest {
     [key: string]: unknown;
 }
 
+export type OtpChannel = 'whatsapp' | 'email';
+
+// The verification-code window, in seconds. Persisted on the verify-otp page as
+// an absolute expiry timestamp (see OTP_TIMER_KEY) so the countdown continues
+// across a page reload or a locale switch instead of restarting.
+export const OTP_TIMER_SECONDS = 300;
+export const OTP_TIMER_KEY = 'otp:timerUntil';
+
 export interface VerifyOTPRequest {
     email: string;
     otp: string;
+    type?: OtpChannel;
 }
+
+// Shared shape for the dedicated resend endpoints. `resend-otp` re-issues the
+// registration OTP; `resend-activation` re-issues the coach/gym activation
+// code. Both take the account email and the delivery channel.
+export interface ResendOtpRequest {
+    email: string;
+    verification_method: OtpChannel;
+}
+
+export type ResendActivationRequest = ResendOtpRequest;
 
 
 

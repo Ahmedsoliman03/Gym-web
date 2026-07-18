@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRegisterSchema } from '../validations';
 import { useAuthUser } from '../hooks/useAuthUser';
-import { RegisterFormValues } from '../types';
+import { RegisterFormValues, OTP_TIMER_SECONDS, OTP_TIMER_KEY } from '../types';
 import {
     SpinnerIos20Regular,
     Eye24Regular,
@@ -125,12 +125,20 @@ export default function RegisterForm() {
                     try {
                         const { firstName, lastName, city, area, ...rest } = values;
                         const fullName = `${firstName.trim()} ${lastName.trim()}`;
-                        await register({
+                        const payload = {
                             fullName,
                             ...rest,
                             city: city.trim(),
                             area: area.trim(),
-                        });
+                        };
+                        await register(payload);
+                        // Open a fresh 5-minute OTP window; the verify-otp page
+                        // reads this timestamp so its countdown is accurate and
+                        // survives reloads / locale switches.
+                        localStorage.setItem(
+                            OTP_TIMER_KEY,
+                            String(Date.now() + OTP_TIMER_SECONDS * 1000),
+                        );
                         clearFormDraft('draft:register');
                         toast.success(t('Auth.otpSent'));
                         router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
