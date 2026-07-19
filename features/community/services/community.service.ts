@@ -109,13 +109,13 @@ export const usePost = (postId: string | null) =>
 
 export interface CreatePostInput {
     content: string;
-    media: File[];
+    media: (File | string)[];
 }
 
 export const createPost = async (input: CreatePostInput): Promise<CommunityPost> => {
     const formData = new FormData();
     formData.append('content', input.content);
-    input.media.forEach((file) => formData.append('media', file));
+      input.media.forEach((file) => formData.append('media', file));
 
     const { data } = await api.post<CommunityPost>('/api/community/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -137,13 +137,16 @@ export interface EditPostInput {
     postId: string;
     content: string;
     /** If provided (length > 0), replaces all media. If empty, leaves existing media. */
-    media?: File[];
+    media?: (File | string)[];
 }
 
 export const editPost = async (input: EditPostInput): Promise<CommunityPost> => {
     const formData = new FormData();
     formData.append('content', input.content);
-    input.media?.forEach((file) => formData.append('media', file));
+    input.media?.forEach((file) => {
+        if (file instanceof File) formData.append('media', file);
+        else formData.append('media_urls', file);
+    });
 
     const { data } = await api.patch<CommunityPost>(
         `/api/community/posts/${input.postId}`,

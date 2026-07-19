@@ -32,6 +32,7 @@ import {
   buildEditProfileFormData,
   useUpdateProfileMutation,
 } from "../services/profile.service";
+import { useR2Upload } from "@/hooks/use-r2-upload";
 
 export const GymEditForm = ({ profile }: GymEditFormProps) => {
   const t = useTranslations("Profile");
@@ -39,6 +40,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
   const router = useRouter();
   const updateMutation = useUpdateProfileMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
   const inner = profile.profile;
   const initialPhoto = inner?.mainPhoto ?? inner?.photo ?? null;
@@ -54,14 +56,14 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
     socialMedia: inner?.socialMedia ?? [],
     plans: (inner?.plans ?? []) as ProfilePlan[],
   });
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
   // Warn before leaving with unsaved edits.
   const initialSnapshotRef = useRef(serializeFormState(formData));
   const isDirty =
-    photoFile !== null ||
+    uploadedPhotoPath !== null ||
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
@@ -76,30 +78,50 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
+    
     setImagePreview(URL.createObjectURL(file));
     e.target.value = '';
+
+    try {
+      const path = await uploadFile(file, 'gym_photo');
+      setUploadedPhotoPath(path);
+    } catch (err) {
+      toast.error('Upload failed');
+    }
   };
 
   const triggerFileInput = () => fileInputRef.current?.click();
 
   const performSave = async (sanitized: ProfilePlan[]) => {
-    const payload = buildEditProfileFormData({
-      role: 'gym',
-      values: {
+    try {
+      // All uploads (photo, gallery images) were handled at selection time.
+      const existingGymImageIds = formData.gymImages.filter(g => !!g.id).map(g => g.id!);
+      const newGymImagePaths = formData.gymImages.filter(g => !g.id && !!g.url).map(g => g.url!);
+
+      const payloadValues: Record<string, any> = {
         name: formData.name,
-        image: photoFile,
         description: formData.description,
         specializations: formData.specializations,
-        gymImages: formData.gymImages,
         socialMedia: formData.socialMedia,
         plans: sanitized,
-      },
-    });
-    try {
+      };
+
+      if (uploadedPhotoPath) payloadValues.image = uploadedPhotoPath;
+      
+      const combinedGymImages = [
+        ...existingGymImageIds.map(id => ({ id })),
+        ...newGymImagePaths.map(file => ({ file }))
+      ];
+      payloadValues.gymImages = combinedGymImages;
+
+      const payload = buildEditProfileFormData({
+        role: 'gym',
+        values: payloadValues,
+      });
+
       await updateMutation.mutateAsync(payload);
       toast.success(t('saveSuccess'));
       router.push('/profile');
@@ -168,9 +190,15 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
               ) : (
                 <div className={styles.avatarPlaceholder}>{t('noImage')}</div>
               )}
-              <div className={styles.avatarOverlay}>
-                <Camera className="text-white" size={24} />
-              </div>
+              {isUploading ? (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xs rounded-full z-10">
+                  {uploadProgress}%
+                </div>
+              ) : (
+                <div className={styles.avatarOverlay}>
+                  <Camera className="text-white" size={24} />
+                </div>
+              )}
             </div>
           </div>
           <div className={styles.photoTextContent}>
@@ -240,7 +268,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
       <div className={styles.actions}>
         <button
           onClick={handleSave}
-          disabled={updateMutation.isPending}
+          disabled={updateMutation.isPending || isUploading}
           className={styles.saveBtn}
         >
           <Save size={18} />

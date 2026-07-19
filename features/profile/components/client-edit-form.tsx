@@ -17,25 +17,27 @@ import {
   buildEditProfileFormData,
   useUpdateProfileMutation,
 } from "../services/profile.service";
+import { useR2Upload } from "@/hooks/use-r2-upload";
 
 export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
   const t = useTranslations("Profile");
   const router = useRouter();
   const updateMutation = useUpdateProfileMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
   const initialPhoto = profile.profile?.photo ?? null;
   const [formData, setFormData] = useState({
     fullName: profile.fullName ?? '',
     phone: profile.phone ?? '',
   });
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
 
   // Warn before leaving with unsaved edits.
   const initialSnapshotRef = useRef(serializeFormState(formData));
   const isDirty =
-    photoFile !== null ||
+    uploadedPhotoPath !== null ||
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
@@ -43,27 +45,37 @@ export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
+    
     setImagePreview(URL.createObjectURL(file));
     e.target.value = '';
+
+    try {
+      const path = await uploadFile(file, 'profile_photo');
+      setUploadedPhotoPath(path);
+    } catch (err) {
+      toast.error('Upload failed');
+    }
   };
 
   const triggerFileInput = () => fileInputRef.current?.click();
 
   const handleSave = async () => {
-    if (updateMutation.isPending) return;
-    const payload = buildEditProfileFormData({
-      role: 'client',
-      values: {
+    try {
+      const payloadValues: Record<string, any> = {
         fullName: formData.fullName,
         phone: formData.phone,
-        photo: photoFile,
-      },
-    });
-    try {
+      };
+
+      if (uploadedPhotoPath) payloadValues.photo = uploadedPhotoPath;
+
+      const payload = buildEditProfileFormData({
+        role: 'client',
+        values: payloadValues,
+      });
+
       await updateMutation.mutateAsync(payload);
       toast.success(t('saveSuccess'));
       router.push('/profile');
@@ -99,9 +111,15 @@ export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
               ) : (
                 <div className={styles.avatarPlaceholder}>{t('noImage')}</div>
               )}
-              <div className={styles.avatarOverlay}>
-                <Camera className="text-white" size={24} />
-              </div>
+              {isUploading ? (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xs rounded-full z-10">
+                  {uploadProgress}%
+                </div>
+              ) : (
+                <div className={styles.avatarOverlay}>
+                  <Camera className="text-white" size={24} />
+                </div>
+              )}
             </div>
           </div>
           <div className={styles.photoTextContent}>
@@ -138,7 +156,7 @@ export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
       <div className={styles.actions}>
         <button
           onClick={handleSave}
-          disabled={updateMutation.isPending}
+          disabled={updateMutation.isPending || isUploading}
           className={styles.saveBtn}
         >
           <Save size={18} />

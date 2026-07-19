@@ -10,6 +10,7 @@ import {
     useStories,
 } from '../services/stories.service';
 import { useProfileQuery } from '@/features/profile/services/profile.service';
+import { useR2Upload } from '@/hooks/use-r2-upload';
 import type { Story, StoryAuthor } from '../types';
 import { StoryPreviewModal } from './story-preview-modal';
 import { ProfileAvatarChoiceModal } from './profile-avatar-choice-modal';
@@ -50,6 +51,7 @@ export function StoryAvatarBadge({
     const t = useTranslations('Stories');
     const inputRef = useRef<HTMLInputElement>(null);
     const { mutateAsync, isPending } = useCreateStoryMutation();
+    const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
 
     const { data: me } = useProfileQuery();
@@ -97,7 +99,7 @@ export function StoryAvatarBadge({
     }, [previewUrl]);
 
     const openPicker = () => {
-        if (isPending) return;
+        if (isPending || isUploading) return;
         inputRef.current?.click();
     };
 
@@ -111,7 +113,7 @@ export function StoryAvatarBadge({
     };
 
     const handleCancelPreview = () => {
-        if (isPending) return;
+        if (isPending || isUploading) return;
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         setPendingFile(null);
         setPreviewUrl(null);
@@ -120,7 +122,8 @@ export function StoryAvatarBadge({
     const handlePublish = async () => {
         if (!pendingFile) return;
         try {
-            await mutateAsync(pendingFile);
+            const path = await uploadFile(pendingFile, 'community_post');
+            await mutateAsync([path]);
             if (previewUrl) URL.revokeObjectURL(previewUrl);
             setPendingFile(null);
             setPreviewUrl(null);
@@ -176,19 +179,20 @@ export function StoryAvatarBadge({
                 <button
                     type="button"
                     onClick={openPicker}
-                    disabled={isPending}
-                    aria-label={isPending ? t('uploading') : t('addStory')}
+                    disabled={isPending || isUploading}
+                    aria-label={isPending || isUploading ? t('uploading') : t('addStory')}
                     className={styles.badge}
                 >
                     <Plus size={16} />
-                    {isPending && <span className={styles.spinner} />}
+                    {(isPending || isUploading) && <span className={styles.spinner} />}
                 </button>
             )}
 
             <StoryPreviewModal
                 isOpen={previewUrl !== null}
                 previewUrl={previewUrl}
-                isPublishing={isPending}
+                isPublishing={isPending || isUploading}
+                uploadProgress={isUploading ? uploadProgress : null}
                 onCancel={handleCancelPreview}
                 onPublish={handlePublish}
             />

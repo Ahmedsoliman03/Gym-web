@@ -33,12 +33,14 @@ import {
   buildEditProfileFormData,
   useUpdateProfileMutation,
 } from "../services/profile.service";
+import { useR2Upload } from "@/hooks/use-r2-upload";
 
 export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const t = useTranslations("Profile");
   const t_root = useTranslations();
   const router = useRouter();
   const updateMutation = useUpdateProfileMutation();
+  const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
   const [showAddTag, setShowAddTag] = useState<string | null>(null);
   const [pendingSpecs, setPendingSpecs] = useState<string[]>([]);
@@ -98,20 +100,21 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       image: tr.image,
     })),
   });
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
   const initialSnapshotRef = useRef(serializeFormState(formData));
   const isDirty =
-    photoFile !== null ||
+    uploadedPhotoPath !== null ||
     serializeFormState(formData) !== initialSnapshotRef.current;
   useUnsavedChangesWarning(isDirty);
 
   const newlyAdding = {
-    certifications: formData.certifications.filter((c) => c.file && !c.id).length,
+    certifications: formData.certifications.filter((c) => c.url && !c.id).length,
     transformation_photos: formData.transformations.filter(
-      (tr) => tr.image instanceof File,
+      (tr) => typeof tr.image === 'string' && tr.image.startsWith('temp/'),
     ).length,
   };
   const saveGuard = useProfileSaveGuard(true, newlyAdding);
@@ -125,12 +128,21 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
     setImagePreview(URL.createObjectURL(file));
     e.target.value = '';
+
+    setPhotoUploading(true);
+    try {
+      const path = await uploadFile(file, 'profile_photo');
+      setUploadedPhotoPath(path);
+    } catch (err) {
+      toast.error('Upload failed');
+    } finally {
+      setPhotoUploading(false);
+    }
   };
 
   const triggerFileInput = () => fileInputRef.current?.click();
@@ -143,18 +155,20 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   };
 
   const performSave = async (sanitized: ProfilePlan[]) => {
-    const name = [formData.firstName, formData.lastName]
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .join(' ');
-    const payload = buildEditProfileFormData({
-      role: 'coach',
-      values: {
+    try {
+      // All uploads (photo, certifications, transformations) were handled at selection time.
+      const existingCertIds = formData.certifications.filter(c => !!c.id).map(c => c.id!);
+      const newCertPaths = formData.certifications.filter(c => !c.id && !!c.url).map(c => c.url!);
+
+      const name = [formData.firstName, formData.lastName]
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .join(' ');
+
+      const payloadValues: Record<string, any> = {
         name,
-        image: photoFile,
         philosophyDesc: formData.philosophyDesc,
         specializations: formData.specializations,
-        certifications: formData.certifications,
         socialMedia: formData.socialMedia,
         plans: sanitized,
         transformations: formData.transformations.map((tr) => ({
@@ -163,9 +177,21 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
           duration: tr.duration,
           image: tr.image,
         })),
-      },
-    });
-    try {
+      };
+
+      if (uploadedPhotoPath) payloadValues.image = uploadedPhotoPath;
+      
+      const combinedCerts = [
+        ...existingCertIds.map(id => ({ id })),
+        ...newCertPaths.map(file => ({ file }))
+      ];
+      payloadValues.certifications = combinedCerts;
+
+      const payload = buildEditProfileFormData({
+        role: 'coach',
+        values: payloadValues,
+      });
+
       await updateMutation.mutateAsync(payload);
       toast.success(t('saveSuccess'));
       router.push('/profile');
@@ -236,9 +262,15 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
               ) : (
                 <div className={styles.avatarPlaceholder}>{t('noImage')}</div>
               )}
-              <div className={styles.avatarOverlay}>
-                <Camera className="text-white" size={24} />
-              </div>
+              {photoUploading ? (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xs rounded-full z-10">
+                  {uploadProgress}%
+                </div>
+              ) : (
+                <div className={styles.avatarOverlay}>
+                  <Camera className="text-white" size={24} />
+                </div>
+              )}
             </div>
           </div>
           <div className={styles.photoTextContent}>
@@ -383,11 +415,11 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       <div className={styles.actions}>
         <button
           onClick={handleSave}
-          disabled={updateMutation.isPending}
+          disabled={updateMutation.isPending || isUploading || photoUploading}
           className={styles.saveBtn}
         >
           <Save size={18} />
-          {updateMutation.isPending ? t('saving') : t('saveProfile')}
+          {updateMutation.isPending ? t('saving') : isUploading ? `Uploading ${uploadProgress}%` : t('saveProfile')}
         </button>
         <button onClick={() => router.back()} className={styles.cancelBtn}>
           {t('cancelChanges')}

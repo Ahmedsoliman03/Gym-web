@@ -70,14 +70,13 @@ export const useJob = (jobId: string | null) =>
 // ─── Create / edit / delete / close / reopen ─────────────────────────────────
 
 export const createJob = async (input: CreateJobInput): Promise<Job> => {
-    const formData = new FormData();
-    formData.append('title', input.title);
-    formData.append('specialization', input.specialization);
-    formData.append('content', input.content);
-    if (input.image) formData.append('image', input.image);
-
-    const { data } = await api.post<Job>('/api/jobs', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+    // `image` is an R2 file path (temp/...) produced by the direct-upload flow;
+    // the backend accepts it as a plain string field (see upload-img.md / postman README).
+    const { data } = await api.post<Job>('/api/jobs', {
+        title: input.title,
+        specialization: input.specialization,
+        content: input.content,
+        ...(input.image ? { image: input.image } : {}),
     });
     return data;
 };
@@ -337,7 +336,7 @@ export const useShareJobMutation = () => {
 
 // ─── Apply ────────────────────────────────────────────────────────────────────
 
-export const applyForJob = async (input: ApplyJobInput): Promise<void> => {
+export const applyForJob = async (input: ApplyJobInput & { cv: File | string }): Promise<void> => {
     const formData = new FormData();
     formData.append('fullName', input.fullName);
     formData.append('email', input.email);

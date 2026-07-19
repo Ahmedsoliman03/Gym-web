@@ -27,7 +27,7 @@ export default function NewJobPage() {
     title: string;
     specialization: string;
     desc: string;
-    image: File | null;
+    image: string | null;
   }) => {
     try {
       await createMutation.mutateAsync({

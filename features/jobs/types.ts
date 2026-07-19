@@ -32,7 +32,8 @@ export interface CreateJobInput {
     title: string;
     specialization: string;
     content: string;
-    image: File | null;
+    /** R2 file path returned by the uploads/generate flow (see upload-img.md). */
+    image: string | null;
 }
 
 export interface EditJobInput {

@@ -25,6 +25,7 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                 lastName: '',
                 email: '',
                 phone: '',
+                verification_method: 'whatsapp',
                 city: '',
                 area: '',
                 specialization: [] as string[],
@@ -37,12 +38,22 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    const { firstName, lastName, ...rest } = values;
+                    const { firstName, lastName, profile_image, certifications, ...rest } = values;
                     const name = [firstName, lastName]
                         .map((part) => part.trim())
                         .filter(Boolean)
                         .join(' ');
-                    await requestAccess({ ...rest, name } as RequestAccessRequest);
+                    
+                    const mappedValues = {
+                        ...rest,
+                        name,
+                    } as any;
+
+                    if (profile_image) mappedValues.profile_image = profile_image;
+                    if (certifications.length > 0) mappedValues.certifications = certifications;
+
+                    await requestAccess(mappedValues as RequestAccessRequest);
+                    sessionStorage.setItem('request-access-email', values.email);
                     clearFormDraft('draft:coach-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();

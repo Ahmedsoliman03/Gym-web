@@ -2,7 +2,7 @@
 
 import { Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import { 
     SpinnerIos20Regular, 
     ArrowRight24Regular, 
@@ -16,6 +16,8 @@ import { LiveValidate } from '@/components/shared/live-validate';
 import { FormPersist } from '@/components/shared/form-persist';
 import { WhyWeAsk } from '@/components/shared/why-we-ask';
 import { GymFormInnerProps } from '../types';
+import { useR2Upload } from '@/hooks/use-r2-upload';
+import toast from 'react-hot-toast';
 
 const styles = {
     form: "space-y-6",
@@ -38,14 +40,41 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
     const tLoc = useTranslations('Location');
     const gymLicenseRef = useRef<HTMLInputElement>(null);
     const gymPhotoRef = useRef<HTMLInputElement>(null);
+    const { uploadFile, uploadProgress } = useR2Upload();
+    const [licenseUploading, setLicenseUploading] = useState(false);
+    const [licensePreview, setLicensePreview] = useState<string | null>(null);
+    const [photoUploading, setPhotoUploading] = useState(false);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     const licenseDrop = useFileDrop({
         accept: 'image/*',
-        onFiles: (files) => setFieldValue('gymLicense', files[0]),
+        onFiles: async (files) => {
+            const file = files[0];
+            setLicensePreview(URL.createObjectURL(file));
+            setLicenseUploading(true);
+            try {
+                const path = await uploadFile(file, 'gym_photo');
+                setFieldValue('gymLicense', path);
+            } catch { 
+                toast.error('Upload failed'); 
+                setLicensePreview(null);
+            } finally { setLicenseUploading(false); }
+        },
     });
     const photoDrop = useFileDrop({
         accept: 'image/*',
-        onFiles: (files) => setFieldValue('gymPhoto', files[0]),
+        onFiles: async (files) => {
+            const file = files[0];
+            setPhotoPreview(URL.createObjectURL(file));
+            setPhotoUploading(true);
+            try {
+                const path = await uploadFile(file, 'gym_photo');
+                setFieldValue('gymPhoto', path);
+            } catch { 
+                toast.error('Upload failed'); 
+                setPhotoPreview(null);
+            } finally { setPhotoUploading(false); }
+        },
     });
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
@@ -191,14 +220,34 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                             name="gymLicense"
                             className="hidden"
                             accept="image/*"
-                            onChange={(e) => setFieldValue('gymLicense', e.currentTarget.files?.[0])}
+                            onChange={async (e) => {
+                                const file = e.currentTarget.files?.[0];
+                                if (!file) return;
+                                e.currentTarget.value = '';
+                                setLicensePreview(URL.createObjectURL(file));
+                                setLicenseUploading(true);
+                                try {
+                                    const path = await uploadFile(file, 'gym_photo');
+                                    setFieldValue('gymLicense', path);
+                                } catch { 
+                                    toast.error('Upload failed'); 
+                                    setLicensePreview(null);
+                                } finally { setLicenseUploading(false); }
+                            }}
                         />
-                        {values.gymLicense && values.gymLicense instanceof File ? (
-                            <img 
-                                src={URL.createObjectURL(values.gymLicense)} 
-                                alt="License Preview" 
-                                className="w-full h-40 object-contain rounded-lg bg-black/20"
-                            />
+                        {licensePreview ? (
+                            <div className="relative w-full">
+                                <img 
+                                    src={licensePreview} 
+                                    alt="License Preview" 
+                                    className="w-full h-40 object-contain rounded-lg bg-black/20"
+                                />
+                                {licenseUploading && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm rounded-lg z-10">
+                                        {uploadProgress}%
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <>
                                 <ArrowUpload24Regular className={styles.uploadIcon} />
@@ -223,14 +272,34 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
                             name="gymPhoto"
                             className="hidden"
                             accept="image/*"
-                            onChange={(e) => setFieldValue('gymPhoto', e.currentTarget.files?.[0])}
+                            onChange={async (e) => {
+                                const file = e.currentTarget.files?.[0];
+                                if (!file) return;
+                                e.currentTarget.value = '';
+                                setPhotoPreview(URL.createObjectURL(file));
+                                setPhotoUploading(true);
+                                try {
+                                    const path = await uploadFile(file, 'gym_photo');
+                                    setFieldValue('gymPhoto', path);
+                                } catch { 
+                                    toast.error('Upload failed'); 
+                                    setPhotoPreview(null);
+                                } finally { setPhotoUploading(false); }
+                            }}
                         />
-                        {values.gymPhoto && values.gymPhoto instanceof File ? (
-                            <img 
-                                src={URL.createObjectURL(values.gymPhoto)} 
-                                alt="Gym Preview" 
-                                className="w-full h-40 object-contain rounded-lg bg-black/20"
-                            />
+                        {photoPreview ? (
+                            <div className="relative w-full">
+                                <img 
+                                    src={photoPreview} 
+                                    alt="Gym Preview" 
+                                    className="w-full h-40 object-contain rounded-lg bg-black/20"
+                                />
+                                {photoUploading && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm rounded-lg z-10">
+                                        {uploadProgress}%
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <>
                                 <Image24Regular className={styles.uploadIcon} />
@@ -243,7 +312,7 @@ export function GymFormInner({ isSubmitting, values, setFieldValue }: GymFormInn
             </div>
 
             <div className={styles.submitWrapper}>
-                <button type="submit" disabled={isSubmitting} className={styles.submitButton}>
+                <button type="submit" disabled={isSubmitting || licenseUploading || photoUploading} className={styles.submitButton}>
                     {isSubmitting ? (
                         <SpinnerIos20Regular className="animate-spin" />
                     ) : (

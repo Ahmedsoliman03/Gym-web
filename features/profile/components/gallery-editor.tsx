@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X, Plus, ChevronRight, Maximize2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { ImageLightbox } from "@/components/shared/image-lightbox";
 import type { EditableImage, GalleryEditorProps } from "@/features/profile/types";
+import { useR2Upload } from "@/hooks/use-r2-upload";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -31,6 +33,8 @@ export const GalleryEditor = ({
 }: GalleryEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
+  const { uploadFile } = useR2Upload();
+  const [uploadingIndexes, setUploadingIndexes] = useState<Record<number, number>>({});
 
   const [lightbox, setLightbox] = useState({
     isOpen: false,
@@ -53,13 +57,38 @@ export const GalleryEditor = ({
     }
   };
 
-  const handleAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const next: EditableImage[] = Array.from(files).map((file) => ({ file }));
-    onChange([...images, ...next]);
-    // Allow re-picking the same file by resetting the input value.
+    const startIdx = images.length;
+    // Add placeholders first so the user sees a preview immediately
+    const placeholders: EditableImage[] = Array.from(files).map((file) => ({ file }));
+    let current = [...images, ...placeholders];
+    onChange(current);
     e.target.value = '';
+
+    // Upload each file and replace the placeholder with the URL string
+    for (let i = 0; i < placeholders.length; i++) {
+      const absIdx = startIdx + i;
+      setUploadingIndexes((prev) => ({ ...prev, [absIdx]: 0 }));
+      try {
+        const path = await uploadFile(placeholders[i].file!, 'gym_photo', (percent) =>
+          setUploadingIndexes((prev) => ({ ...prev, [absIdx]: percent }))
+        );
+        current = current.map((img, idx) =>
+          idx === absIdx ? { url: path } : img
+        );
+        onChange(current);
+      } catch (err) {
+        toast.error('Upload failed');
+      } finally {
+        setUploadingIndexes((prev) => {
+          const copy = { ...prev };
+          delete copy[absIdx];
+          return copy;
+        });
+      }
+    }
   };
 
   const handleRemove = (index: number) => {
@@ -100,11 +129,18 @@ export const GalleryEditor = ({
               <X size={16} />
             </button>
 
-            <div className={styles.image} onClick={() => openLightbox(idx)}>
+            <div className={styles.image} onClick={() => !uploadingIndexes[idx] && openLightbox(idx)}>
               <img src={previews[idx]} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-              <div className={styles.imageOverlay}>
-                <Maximize2 className="text-white" size={24} />
-              </div>
+              {uploadingIndexes[idx] !== undefined ? (
+                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 z-10">
+                  <div className="w-10 h-10 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
+                  <span className="text-white text-xs font-bold">{uploadingIndexes[idx]}%</span>
+                </div>
+              ) : (
+                <div className={styles.imageOverlay}>
+                  <Maximize2 className="text-white" size={24} />
+                </div>
+              )}
             </div>
           </div>
         ))}

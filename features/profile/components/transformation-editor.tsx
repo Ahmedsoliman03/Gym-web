@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, X, Plus, ChevronRight, Maximize2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { ImageLightbox } from "@/components/shared/image-lightbox";
 import type { TransformationEditorProps, TransformationItem } from "../types";
+import { useR2Upload } from "@/hooks/use-r2-upload";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -36,6 +38,8 @@ export const TransformationEditor = ({
 }: TransformationEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
+  const { uploadFile } = useR2Upload();
+  const [uploadingIds, setUploadingIds] = useState<Record<string, number>>({});
 
   const [lightbox, setLightbox] = useState({
     isOpen: false,
@@ -73,12 +77,30 @@ export const TransformationEditor = ({
     ));
   };
 
-  const handleImageChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      handleUpdate(id, 'image', file);
-      // Allow re-picking the same file by resetting the input value.
-      e.target.value = '';
+    if (!file) return;
+    // Show blob preview immediately
+    handleUpdate(id, 'image', file);
+    e.target.value = '';
+
+    setUploadingIds((prev) => ({ ...prev, [id]: 0 }));
+    try {
+      const path = await uploadFile(file, 'gym_photo', (percent) =>
+        setUploadingIds((prev) => ({ ...prev, [id]: percent }))
+      );
+      // Replace the File blob with the uploaded path string
+      onChange(transformations.map((item) =>
+        item.id === id ? { ...item, image: path } : item
+      ));
+    } catch (err) {
+      toast.error('Upload failed');
+    } finally {
+      setUploadingIds((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
   };
 
@@ -156,7 +178,14 @@ export const TransformationEditor = ({
                   className="hidden"
                   onChange={(e) => handleImageChange(item.id, e)}
                 />
-                <Camera className="text-white" size={24} />
+                {uploadingIds[item.id] !== undefined ? (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 z-10 rounded-xl">
+                    <div className="w-10 h-10 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
+                    <span className="text-white text-xs font-bold">{uploadingIds[item.id]}%</span>
+                  </div>
+                ) : (
+                  <Camera className="text-white" size={24} />
+                )}
               </label>
             </div>
 

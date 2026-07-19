@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
 import { LiveValidate } from '@/components/shared/live-validate';
 import { GoogleAuthButton } from './google-auth-button';
+import { ContactSupport } from '@/components/shared/contact-support';
 import { normalizeAuthNextPath } from '../utils/next-path';
 
 const styles = {
@@ -242,17 +243,11 @@ export default function LoginForm() {
 
                     <div className={styles.secondaryText}>
                         <span className={styles.dimText}>{t('Auth.needHelp')}</span>
-                        <a
-                            href="https://wa.me/201159133110"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <ContactSupport
+                            showArrow
                             className={styles.supportLink}
-                        >
-                            <span>{t('Auth.contactSupport')}</span>
-                            <svg className={styles.supportIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
+                            iconClassName={styles.supportIcon}
+                        />
                     </div>
                 </div>
             </div>

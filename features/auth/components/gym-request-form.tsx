@@ -22,6 +22,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                 type: 'gym',
                 email: '',
                 phone: '',
+                verification_method: 'whatsapp',
                 gymName: '',
                 gymAddress: '',
                 governorate: '',
@@ -35,20 +36,23 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
             validationSchema={validationSchema}
             onSubmit={async (values) => {
                 try {
-                    const { governorate, city, area, gymAddress, ...rest } = values;
+                    const { governorate, city, area, gymAddress, gymLicense, gymPhoto, ...rest } = values;
                     const friendlyAddress = [gymAddress, area, city, governorate]
                         .map((part) => (part ?? '').toString().trim())
                         .filter(Boolean)
                         .join(', ');
                     const mappedValues = {
                         ...rest,
-                        // Keep the city/area split the backend already expects.
                         city: governorate,
                         area: city,
-                        // Send the combined friendly address back as gymAddress.
                         gymAddress: friendlyAddress,
-                    };
+                    } as any;
+                    
+                    if (gymLicense) mappedValues.gymLicense = gymLicense;
+                    if (gymPhoto) mappedValues.gymPhoto = gymPhoto;
+
                     await requestAccess(mappedValues as RequestAccessRequest);
+                    sessionStorage.setItem('request-access-email', values.email);
                     clearFormDraft('draft:gym-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();

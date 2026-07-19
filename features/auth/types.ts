@@ -11,6 +11,7 @@ export interface RegisterRequest {
     confirmPassword: string;
     city?: string;
     area?: string;
+    verification_method?: OtpChannel;
 }
 
 export interface GoogleAuthRequest {
@@ -80,11 +81,17 @@ export interface RequestAccessRequest {
 
 export type OtpChannel = 'whatsapp' | 'email';
 
-// The verification-code window, in seconds. Persisted on the verify-otp page as
-// an absolute expiry timestamp (see OTP_TIMER_KEY) so the countdown continues
-// across a page reload or a locale switch instead of restarting.
 export const OTP_TIMER_SECONDS = 300;
 export const OTP_TIMER_KEY = 'otp:timerUntil';
+
+
+export const OTP_CHANNEL_KEY = 'otp:channel';
+export const OTP_SWITCH_COOLDOWN_KEY = 'otp:switchCooldownUntil';
+
+export const OTP_EMAIL_KEY = 'otp:email';
+
+// Registration always sends the first code over WhatsApp.
+export const DEFAULT_OTP_CHANNEL: OtpChannel = 'whatsapp';
 
 export interface VerifyOTPRequest {
     email: string;
@@ -92,12 +99,24 @@ export interface VerifyOTPRequest {
     type?: OtpChannel;
 }
 
-// Shared shape for the dedicated resend endpoints. `resend-otp` re-issues the
-// registration OTP; `resend-activation` re-issues the coach/gym activation
-// code. Both take the account email and the delivery channel.
 export interface ResendOtpRequest {
     email: string;
     verification_method: OtpChannel;
+}
+export interface UseResendCooldownOptions {
+    /** localStorage key under which the absolute expiry timestamp is stored. */
+    storageKey: string;
+    /** Cooldown length in milliseconds. Defaults to 15 seconds. */
+    durationMs?: number;
+}
+
+export interface ResendCooldown {
+    /** Whole seconds remaining, 0 when idle. */
+    secondsLeft: number;
+    /** True while a cooldown is running. */
+    isCoolingDown: boolean;
+    /** Begin (or restart) the cooldown and persist it. */
+    start: () => void;
 }
 
 export type ResendActivationRequest = ResendOtpRequest;

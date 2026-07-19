@@ -2,7 +2,7 @@
 
 import { Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import {
     SpinnerIos20Regular,
     ArrowRight24Regular,
@@ -17,6 +17,8 @@ import { useFileDrop } from '@/hooks/use-file-drop';
 import { LiveValidate } from '@/components/shared/live-validate';
 import { FormPersist } from '@/components/shared/form-persist';
 import { CoachFormInnerProps } from '../types';
+import { useR2Upload } from '@/hooks/use-r2-upload';
+import toast from 'react-hot-toast';
 
 const styles = {
     form: "space-y-6",
@@ -42,16 +44,34 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
     const tLoc = useTranslations('Location');
     const certificationsRef = useRef<HTMLInputElement>(null);
     const profileImageRef = useRef<HTMLInputElement>(null);
+    const { uploadFile, uploadMultipleFiles } = useR2Upload();
+    const [photoUploading, setPhotoUploading] = useState(false);
+    const [photoProgress, setPhotoProgress] = useState(0);
+    const [certsUploading, setCertsUploading] = useState(false);
+    const [certsProgress, setCertsProgress] = useState(0);
 
     const profileImageDrop = useFileDrop({
         accept: 'image/*',
-        onFiles: (files) => setFieldValue('profile_image', files[0]),
+        onFiles: async (files) => {
+            setPhotoUploading(true);
+            setPhotoProgress(0);
+            try {
+                const path = await uploadFile(files[0], 'profile_photo', setPhotoProgress);
+                setFieldValue('profile_image', path);
+            } catch { toast.error('Upload failed'); } finally { setPhotoUploading(false); }
+        },
     });
     const certificationsDrop = useFileDrop({
         accept: 'image/*',
         multiple: true,
-        onFiles: (files) =>
-            setFieldValue('certifications', [...values.certifications, ...files]),
+        onFiles: async (files) => {
+            setCertsUploading(true);
+            setCertsProgress(0);
+            try {
+                const paths = await uploadMultipleFiles(files, 'certification', setCertsProgress);
+                setFieldValue('certifications', [...values.certifications, ...paths]);
+            } catch { toast.error('Upload failed'); } finally { setCertsUploading(false); }
+        },
     });
 
     const handleLocationSuccess = useCallback((result: LocationResult) => {
@@ -246,9 +266,16 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                             name="profile_image"
                             className="hidden"
                             accept="image/*"
-                            onChange={(e) => {
-                                const file = e.currentTarget.files?.[0] || null;
-                                setFieldValue('profile_image', file);
+                            onChange={async (e) => {
+                                const file = e.currentTarget.files?.[0];
+                                if (!file) return;
+                                e.currentTarget.value = '';
+                                setPhotoUploading(true);
+                                setPhotoProgress(0);
+                                try {
+                                    const path = await uploadFile(file, 'profile_photo', setPhotoProgress);
+                                    setFieldValue('profile_image', path);
+                                } catch { toast.error('Upload failed'); } finally { setPhotoUploading(false); }
                             }}
                         />
                         <ArrowUpload24Regular className={styles.uploadIconSize} />
@@ -258,32 +285,35 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                         </div>
                     </div>
 
-                    {/* Single File Preview */}
-                    {values.profile_image && (
+                    {/* Upload spinner or existing photo preview */}
+                    {photoUploading ? (
+                        <div className="mt-3 flex items-center gap-3 bg-white/[0.03] border border-white/5 px-3 py-2.5 rounded-xl">
+                            <div className="w-6 h-6 border-2 border-white/20 border-t-primary rounded-full animate-spin flex-shrink-0" />
+                            <span className="text-xs font-bold text-foreground/50">Uploading {photoProgress}%</span>
+                        </div>
+                    ) : values.profile_image && typeof values.profile_image === 'string' ? (
                         <div className="mt-3">
                             <div className="flex items-center justify-between gap-3 bg-white/[0.03] border border-white/5 px-3 py-2.5 rounded-xl group/file">
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <img
-                                        src={URL.createObjectURL(values.profile_image)}
+                                        src={values.profile_image}
                                         className="w-8 h-8 object-cover rounded-lg bg-black/20 flex-shrink-0"
-                                        alt={values.profile_image.name}
+                                        alt="Profile"
                                     />
                                     <span className="text-xs font-bold text-foreground/80 truncate">
-                                        {values.profile_image.name}
+                                        Photo uploaded ✓
                                     </span>
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setFieldValue('profile_image', null);
-                                    }}
+                                    onClick={() => setFieldValue('profile_image', null)}
                                     className="text-foreground/30 hover:text-red-400 p-1 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
                                 >
                                     <Dismiss20Regular className="h-4 w-4" />
                                 </button>
                             </div>
                         </div>
-                    )}
+                    ) : null}
                     <ErrorMessage name="profile_image" component="div" className={styles.error} />
                 </div>
 
@@ -304,9 +334,16 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                             className="hidden"
                             multiple
                             accept="image/*"
-                            onChange={(e) => {
+                            onChange={async (e) => {
                                 const newFiles = Array.from(e.currentTarget.files || []);
-                                setFieldValue('certifications', [...values.certifications, ...newFiles]);
+                                if (!newFiles.length) return;
+                                e.currentTarget.value = '';
+                                setCertsUploading(true);
+                                setCertsProgress(0);
+                                try {
+                                    const paths = await uploadMultipleFiles(newFiles, 'certification', setCertsProgress);
+                                    setFieldValue('certifications', [...values.certifications, ...paths]);
+                                } catch { toast.error('Upload failed'); } finally { setCertsUploading(false); }
                             }}
                         />
                         <ArrowUpload24Regular className={styles.uploadIconSize} />
@@ -316,34 +353,35 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
                         </div>
                     </div>
 
+                    {/* Certs uploading spinner */}
+                    {certsUploading && (
+                        <div className="mt-3 flex items-center gap-3 bg-white/[0.03] border border-white/5 px-3 py-2.5 rounded-xl">
+                            <div className="w-6 h-6 border-2 border-white/20 border-t-primary rounded-full animate-spin flex-shrink-0" />
+                            <span className="text-xs font-bold text-foreground/50">Uploading {certsProgress}%</span>
+                        </div>
+                    )}
                     {/* Files List */}
                     {values.certifications.length > 0 && (
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {values.certifications.map((file: File, index: number) => (
+                            {values.certifications.map((cert: string | File, index: number) => (
                                 <div
                                     key={index}
                                     className="flex items-center justify-between gap-3 bg-white/[0.03] border border-white/5 px-3 py-2.5 rounded-xl group/file"
                                 >
                                     <div className="flex items-center gap-2.5 min-w-0">
-                                        {file.type.startsWith('image/') ? (
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                className="w-8 h-8 object-cover rounded-lg bg-black/20 flex-shrink-0"
-                                                alt={file.name}
-                                            />
-                                        ) : (
-                                            <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 font-bold text-[9px] uppercase flex-shrink-0">
-                                                {file.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'DOC'}
-                                            </div>
-                                        )}
+                                        <img
+                                            src={typeof cert === 'string' ? cert : URL.createObjectURL(cert)}
+                                            className="w-8 h-8 object-cover rounded-lg bg-black/20 flex-shrink-0"
+                                            alt={`cert-${index}`}
+                                        />
                                         <span className="text-xs font-bold text-foreground/80 truncate">
-                                            {file.name}
+                                            {typeof cert === 'string' ? `Cert ${index + 1} ✓` : cert.name}
                                         </span>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            const updatedFiles = values.certifications.filter((_: File, i: number) => i !== index);
+                                            const updatedFiles = values.certifications.filter((_: any, i: number) => i !== index);
                                             setFieldValue('certifications', updatedFiles);
                                         }}
                                         className="text-foreground/30 hover:text-red-400 p-1 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
@@ -376,7 +414,7 @@ export function CoachFormInner({ isSubmitting, values, setFieldValue }: CoachFor
             <div className={styles.submitWrapper}>
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || photoUploading || certsUploading}
                     className={styles.submitButton}
                 >
                     {isSubmitting ? (

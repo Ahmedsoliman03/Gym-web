@@ -3,13 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
 import { Story, StoryViewersResponse } from '../types';
 
-export const createStory = async (file: File): Promise<void> => {
-    const formData = new FormData();
-    formData.append('durationHours', '24');
-    formData.append('media', file);
-
-    await api.post('/api/community/stories', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+export const createStory = async (media: string[]): Promise<void> => {
+    // `media` is an array of R2 file paths (temp/...) from the direct-upload flow.
+    // The backend accepts them as string paths (see upload-img.md / postman README).
+    await api.post('/api/community/stories', {
+        durationHours: 24,
+        media,
     });
 };
 

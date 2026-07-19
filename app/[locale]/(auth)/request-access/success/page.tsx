@@ -3,6 +3,15 @@
 import { useTranslations } from 'next-intl';
 import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
 import { Link } from '@/i18n/routing';
+import { useState, useEffect } from 'react';
+import { useAuthRequest } from '@/features/auth/hooks/useAuthRequest';
+import { useResendCooldown } from '@/features/auth/hooks/useResendCooldown';
+import toast from 'react-hot-toast';
+import { toastApiError } from '@/utils/toast-api-error';
+import type { OtpChannel } from '@/features/auth/types';
+
+const METHOD_KEY = 'request-access-otp-method';
+const RESEND_UNTIL_KEY = 'request-access-resend-until';
 
 const styles = {
   container: "flex flex-col items-center justify-center min-h-[400px] text-center space-y-8 py-12 px-4",
@@ -19,6 +28,41 @@ const styles = {
 
 export default function RequestAccessSuccessPage() {
     const t = useTranslations();
+    const { resendActivation, resendActivationMutation } = useAuthRequest();
+    const [email, setEmail] = useState<string | null>(null);
+    const [method, setMethod] = useState<OtpChannel>('whatsapp');
+    const { secondsLeft, isCoolingDown, start: startCooldown } = useResendCooldown({
+        storageKey: RESEND_UNTIL_KEY,
+    });
+
+    useEffect(() => {
+        const stored = sessionStorage.getItem('request-access-email');
+        if (stored) {
+            setEmail(stored);
+        }
+        // Restore the previously chosen channel so a reload/lang-switch keeps state.
+        const storedMethod = localStorage.getItem(METHOD_KEY);
+        if (storedMethod === 'email' || storedMethod === 'whatsapp') {
+            setMethod(storedMethod);
+        }
+    }, []);
+
+    const isSwitchDisabled = resendActivationMutation.isPending || isCoolingDown;
+
+    const handleSwitchMethod = async () => {
+        if (!email || isSwitchDisabled) return;
+        const nextMethod: OtpChannel = method === 'whatsapp' ? 'email' : 'whatsapp';
+        try {
+            await resendActivation({ email, verification_method: nextMethod });
+            setMethod(nextMethod);
+            localStorage.setItem(METHOD_KEY, nextMethod);
+            // Start a fresh 15s cooldown, persisted so it survives reload/lang-switch.
+            startCooldown();
+            toast.success(t('Auth.activationCodeSent'));
+        } catch (error) {
+            toastApiError(error, t('Validation.error'));
+        }
+    };
 
     return (
         <div className={styles.container}>
@@ -32,6 +76,33 @@ export default function RequestAccessSuccessPage() {
                 <p className={styles.description}>
                     {t('Auth.requestAccessSuccessDesc')}
                 </p>
+            </div>
+
+            <div className="w-full max-w-md bg-white/2 border border-white/5 rounded-2xl p-5 space-y-4 text-center">
+                {/* Always tell the user where the code is going (WhatsApp by default). */}
+                <p className="text-center text-[12px] font-semibold text-primary bg-primary/5 border border-primary/15 rounded-xl py-2.5 px-4">
+                    {method === 'whatsapp'
+                        ? t('Auth.channelHintWhatsapp')
+                        : t('Auth.channelHintEmail')}
+                </p>
+                {email && (
+                    <button
+                        type="button"
+                        onClick={handleSwitchMethod}
+                        disabled={isSwitchDisabled}
+                        className="w-full py-4 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/45 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary/10"
+                    >
+                        {resendActivationMutation.isPending ? (
+                            <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        ) : isCoolingDown ? (
+                            t('Auth.resendCountdown', { seconds: secondsLeft })
+                        ) : method === 'whatsapp' ? (
+                            t('Auth.sendAsEmail')
+                        ) : (
+                            t('Auth.sendViaWhatsapp')
+                        )}
+                    </button>
+                )}
             </div>
 
             <div className={styles.actionWrapper}>

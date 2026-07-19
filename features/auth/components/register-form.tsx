@@ -4,7 +4,15 @@ import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getRegisterSchema } from '../validations';
 import { useAuthUser } from '../hooks/useAuthUser';
-import { RegisterFormValues, OTP_TIMER_SECONDS, OTP_TIMER_KEY } from '../types';
+import {
+    RegisterFormValues,
+    OTP_TIMER_SECONDS,
+    OTP_TIMER_KEY,
+    OTP_CHANNEL_KEY,
+    OTP_SWITCH_COOLDOWN_KEY,
+    OTP_EMAIL_KEY,
+    DEFAULT_OTP_CHANNEL,
+} from '../types';
 import {
     SpinnerIos20Regular,
     Eye24Regular,
@@ -130,6 +138,8 @@ export default function RegisterForm() {
                             ...rest,
                             city: city.trim(),
                             area: area.trim(),
+                            // Registration always delivers the first code via WhatsApp.
+                            verification_method: DEFAULT_OTP_CHANNEL,
                         };
                         await register(payload);
                         // Open a fresh 5-minute OTP window; the verify-otp page
@@ -139,9 +149,16 @@ export default function RegisterForm() {
                             OTP_TIMER_KEY,
                             String(Date.now() + OTP_TIMER_SECONDS * 1000),
                         );
+                        // Reset the persisted channel to WhatsApp and drop any
+                        // stale switch cooldown so the verify-otp screen shows the
+                        // WhatsApp text/button for this fresh registration.
+                        localStorage.setItem(OTP_CHANNEL_KEY, DEFAULT_OTP_CHANNEL);
+                        localStorage.removeItem(OTP_SWITCH_COOLDOWN_KEY);
+                       
+                        localStorage.setItem(OTP_EMAIL_KEY, values.email);
                         clearFormDraft('draft:register');
                         toast.success(t('Auth.otpSent'));
-                        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
+                        router.push('/verify-otp');
                     } catch (error) {
                         toastApiError(error, t('Validation.error'));
                     }

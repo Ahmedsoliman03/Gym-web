@@ -8,6 +8,8 @@ interface StoryPreviewModalProps {
     isOpen: boolean;
     previewUrl: string | null;
     isPublishing: boolean;
+    /** Direct-to-R2 upload progress (0-100). While < 100 the button shows the percentage. */
+    uploadProgress?: number | null;
     onCancel: () => void;
     onPublish: () => void;
 }
@@ -33,6 +35,7 @@ export function StoryPreviewModal({
     isOpen,
     previewUrl,
     isPublishing,
+    uploadProgress,
     onCancel,
     onPublish,
 }: StoryPreviewModalProps) {
@@ -101,7 +104,11 @@ export function StoryPreviewModal({
                         className={styles.publishBtn}
                     >
                         {isPublishing && <span className={styles.spinner} />}
-                        {isPublishing ? t('publishing') : t('publish')}
+                        {isPublishing
+                            ? (uploadProgress != null && uploadProgress < 100
+                                ? `Uploading ${uploadProgress}%`
+                                : t('publishing'))
+                            : t('publish')}
                     </button>
                 </div>
             </div>

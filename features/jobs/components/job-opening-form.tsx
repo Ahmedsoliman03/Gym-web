@@ -2,16 +2,18 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import toast from 'react-hot-toast';
 import { SpecializationSelect } from '@/features/jobs/components/specialization-select';
 import { PostImageUpload } from '@/components/shared/post-image-upload';
 import { LiveValidate } from '@/components/shared/live-validate';
+import { useR2Upload } from '@/hooks/use-r2-upload';
 
 interface JobOpeningFormProps {
   onSubmit: (values: {
     title: string;
     specialization: string;
     desc: string;
-    image: File | null;
+    image: string | null;
   }) => void;
 }
 
@@ -35,6 +37,7 @@ const buildJobSchema = (t: (k: string) => string) =>
 
 export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
   const t = useTranslations('Jobs');
+  const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
   return (
     <Formik
@@ -45,8 +48,22 @@ export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
         image: null as File | null,
       }}
       validationSchema={buildJobSchema(t)}
-      onSubmit={(values) => {
-        onSubmit(values);
+      onSubmit={async (values) => {
+        let imagePath: string | null = null;
+        if (values.image) {
+          try {
+            imagePath = await uploadFile(values.image, 'gym_photo');
+          } catch {
+            toast.error('Upload failed');
+            return;
+          }
+        }
+        onSubmit({
+          title: values.title,
+          specialization: values.specialization,
+          desc: values.desc,
+          image: imagePath,
+        });
       }}
     >
       {({ setFieldValue, values, isSubmitting }) => (
@@ -89,9 +106,9 @@ export function JobOpeningForm({ onSubmit }: JobOpeningFormProps) {
           />
 
           {/* Submit */}
-          <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+          <button type="submit" className={styles.submitBtn} disabled={isSubmitting || isUploading}>
             <Zap size={18} fill="currentColor" />
-            {t('publishPost')}
+            {isUploading ? `Uploading ${uploadProgress}%` : t('publishPost')}
           </button>
         </Form>
       )}

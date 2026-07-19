@@ -9,6 +9,7 @@ import { UserProfile } from "../types";
 import * as Yup from "yup";
 import { getPhoneSchema, getFullNameSchema } from "@/utils/validations";
 import { WeightProgress } from "./WeightProgress";
+import { useR2Upload } from "@/hooks/use-r2-upload";
 
 const styles = {
   container: "max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500",
@@ -39,11 +40,12 @@ const styles = {
 export const ClientProfileView = ({ data }: { data: UserProfile }) => {
   const t = useTranslations();
   const { updateProfile, updateProfileMutation } = useProfileUser();
+  const { uploadFile, isUploading, uploadProgress } = useR2Upload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(data.fullName || "");
   const [phone, setPhone] = useState(data.phone || "");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ fullName?: string; phone?: string }>({});
 
@@ -51,27 +53,32 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
   useEffect(() => {
     setFullName(data.fullName || "");
     setPhone(data.phone || "");
-    setSelectedFile(null);
+    setUploadedPhotoPath(null);
     setPreviewUrl(null);
     setErrors({});
   }, [data]);
 
-  const isDirty = fullName.trim() !== data.fullName || phone.trim() !== data.phone || selectedFile !== null;
+  const isDirty = fullName.trim() !== data.fullName || phone.trim() !== data.phone || uploadedPhotoPath !== null;
   const isSaving = updateProfileMutation.isPending;
 
   const handleReset = () => {
     setFullName(data.fullName || "");
     setPhone(data.phone || "");
-    setSelectedFile(null);
+    setUploadedPhotoPath(null);
     setPreviewUrl(null);
     setErrors({});
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (!file) return;
+    setPreviewUrl(URL.createObjectURL(file));
+    e.target.value = '';
+    try {
+      const path = await uploadFile(file, 'profile_photo');
+      setUploadedPhotoPath(path);
+    } catch {
+      toast.error('Upload failed');
     }
   };
 
@@ -110,8 +117,8 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
       const formData = new FormData();
       formData.append('fullName', fullName.trim());
       formData.append('phone', phone.trim());
-      if (selectedFile) {
-        formData.append('photo', selectedFile);
+      if (uploadedPhotoPath) {
+        formData.append('photo', uploadedPhotoPath);
       }
       await updateProfile(formData);
       toast.success(t('Navbar.changePasswordSuccess') || 'Changes saved successfully!');
@@ -163,9 +170,15 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
               {getInitials(fullName)}
             </div>
           )}
-          <div className={styles.avatarOverlay}>
-            <Plus size={24} className="transform group-hover/avatar:scale-110 transition-transform" />
-          </div>
+          {isUploading ? (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xs rounded-full z-20">
+              {uploadProgress}%
+            </div>
+          ) : (
+            <div className={styles.avatarOverlay}>
+              <Plus size={24} className="transform group-hover/avatar:scale-110 transition-transform" />
+            </div>
+          )}
         </div>
 
         {/* Hidden File Input */}
@@ -264,11 +277,11 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
 
             <button
               type="submit"
-              disabled={!isDirty || isSaving}
+              disabled={!isDirty || isSaving || isUploading}
               className={styles.saveBtn}
             >
               <Save size={16} />
-              {isSaving ? '...' : (t('Profile.saveProfile') || 'Save Changes')}
+              {isSaving ? '...' : isUploading ? `Uploading ${uploadProgress}%` : (t('Profile.saveProfile') || 'Save Changes')}
             </button>
           </div>
         </form>

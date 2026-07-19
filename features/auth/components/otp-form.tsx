@@ -6,10 +6,17 @@ import { useTranslations } from 'next-intl';
 import { getOtpSchema } from '../validations';
 import { SpinnerIos20Regular, ArrowRight24Regular } from '@fluentui/react-icons';
 import { useAuthUser } from '../hooks/useAuthUser';
-import { OTP_TIMER_SECONDS, OTP_TIMER_KEY } from '../types';
+import { useResendCooldown } from '../hooks/useResendCooldown';
+import {
+    OTP_TIMER_SECONDS,
+    OTP_TIMER_KEY,
+    OTP_CHANNEL_KEY,
+    OTP_SWITCH_COOLDOWN_KEY,
+    OTP_EMAIL_KEY,
+    DEFAULT_OTP_CHANNEL,
+} from '../types';
 import type { OtpChannel } from '../types';
 import { useRouter, Link } from '@/i18n/routing';
-import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { toastApiError } from '@/utils/toast-api-error';
@@ -39,50 +46,47 @@ const styles = {
     switchButton: "w-full py-4 bg-primary/10 text-primary border border-primary/40 rounded-xl font-semibold enabled:hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer text-base"
 };
 
-const SWITCH_COOLDOWN_MS = 15 * 1000;
 const OTP_TIMER_MS = OTP_TIMER_SECONDS * 1000;
-const OTP_TYPE_KEY = 'otp:channel';
-const OTP_COOLDOWN_KEY = 'otp:switchCooldownUntil';
 
 export default function OtpForm() {
     const t = useTranslations();
     const router = useRouter();
 
-    const searchParams = useSearchParams();
-    const email = searchParams.get('email') || '';
     const { verifyOTP, resendOtp } = useAuthUser();
     const validationSchema = getOtpSchema(t);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+    // Email is stashed in localStorage by the register step (not the URL).
+    const [email, setEmail] = useState('');
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timeLeft, setTimeLeft] = useState(OTP_TIMER_SECONDS);
     const [isExpired, setIsExpired] = useState(false);
     const [isResending, setIsResending] = useState(false);
-    const [otpType, setOtpType] = useState<OtpChannel>('whatsapp');
+    const [isSwitching, setIsSwitching] = useState(false);
+    const [otpType, setOtpType] = useState<OtpChannel>(DEFAULT_OTP_CHANNEL);
 
-    // The switch cooldown is stored as an absolute expiry timestamp (epoch ms)
-    // and the visible countdown is derived from a ticking `nowTs`. This makes a
-    // page reload continue the remaining time instead of resetting/ending it.
-    // `nowTs` stays 0 until mounted so SSR/first paint never shows a stale value.
-    const [cooldownUntil, setCooldownUntil] = useState(0);
-    const [nowTs, setNowTs] = useState(0);
+    // Persisted 15s channel-switch cooldown; survives reloads/locale switches.
+    const { secondsLeft: switchCooldown, start: startSwitchCooldown } = useResendCooldown({
+        storageKey: OTP_SWITCH_COOLDOWN_KEY,
+    });
 
-    const switchCooldown =
-        nowTs > 0 && cooldownUntil > nowTs
-            ? Math.ceil((cooldownUntil - nowTs) / 1000)
-            : 0;
-
-    // Restore the persisted channel, the code timer, and the remaining switch
-    // cooldown on mount so a reload or a locale switch continues the running
-    // countdowns instead of restarting them.
+    
     useEffect(() => {
-        const storedType = localStorage.getItem(OTP_TYPE_KEY);
+
+        const storedEmail = localStorage.getItem(OTP_EMAIL_KEY);
+        if (storedEmail) {
+            setEmail(storedEmail);
+        } else {
+            router.replace('/register');
+            return;
+        }
+
+        const storedType = localStorage.getItem(OTP_CHANNEL_KEY);
         if (storedType === 'whatsapp' || storedType === 'email') {
             setOtpType(storedType);
         }
 
-        // 5-minute code timer: continue from the stored expiry, or open a fresh
-        // window on the first visit (also the fallback for direct navigation).
+    
         const timerUntil = Number(localStorage.getItem(OTP_TIMER_KEY)) || 0;
         if (timerUntil) {
             const remaining = Math.ceil((timerUntil - Date.now()) / 1000);
@@ -95,14 +99,6 @@ export default function OtpForm() {
         } else {
             localStorage.setItem(OTP_TIMER_KEY, String(Date.now() + OTP_TIMER_MS));
         }
-
-        const until = Number(localStorage.getItem(OTP_COOLDOWN_KEY)) || 0;
-        if (until > Date.now()) {
-            setCooldownUntil(until);
-        } else if (until) {
-            localStorage.removeItem(OTP_COOLDOWN_KEY);
-        }
-        setNowTs(Date.now());
     }, []);
 
     useEffect(() => {
@@ -118,28 +114,12 @@ export default function OtpForm() {
         return () => clearInterval(timer);
     }, [timeLeft]);
 
-    // Tick `nowTs` while a cooldown is pending; clear it once it elapses.
-    useEffect(() => {
-        if (!cooldownUntil) return;
-
-        const timer = setInterval(() => {
-            const now = Date.now();
-            setNowTs(now);
-            if (now >= cooldownUntil) {
-                localStorage.removeItem(OTP_COOLDOWN_KEY);
-                setCooldownUntil(0);
-            }
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [cooldownUntil]);
-
     const handleVerify = async (code: string, type: OtpChannel): Promise<boolean> => {
         try {
             await verifyOTP({ email, otp: code, type });
-            // Code consumed — drop the persisted timer so a later registration
-            // starts a fresh window instead of reading this stale one.
+           
             localStorage.removeItem(OTP_TIMER_KEY);
+            localStorage.removeItem(OTP_EMAIL_KEY);
             toast.success(t('Auth.registrationSuccess'));
             router.push('/login');
             return true;
@@ -149,15 +129,13 @@ export default function OtpForm() {
         }
     };
 
-    // Hits the dedicated /resend-otp endpoint to issue a fresh code for the
-    // given channel and restarts the 5-minute expiry.
+
     const sendCode = async (type: OtpChannel): Promise<boolean> => {
         if (!email) {
             toast.error(t('Validation.error'));
             return false;
         }
 
-        setIsResending(true);
         try {
             await resendOtp({ email, verification_method: type });
             toast.success(t('Auth.otpSent'));
@@ -168,28 +146,33 @@ export default function OtpForm() {
         } catch (error) {
             toastApiError(error, t('Validation.error'));
             return false;
+        }
+    };
+
+    // Small button under the timer: resend through the same channel.
+    const handleResend = async () => {
+        setIsResending(true);
+        try {
+            await sendCode(otpType);
         } finally {
             setIsResending(false);
         }
     };
 
-    // Small button under the timer: resend through the same channel.
-    const handleResend = () => sendCode(otpType);
 
-    // Big button: change the delivery channel and send the code through it.
-    // Starts the persisted 15s cooldown so the channel can't be flipped rapidly.
     const handleSwitchType = async () => {
-        const next: OtpChannel = otpType === 'whatsapp' ? 'email' : 'whatsapp';
-        const sent = await sendCode(next);
-        if (!sent) return;
+        setIsSwitching(true);
+        try {
+            const next: OtpChannel = otpType === 'whatsapp' ? 'email' : 'whatsapp';
+            const sent = await sendCode(next);
+            if (!sent) return;
 
-        setOtpType(next);
-        localStorage.setItem(OTP_TYPE_KEY, next);
-
-        const until = Date.now() + SWITCH_COOLDOWN_MS;
-        setCooldownUntil(until);
-        setNowTs(Date.now());
-        localStorage.setItem(OTP_COOLDOWN_KEY, String(until));
+            setOtpType(next);
+            localStorage.setItem(OTP_CHANNEL_KEY, next);
+            startSwitchCooldown();
+        } finally {
+            setIsSwitching(false);
+        }
     };
 
     const handleChange = (
@@ -295,21 +278,21 @@ export default function OtpForm() {
                                     {t('Auth.timeRemaining', { time: formatCountdown(timeLeft) })}
                                 </p>
                             )}
-
-                            <button
-                                type="button"
-                                onClick={handleResend}
-                                disabled={isResending || timeLeft > 0}
-                                className={styles.resendButton}
-                            >
-                                {isResending ? (
-                                    <SpinnerIos20Regular className="animate-spin" />
-                                ) : otpType === 'whatsapp' ? (
-                                    t('Auth.resendViaWhatsapp')
-                                ) : (
-                                    t('Auth.resendViaEmail')
-                                )}
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={handleResend}
+                                    disabled={isResending || timeLeft > 0}
+                                    className={styles.resendButton}
+                                >
+                                    {isResending ? (
+                                        <SpinnerIos20Regular className="animate-spin" />
+                                    ) : otpType === 'whatsapp' ? (
+                                        t('Auth.resendViaWhatsapp')
+                                    ) : (
+                                        t('Auth.resendViaEmail')
+                                    )}
+                                </button>
+                            
                         </div>
 
                         <div className={styles.actions}>
@@ -328,16 +311,14 @@ export default function OtpForm() {
                                 )}
                             </button>
 
-                            {/* Big button: change the delivery channel (and send
-                                the code through it). Disabled during the 15s
-                                cooldown, which survives a page reload. */}
+                     
                             <button
                                 type="button"
                                 onClick={handleSwitchType}
-                                disabled={isResending || switchCooldown > 0}
+                                disabled={isSwitching || switchCooldown > 0}
                                 className={styles.switchButton}
                             >
-                                {isResending ? (
+                                {isSwitching ? (
                                     <SpinnerIos20Regular className="animate-spin" />
                                 ) : switchCooldown > 0 ? (
                                     t('Auth.timeRemaining', { time: formatCountdown(switchCooldown) })

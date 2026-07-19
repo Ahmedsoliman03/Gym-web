@@ -11,6 +11,7 @@ import { useFileDrop } from '@/hooks/use-file-drop';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { useApplyForJobMutation } from '../services/jobs.service';
 import type { Job } from '../types';
+import { useR2Upload } from '@/hooks/use-r2-upload';
 
 interface ApplyJobModalProps {
     job: Job | null;
@@ -41,15 +42,42 @@ const styles = {
 
 function CvField() {
     const t = useTranslations('Jobs');
-    const { values, setFieldValue } = useFormikContext<{ cv: File | null }>();
+    const { values, setFieldValue } = useFormikContext<{ cv: File | null | string }>();
     const cv = values.cv;
+    const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
     const { isDragging, dropHandlers } = useFileDrop({
-        onFiles: (files) => setFieldValue('cv', files[0]),
+        onFiles: async (files) => {
+            const file = files[0];
+            setFieldValue('cv', file);
+            try {
+                const path = await uploadFile(file, 'cv');
+                setFieldValue('cv', path);
+            } catch {
+                toast.error('Upload failed');
+                setFieldValue('cv', null);
+            }
+        },
     });
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.currentTarget.files?.[0];
+        if (!file) return;
+        e.currentTarget.value = '';
+        setFieldValue('cv', file);
+        try {
+            const path = await uploadFile(file, 'cv');
+            setFieldValue('cv', path);
+        } catch {
+            toast.error('Upload failed');
+            setFieldValue('cv', null);
+        }
+    };
 
     const openPicker = () =>
         (document.getElementById('cv-upload') as HTMLInputElement | null)?.click();
+
+    const cvName = cv instanceof File ? cv.name : typeof cv === 'string' ? cv.split('/').pop() : null;
 
     return (
         <div>
@@ -64,14 +92,20 @@ function CvField() {
                         id="cv-upload"
                         type="file"
                         className="hidden"
-                        onChange={(e) => setFieldValue('cv', e.currentTarget.files?.[0])}
+                        onChange={handleFileChange}
                     />
                     <span className={styles.uploadIconSelected}>
-                        <FileCheck2 size={18} />
+                        {isUploading ? (
+                            <span className="text-xs font-bold">{uploadProgress}%</span>
+                        ) : (
+                            <FileCheck2 size={18} />
+                        )}
                     </span>
                     <div className={styles.uploadDetails}>
-                        <p className={styles.uploadFilename}>{cv.name}</p>
-                        <p className={styles.uploadHint}>{t('cvSelected')}</p>
+                        <p className={styles.uploadFilename}>{cvName}</p>
+                        <p className={styles.uploadHint}>
+                            {isUploading ? `Uploading ${uploadProgress}%` : t('cvSelected')}
+                        </p>
                     </div>
                     <button
                         type="button"
@@ -97,7 +131,7 @@ function CvField() {
                         id="cv-upload"
                         type="file"
                         className="hidden"
-                        onChange={(e) => setFieldValue('cv', e.currentTarget.files?.[0])}
+                        onChange={handleFileChange}
                     />
                     <Upload className="text-foreground/20" />
                     <span className="text-xs text-foreground/40 font-medium">
@@ -114,6 +148,9 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
     const t = useTranslations('Jobs');
     const applyMutation = useApplyForJobMutation();
     const { profile } = useProfileUser();
+    // Fallback for the rare case the CV file hasn't finished its direct upload
+    // by submit time (CvField normally uploads on selection and stores the path).
+    const { uploadFile, isUploading, uploadProgress } = useR2Upload();
 
     if (!job) return null;
 
@@ -143,13 +180,16 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
                 onSubmit={async (values, { resetForm }) => {
                     if (!values.cv) return;
                     try {
+                        const cvPayload = typeof values.cv === 'string'
+                            ? values.cv
+                            : await uploadFile(values.cv as File, 'cv');
                         await applyMutation.mutateAsync({
                             jobId: job.id,
                             fullName: values.name,
                             email: values.email,
                             whatsappNumber: values.whatsapp,
                             headline: values.description,
-                            cv: values.cv,
+                            cv: cvPayload as any,
                         });
                         toast.success(t('applySuccess'));
                         resetForm();
@@ -198,10 +238,12 @@ export function ApplyJobModal({ job, onClose }: ApplyJobModalProps) {
                         <button
                             type="submit"
                             className={styles.submitButton}
-                            disabled={applyMutation.isPending}
+                            disabled={applyMutation.isPending || isUploading}
                         >
                             {applyMutation.isPending
                                 ? t('applySubmitting')
+                                : isUploading
+                                ? `Uploading ${uploadProgress}%`
                                 : t('submitApplication')}
                         </button>
                     </Form>

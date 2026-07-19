@@ -134,7 +134,7 @@ export const useRequestAccessMutation = () => {
                     } else if (Array.isArray(value)) {
                         value.forEach((v) => {
                             if (v instanceof File) {
-                                formData.append(`${key}`, v); // Backend usually handles multi-files with same key or key[]
+                                formData.append(`${key}`, v);
                             } else {
                                 formData.append(`${key}[]`, String(v));
                             }

@@ -137,7 +137,8 @@ export const getGoogleSignupCompleteSchema = (t: Translator) => Yup.object().sha
 });
 
 export const getActivateProfileSchema = (t: Translator) => Yup.object().shape({
-    email: getEmailSchema(t),
+    // Email lives in the "send code" modal now (only needed to resend/switch the
+    // delivery channel), so it's no longer part of the activation submit.
     inviteCode: Yup.string().length(8, t('Validation.min', { field: t('Auth.inviteCode'), min: 8 })).required(t('Validation.required', { field: t('Auth.inviteCode') })),
     password: getPasswordSchema(t),
     confirmPassword: Yup.string()
