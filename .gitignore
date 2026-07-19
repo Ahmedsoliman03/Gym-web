@@ -31,8 +31,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-#.env*
-#!.env.example
+.env
+.env*.local
+!.env.example
 
 # vercel
 .vercel
@@ -47,3 +48,4 @@ CLAUDE.md
 /postman/GymSpot_Auth_API.postman_collection.json
 /postman/README.md
 /GymSpot Pricing Plans.pdf
+/upload-img.md
