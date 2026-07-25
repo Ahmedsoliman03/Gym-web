@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+import { api } from '@/utils/axios';
 import { Link } from '@/i18n/routing';
 import { SharePostModal } from '@/components/shared/share-post-modal';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -107,10 +108,48 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
     const [closeOpen, setCloseOpen] = useState(false);
     const [reopenOpen, setReopenOpen] = useState(false);
     const [contentExpanded, setContentExpanded] = useState(false);
+    const [translatedContent, setTranslatedContent] = useState<string | null>(null);
+    const [showTranslation, setShowTranslation] = useState(false);
+    const [isTranslating, setIsTranslating] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const CONTENT_TRUNCATE_AT = 240;
-    const contentNeedsToggle = (job.content?.length ?? 0) > CONTENT_TRUNCATE_AT;
+    const displayedContent =
+        showTranslation && translatedContent ? translatedContent : job.content;
+    const targetLanguage = locale === 'ar' ? 'en' : 'ar';
+    const contentNeedsToggle = (displayedContent?.length ?? 0) > CONTENT_TRUNCATE_AT;
+
+    const handleTranslate = async () => {
+        if (!job.content) return;
+
+        if (translatedContent) {
+            setShowTranslation((current) => !current);
+            return;
+        }
+
+        setIsTranslating(true);
+
+        try {
+            const { data } = await api.post<{ translations: string[] }>(
+                '/api/core/translate/',
+                {
+                    texts: [job.content],
+                    targetLanguage,
+                },
+            );
+            const translation = data.translations?.[0];
+
+            if (!translation) throw new Error('Empty translation response');
+
+            setTranslatedContent(translation);
+            setShowTranslation(true);
+            setContentExpanded(true);
+        } catch {
+            toast.error(t('translationFailed'));
+        } finally {
+            setIsTranslating(false);
+        }
+    };
 
     const jobUrl = typeof window !== 'undefined'
         ? `${window.location.origin}/${locale}/jobs/${job.id}`
@@ -332,7 +371,7 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                                         : styles.descriptionClamped
                                 }
                             >
-                                {job.content}
+                                {displayedContent}
                             </p>
                             {contentNeedsToggle && (
                                 <button
@@ -343,6 +382,18 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                                     {contentExpanded ? t('seeLess') : t('seeMore')}
                                 </button>
                             )}
+                            <button
+                                type="button"
+                                onClick={handleTranslate}
+                                disabled={isTranslating}
+                                className={`${styles.seeMoreBtn} block disabled:cursor-not-allowed disabled:opacity-60`}
+                            >
+                                {isTranslating
+                                    ? t('translating')
+                                    : showTranslation
+                                        ? t('seeOriginal')
+                                        : t('seeTranslation')}
+                            </button>
                         </>
                     )}
                 </div>

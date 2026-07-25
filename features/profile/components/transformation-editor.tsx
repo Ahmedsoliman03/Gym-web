@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { ImageLightbox } from "@/components/shared/image-lightbox";
 import type { TransformationEditorProps, TransformationItem } from "../types";
 import { useR2Upload } from "@/hooks/use-r2-upload";
+import { applyUploadedTransformationPath } from "../utils/uploaded-media";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -35,11 +36,24 @@ const previewSrc = (image: string | File): string => {
 export const TransformationEditor = ({
   transformations,
   onChange,
+  onUploadingChange,
 }: TransformationEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
   const { uploadFile } = useR2Upload();
   const [uploadingIds, setUploadingIds] = useState<Record<string, number>>({});
+  const [failedIds, setFailedIds] = useState<Record<string, true>>({});
+  const latestTransformationsRef = useRef(transformations);
+
+  useEffect(() => {
+    latestTransformationsRef.current = transformations;
+  }, [transformations]);
+
+  useEffect(() => {
+    onUploadingChange?.(
+      Object.keys(uploadingIds).length > 0 || Object.keys(failedIds).length > 0,
+    );
+  }, [failedIds, onUploadingChange, uploadingIds]);
 
   const [lightbox, setLightbox] = useState({
     isOpen: false,
@@ -64,6 +78,11 @@ export const TransformationEditor = ({
   };
 
   const handleRemove = (id: string) => {
+    setFailedIds((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     onChange(transformations.filter(item => item.id !== id));
   };
 
@@ -72,9 +91,11 @@ export const TransformationEditor = ({
     field: keyof TransformationItem,
     value: string | File,
   ) => {
-    onChange(transformations.map(item =>
+    const next = latestTransformationsRef.current.map(item =>
       item.id === id ? { ...item, [field]: value } as TransformationItem : item
-    ));
+    );
+    latestTransformationsRef.current = next;
+    onChange(next);
   };
 
   const handleImageChange = async (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,15 +106,24 @@ export const TransformationEditor = ({
     e.target.value = '';
 
     setUploadingIds((prev) => ({ ...prev, [id]: 0 }));
+    setFailedIds((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     try {
       const path = await uploadFile(file, 'gym_photo', (percent) =>
         setUploadingIds((prev) => ({ ...prev, [id]: percent }))
       );
-      // Replace the File blob with the uploaded path string
-      onChange(transformations.map((item) =>
-        item.id === id ? { ...item, image: path } : item
-      ));
+      const next = applyUploadedTransformationPath(
+        latestTransformationsRef.current,
+        id,
+        path,
+      );
+      latestTransformationsRef.current = next;
+      onChange(next);
     } catch (err) {
+      setFailedIds((prev) => ({ ...prev, [id]: true }));
       toast.error('Upload failed');
     } finally {
       setUploadingIds((prev) => {

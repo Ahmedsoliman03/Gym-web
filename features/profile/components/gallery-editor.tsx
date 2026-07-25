@@ -7,6 +7,10 @@ import toast from "react-hot-toast";
 import { ImageLightbox } from "@/components/shared/image-lightbox";
 import type { EditableImage, GalleryEditorProps } from "@/features/profile/types";
 import { useR2Upload } from "@/hooks/use-r2-upload";
+import {
+  applyUploadedGalleryPath,
+  getEditableImagePreviewSource,
+} from "../utils/uploaded-media";
 
 const styles = {
   section: "space-y-8 pt-8 border-t border-white/5",
@@ -20,28 +24,36 @@ const styles = {
   addBtn: "min-w-[200px] md:min-w-[240px] aspect-square flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/5 rounded-2xl text-foreground/20 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all group active:scale-95",
 };
 
-const previewSrc = (img: EditableImage): string => {
-  if (img.url) return img.url;
-  if (img.file) return URL.createObjectURL(img.file);
-  return '';
-};
-
 export const GalleryEditor = ({
   images,
   onChange,
+  onUploadingChange,
   title,
 }: GalleryEditorProps) => {
   const t = useTranslations("Profile");
   const sliderRef = useRef<HTMLDivElement>(null);
   const { uploadFile } = useR2Upload();
   const [uploadingIndexes, setUploadingIndexes] = useState<Record<number, number>>({});
+  const [failedIndexes, setFailedIndexes] = useState<Record<number, true>>({});
+  const [batchUploading, setBatchUploading] = useState(false);
+
+  useEffect(() => {
+    onUploadingChange?.(
+      batchUploading ||
+      Object.keys(uploadingIndexes).length > 0 ||
+      Object.keys(failedIndexes).length > 0,
+    );
+  }, [batchUploading, failedIndexes, onUploadingChange, uploadingIndexes]);
 
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     index: 0
   });
 
-  const previews = useMemo(() => images.map(previewSrc), [images]);
+  const previews = useMemo(
+    () => images.map((image) => getEditableImagePreviewSource(image)),
+    [images],
+  );
   useEffect(() => {
     return () => {
       previews.forEach((src) => {
@@ -59,7 +71,7 @@ export const GalleryEditor = ({
 
   const handleAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files?.length) return;
     const startIdx = images.length;
     // Add placeholders first so the user sees a preview immediately
     const placeholders: EditableImage[] = Array.from(files).map((file) => ({ file }));
@@ -67,31 +79,41 @@ export const GalleryEditor = ({
     onChange(current);
     e.target.value = '';
 
-    // Upload each file and replace the placeholder with the URL string
-    for (let i = 0; i < placeholders.length; i++) {
-      const absIdx = startIdx + i;
-      setUploadingIndexes((prev) => ({ ...prev, [absIdx]: 0 }));
-      try {
-        const path = await uploadFile(placeholders[i].file!, 'gym_photo', (percent) =>
-          setUploadingIndexes((prev) => ({ ...prev, [absIdx]: percent }))
-        );
-        current = current.map((img, idx) =>
-          idx === absIdx ? { url: path } : img
-        );
-        onChange(current);
-      } catch (err) {
-        toast.error('Upload failed');
-      } finally {
-        setUploadingIndexes((prev) => {
-          const copy = { ...prev };
-          delete copy[absIdx];
-          return copy;
-        });
+    setBatchUploading(true);
+    try {
+      // Upload each file and replace the placeholder with the URL string
+      for (let i = 0; i < placeholders.length; i++) {
+        const absIdx = startIdx + i;
+        setUploadingIndexes((prev) => ({ ...prev, [absIdx]: 0 }));
+        try {
+          const path = await uploadFile(placeholders[i].file!, 'gym_photo', (percent) =>
+            setUploadingIndexes((prev) => ({ ...prev, [absIdx]: percent }))
+          );
+          current = applyUploadedGalleryPath(current, absIdx, path);
+          onChange(current);
+        } catch (err) {
+          setFailedIndexes((prev) => ({ ...prev, [absIdx]: true }));
+          toast.error('Upload failed');
+        } finally {
+          setUploadingIndexes((prev) => {
+            const copy = { ...prev };
+            delete copy[absIdx];
+            return copy;
+          });
+        }
       }
+    } finally {
+      setBatchUploading(false);
     }
   };
 
   const handleRemove = (index: number) => {
+    setFailedIndexes((prev) => Object.fromEntries(
+      Object.keys(prev)
+        .map(Number)
+        .filter((failedIndex) => failedIndex !== index)
+        .map((failedIndex) => [failedIndex > index ? failedIndex - 1 : failedIndex, true]),
+    ));
     onChange(images.filter((_, i) => i !== index));
   };
 
@@ -179,4 +201,3 @@ export const GalleryEditor = ({
     </div>
   );
 };
-

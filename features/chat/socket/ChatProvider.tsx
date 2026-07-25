@@ -57,7 +57,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
 
     const wsRef = useRef<WebSocket | null>(null);
     const connectGenRef = useRef(0);
-    const lastInboundAtRef = useRef<number>(0);
     const activeConversationIdRef = useRef<string | null>(null);
     const pendingCatchupRef = useRef(false);
     const isLoggedInRef = useRef(isLoggedIn);
@@ -120,15 +119,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
                     }
                 },
                 isConnected: () => wsRef.current?.readyState === WebSocket.OPEN,
-                getLastInboundAt: () => lastInboundAtRef.current,
-                onStale: () => {
-                    const ws = wsRef.current;
-                    try {
-                        ws?.close(4000, 'stale');
-                    } catch {
-                        /* noop */
-                    }
-                },
             }),
         [],
     );
@@ -249,7 +239,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
             setLastError(null);
             setGaveUp(false);
             reconnector.reset();
-            lastInboundAtRef.current = Date.now();
             heartbeat.start();
 
             const settings = qc.getQueryData<ChatSettings>(chatKeys.settings);
@@ -275,7 +264,6 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
 
         ws.addEventListener('message', (e) => {
             if (wsRef.current !== ws) return;
-            lastInboundAtRef.current = Date.now();
             let payload: ChatServerEvent;
             try {
                 payload = JSON.parse(typeof e.data === 'string' ? e.data : '');

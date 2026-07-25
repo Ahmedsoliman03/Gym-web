@@ -63,6 +63,7 @@ export const ClientEditForm = ({ profile }: ClientEditFormProps) => {
   const triggerFileInput = () => fileInputRef.current?.click();
 
   const handleSave = async () => {
+    if (updateMutation.isPending || isUploading) return;
     try {
       const payloadValues: Record<string, any> = {
         fullName: formData.fullName,

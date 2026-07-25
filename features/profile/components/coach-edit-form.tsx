@@ -34,6 +34,7 @@ import {
   useUpdateProfileMutation,
 } from "../services/profile.service";
 import { useR2Upload } from "@/hooks/use-r2-upload";
+import { getTransformationSubmissionImage } from "../utils/uploaded-media";
 
 export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const t = useTranslations("Profile");
@@ -102,6 +103,8 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   });
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [certificationsUploading, setCertificationsUploading] = useState(false);
+  const [transformationsUploading, setTransformationsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
@@ -114,7 +117,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   const newlyAdding = {
     certifications: formData.certifications.filter((c) => c.url && !c.id).length,
     transformation_photos: formData.transformations.filter(
-      (tr) => typeof tr.image === 'string' && tr.image.startsWith('temp/'),
+      (tr) => tr.uploadedPath?.startsWith('temp/'),
     ).length,
   };
   const saveGuard = useProfileSaveGuard(true, newlyAdding);
@@ -175,7 +178,7 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
           id: tr.id,
           clientName: tr.name,
           duration: tr.duration,
-          image: tr.image,
+          image: getTransformationSubmissionImage(tr),
         })),
       };
 
@@ -202,7 +205,13 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
   };
 
   const handleSave = () => {
-    if (updateMutation.isPending) return;
+    if (
+      updateMutation.isPending ||
+      isUploading ||
+      photoUploading ||
+      certificationsUploading ||
+      transformationsUploading
+    ) return;
 
     const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
     if (hasErrors) {
@@ -321,11 +330,13 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
           title={t('certifications')}
           images={formData.certifications}
           onChange={(next) => setFormData((prev) => ({ ...prev, certifications: next }))}
+          onUploadingChange={setCertificationsUploading}
         />
 
         <TransformationEditor
           transformations={formData.transformations}
           onChange={(next) => setFormData((prev) => ({ ...prev, transformations: next }))}
+          onUploadingChange={setTransformationsUploading}
         />
 
         <SocialMediaEditor
@@ -415,11 +426,23 @@ export const CoachEditForm = ({ profile }: CoachEditFormProps) => {
       <div className={styles.actions}>
         <button
           onClick={handleSave}
-          disabled={updateMutation.isPending || isUploading || photoUploading}
+          disabled={
+            updateMutation.isPending ||
+            isUploading ||
+            photoUploading ||
+            certificationsUploading ||
+            transformationsUploading
+          }
           className={styles.saveBtn}
         >
           <Save size={18} />
-          {updateMutation.isPending ? t('saving') : isUploading ? `Uploading ${uploadProgress}%` : t('saveProfile')}
+          {updateMutation.isPending
+            ? t('saving')
+            : isUploading || photoUploading
+              ? `Uploading ${uploadProgress}%`
+              : certificationsUploading || transformationsUploading
+                ? 'Uploading...'
+              : t('saveProfile')}
         </button>
         <button onClick={() => router.back()} className={styles.cancelBtn}>
           {t('cancelChanges')}

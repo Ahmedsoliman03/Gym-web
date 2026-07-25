@@ -57,6 +57,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
     plans: (inner?.plans ?? []) as ProfilePlan[],
   });
   const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
+  const [galleryUploading, setGalleryUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(initialPhoto);
   const [planErrors, setPlanErrors] = useState<PlanErrors>({});
 
@@ -132,7 +133,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
   };
 
   const handleSave = () => {
-    if (updateMutation.isPending) return;
+    if (updateMutation.isPending || isUploading || galleryUploading) return;
     const { sanitized, errors, hasErrors } = validatePlans(formData.plans);
     if (hasErrors) {
       setPlanErrors(errors);
@@ -248,6 +249,7 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
         <GalleryEditor
           images={formData.gymImages}
           onChange={(next) => setFormData((prev) => ({ ...prev, gymImages: next }))}
+          onUploadingChange={setGalleryUploading}
         />
 
         <SocialMediaEditor
@@ -268,11 +270,17 @@ export const GymEditForm = ({ profile }: GymEditFormProps) => {
       <div className={styles.actions}>
         <button
           onClick={handleSave}
-          disabled={updateMutation.isPending || isUploading}
+          disabled={updateMutation.isPending || isUploading || galleryUploading}
           className={styles.saveBtn}
         >
           <Save size={18} />
-          {updateMutation.isPending ? t('saving') : t('saveProfile')}
+          {updateMutation.isPending
+            ? t('saving')
+            : isUploading
+              ? `Uploading ${uploadProgress}%`
+              : galleryUploading
+                ? 'Uploading...'
+                : t('saveProfile')}
         </button>
         <button onClick={() => router.back()} className={styles.cancelBtn}>
           {t('cancelChanges')}

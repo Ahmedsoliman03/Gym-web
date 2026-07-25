@@ -226,6 +226,7 @@ export interface GymEditFormProps {
 export interface GalleryEditorProps {
     images: EditableImage[];
     onChange: (images: EditableImage[]) => void;
+    onUploadingChange?: (isUploading: boolean) => void;
     title?: string;
 }
 
@@ -258,11 +259,13 @@ export interface TransformationItem {
     name: string;
     duration: string;
     image: string | File;
+    uploadedPath?: string;
 }
 
 export interface TransformationEditorProps {
     transformations: TransformationItem[];
     onChange: (transformations: TransformationItem[]) => void;
+    onUploadingChange?: (isUploading: boolean) => void;
 }
 
 export interface ProfilePostsProps {

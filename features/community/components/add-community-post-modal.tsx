@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Image as ImageIcon, Send, X } from 'lucide-react';
@@ -16,6 +16,18 @@ interface AddCommunityPostModalProps {
   onClose: () => void;
 }
 
+type SelectedMedia = {
+  id: string;
+  file: File;
+  preview: string;
+  mediaType: 'image' | 'video';
+  progress: number;
+  status: 'uploading' | 'uploaded' | 'failed';
+  path?: string;
+};
+
+const MAX_MEDIA = 5;
+
 const styles = {
   form: 'space-y-5',
   fieldWrapper: 'space-y-1.5',
@@ -29,13 +41,18 @@ const styles = {
   uploadLabel:
     'text-sm text-foreground/40 font-medium group-hover:text-primary/60 transition-colors',
   // Selected media fills the input area itself (single image or video).
+  mediaRail: 'flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory',
   mediaBox:
-    'relative w-full min-h-[14rem] h-56 rounded-xl overflow-hidden bg-[#0D121F] border border-white/10',
+    'relative min-w-[68%] sm:min-w-[48%] aspect-video snap-start rounded-xl overflow-hidden bg-[#0D121F] border border-white/10',
   mediaFill: 'absolute inset-0 w-full h-full object-cover',
   uploadOverlay:
     'absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2 z-10',
   mediaRemove:
     'absolute top-2 right-2 z-20 flex items-center justify-center w-8 h-8 rounded-full bg-black/70 text-white hover:bg-red-500/80 transition-all',
+  mediaRetry:
+    'px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold',
+  addMore:
+    'min-w-[42%] sm:min-w-[30%] aspect-video snap-start rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 text-foreground/40 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer',
   submit:
     'w-full py-3.5 bg-primary text-primary-foreground rounded-xl font-black hover:opacity-90 active:scale-[0.99] transition-all text-sm uppercase flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed',
   errBox:
@@ -47,10 +64,8 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
   const { mutateAsync, isPending, error, reset } = useCreatePostMutation();
   const { uploadFile } = useR2Upload();
   // A post carries a single image OR video (or none — content-only is allowed).
-  const [preview, setPreview] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
-  const [mediaPath, setMediaPath] = useState('');
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [media, setMedia] = useState<SelectedMedia[]>([]);
+  const mediaRef = useRef<SelectedMedia[]>([]);
 
   const buildSchema = () =>
     Yup.object({
@@ -58,13 +73,9 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
     });
 
   const clearMedia = () => {
-    setPreview((prev) => {
-      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
-      return null;
-    });
-    setMediaType(null);
-    setMediaPath('');
-    setUploadProgress(null);
+    mediaRef.current.forEach((item) => URL.revokeObjectURL(item.preview));
+    mediaRef.current = [];
+    setMedia([]);
   };
 
   const close = () => {
@@ -82,7 +93,7 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
           try {
             await mutateAsync({
               content: values.content.trim(),
-              media: mediaPath ? [mediaPath] : [],
+              media: mediaRef.current.flatMap((item) => item.path ? [item.path] : []),
             });
             toast.success(t('createPostSuccess'));
             close();
@@ -92,30 +103,61 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
         }}
       >
         {({ values }) => {
-          // Single media per post — a new selection replaces the previous one.
-          const handleSelect = async (files: FileList | null) => {
-            const file = files?.[0];
-            if (!file) return;
-
-            clearMedia();
-            const blob = URL.createObjectURL(file);
-            setPreview(blob);
-            setMediaType(file.type.startsWith('video/') ? 'video' : 'image');
-            setUploadProgress(0);
+          const uploadItem = async (id: string) => {
+            const selected = mediaRef.current.find((item) => item.id === id);
+            if (!selected) return;
+            mediaRef.current = mediaRef.current.map((item) =>
+              item.id === id ? { ...item, status: 'uploading', progress: 0 } : item
+            );
+            setMedia(mediaRef.current);
             try {
-              const path = await uploadFile(file, 'community_post', (percent) =>
-                setUploadProgress(percent)
+              const path = await uploadFile(selected.file, 'community_post', (progress) => {
+                mediaRef.current = mediaRef.current.map((item) =>
+                  item.id === id ? { ...item, progress } : item
+                );
+                setMedia(mediaRef.current);
+              });
+              mediaRef.current = mediaRef.current.map((item) =>
+                item.id === id ? { ...item, path, status: 'uploaded', progress: 100 } : item
               );
-              setMediaPath(path);
+              setMedia(mediaRef.current);
             } catch {
-              toast.error('Upload failed');
-              clearMedia();
-            } finally {
-              setUploadProgress(null);
+              mediaRef.current = mediaRef.current.map((item) =>
+                item.id === id ? { ...item, status: 'failed', progress: 0 } : item
+              );
+              setMedia(mediaRef.current);
             }
           };
 
-          const isUploadingMedia = uploadProgress !== null;
+          const handleSelect = (files: FileList | null) => {
+            if (!files?.length) return;
+            const available = MAX_MEDIA - mediaRef.current.length;
+            const accepted = Array.from(files)
+              .filter((file) => file.type.startsWith('image/') || file.type.startsWith('video/'))
+              .slice(0, available);
+            if (accepted.length < files.length) toast.error(t('mediaLimit'));
+            const added: SelectedMedia[] = accepted.map((file, index) => ({
+              id: `${Date.now()}-${index}-${file.name}`,
+              file,
+              preview: URL.createObjectURL(file),
+              mediaType: file.type.startsWith('video/') ? 'video' : 'image',
+              progress: 0,
+              status: 'uploading',
+            }));
+            mediaRef.current = [...mediaRef.current, ...added];
+            setMedia(mediaRef.current);
+            void Promise.all(added.map((item) => uploadItem(item.id)));
+          };
+
+          const removeMedia = (id: string) => {
+            const selected = mediaRef.current.find((item) => item.id === id);
+            if (selected) URL.revokeObjectURL(selected.preview);
+            mediaRef.current = mediaRef.current.filter((item) => item.id !== id);
+            setMedia(mediaRef.current);
+          };
+
+          const isUploadingMedia = media.some((item) => item.status === 'uploading');
+          const hasFailedMedia = media.some((item) => item.status === 'failed');
 
           return (
             <Form className={styles.form}>
@@ -133,37 +175,64 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
 
               <div className={styles.fieldWrapper}>
                 <label className={styles.label}>{t('mediaLabel')}</label>
-                {preview ? (
-                  <div className={styles.mediaBox}>
-                    {mediaType === 'video' ? (
-                      <video
-                        src={preview}
-                        className={styles.mediaFill}
-                        muted
-                        playsInline
-                        controls
-                        preload="metadata"
-                      />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={preview} alt="" className={styles.mediaFill} />
-                    )}
-                    {isUploadingMedia ? (
-                      <div className={styles.uploadOverlay}>
-                        <div className="w-8 h-8 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
-                        <span className="text-white text-xs font-bold">{uploadProgress}%</span>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.mediaRemove}
-                        onClick={clearMedia}
-                        aria-label={t('removeMedia')}
-                      >
-                        <X size={16} strokeWidth={3} />
-                      </button>
-                    )}
-                  </div>
+                {media.length > 0 ? (
+                  <>
+                    <span className="block px-1 pb-2 text-xs text-foreground/40">
+                      {t('mediaCount', { count: media.length })}
+                    </span>
+                    <div className={styles.mediaRail}>
+                      {media.map((item) => (
+                        <div className={styles.mediaBox} key={item.id}>
+                          {item.mediaType === 'video' ? (
+                            <video src={item.preview} className={styles.mediaFill} muted playsInline controls preload="metadata" />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.preview} alt="" className={styles.mediaFill} />
+                          )}
+                          {item.status === 'uploading' && (
+                            <div className={styles.uploadOverlay}>
+                              <div className="w-8 h-8 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
+                              <span className="text-white text-xs font-bold">
+                                {t('uploadingMedia', { progress: item.progress })}
+                              </span>
+                            </div>
+                          )}
+                          {item.status === 'failed' && (
+                            <div className={styles.uploadOverlay}>
+                              <span className="text-red-300 text-xs font-bold">{t('uploadFailed')}</span>
+                              <button type="button" className={styles.mediaRetry} onClick={() => uploadItem(item.id)}>
+                                {t('retryUpload')}
+                              </button>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            className={styles.mediaRemove}
+                            onClick={() => removeMedia(item.id)}
+                            aria-label={t('removeMedia')}
+                          >
+                            <X size={16} strokeWidth={3} />
+                          </button>
+                        </div>
+                      ))}
+                      {media.length < MAX_MEDIA && (
+                        <label className={styles.addMore}>
+                          <ImageIcon size={24} />
+                          <span className="text-xs font-bold">{t('addMoreMedia')}</span>
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              handleSelect(e.currentTarget.files);
+                              e.currentTarget.value = '';
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </>
                 ) : (
                   <label className={styles.uploadArea}>
                     <ImageIcon size={28} className={styles.uploadIcon} />
@@ -171,8 +240,12 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
                     <input
                       type="file"
                       accept="image/*,video/*"
+                      multiple
                       className="hidden"
-                      onChange={(e) => handleSelect(e.currentTarget.files)}
+                      onChange={(e) => {
+                        handleSelect(e.currentTarget.files);
+                        e.currentTarget.value = '';
+                      }}
                     />
                   </label>
                 )}
@@ -190,7 +263,7 @@ export function AddCommunityPostModal({ isOpen, onClose }: AddCommunityPostModal
               <button
                 type="submit"
                 className={styles.submit}
-                disabled={isPending || isUploadingMedia || (!values.content.trim() && !mediaPath)}
+                disabled={isPending || isUploadingMedia || hasFailedMedia || (!values.content.trim() && media.length === 0)}
               >
                 <Send size={16} />
                 {isPending ? t('publishing') : isUploadingMedia ? 'Uploading…' : t('publish')}

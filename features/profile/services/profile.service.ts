@@ -89,7 +89,7 @@ export const buildEditProfileFormData = (input: EditProfileValues): FormData => 
         const v = input.values;
         if (v.fullName !== undefined) fd.append('fullName', v.fullName);
         if (v.phone !== undefined)    fd.append('phone', v.phone);
-        if (v.photo)                  fd.append('photo', v.photo);
+        if (v.photo)                  fd.append('photo', v.photo); 
         return fd;
     }
 
@@ -130,6 +130,8 @@ export const buildEditProfileFormData = (input: EditProfileValues): FormData => 
                 if (t.image instanceof File) {
                     row.imageIndex = imageIndex++;
                     fd.append('transformation_images', t.image);
+                } else if (t.image.startsWith('temp/')) {
+                    row.image = t.image;
                 }
                 meta.push(row);
             });
