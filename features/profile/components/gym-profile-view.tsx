@@ -23,6 +23,7 @@ import { ProfilePosts } from "./profile-posts";
 import type { PresenceStatus } from "@/features/chat/types";
 import { SocialMediaLinks } from "./social-media-links";
 import { sectionDomId } from "../checklist-sections";
+import { useTextTranslation } from "@/hooks/use-text-translation";
 
 const styles = {
   container: "space-y-8",
@@ -85,6 +86,12 @@ export const GymProfileView = ({
   const t = useTranslations("Profile");
   const tChat = useTranslations("Chat");
   const t_root = useTranslations();
+  const {
+    displayedText: displayedDescription,
+    isTranslating: isTranslatingDescription,
+    toggleTranslation: toggleDescriptionTranslation,
+    buttonLabel: descriptionTranslationLabel,
+  } = useTextTranslation(data.description);
   const router = useRouter();
   const plansRef = useRef<HTMLDivElement>(null);
   const startChat = useStartChatMutation();
@@ -280,7 +287,19 @@ export const GymProfileView = ({
             </button>
           </div>
           {data.description?.trim() ? (
-            <p className={styles.description}>{data.description}</p>
+            <div className="space-y-2">
+              <p className={`${styles.description} whitespace-pre-wrap break-words`}>
+                {displayedDescription}
+              </p>
+              <button
+                type="button"
+                onClick={toggleDescriptionTranslation}
+                disabled={isTranslatingDescription}
+                className="text-primary/80 text-xs font-bold hover:text-primary hover:underline disabled:opacity-50"
+              >
+                {descriptionTranslationLabel}
+              </button>
+            </div>
           ) : (
             <EmptySection
               isOwner={isOwner}

@@ -1021,6 +1021,12 @@
     "areaPlaceholder": "e.g. 6th of October",
     "addressPlaceholder": "Street, Building..."
   },
+  "Translation": {
+    "seeTranslation": "See translation",
+    "seeOriginal": "See original",
+    "translating": "Translating...",
+    "translationFailed": "Couldn't translate this text. Please try again."
+  },
   "Common": {
     "clear": "Clear",
     "scrollToTop": "Scroll to top"

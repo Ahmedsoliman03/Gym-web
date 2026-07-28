@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { EmptySection } from "@/components/shared/empty-section";
 import type { CoachPhilosophyProps } from "../types";
+import { useTextTranslation } from "@/hooks/use-text-translation";
 
 const styles = {
   container: "bg-surface py-4 px-6 rounded-3xl border border-white/5 w-full overflow-hidden",
@@ -20,6 +21,12 @@ export const CoachPhilosophy = ({
 }: CoachPhilosophyProps) => {
   const t = useTranslations("Profile");
   const hasDescription = !!description?.trim();
+  const {
+    displayedText,
+    isTranslating,
+    toggleTranslation,
+    buttonLabel,
+  } = useTextTranslation(description);
 
   return (
     <div className={styles.container}>
@@ -37,8 +44,16 @@ export const CoachPhilosophy = ({
       {hasDescription ? (
         <div className={styles.wrapper}>
           <p className={styles.description}>
-            &quot;{description}&quot;
+            &quot;{displayedText}&quot;
           </p>
+          <button
+            type="button"
+            onClick={toggleTranslation}
+            disabled={isTranslating}
+            className="shrink-0 text-primary/80 text-xs font-bold hover:text-primary hover:underline disabled:opacity-50"
+          >
+            {buttonLabel}
+          </button>
         </div>
       ) : (
         <EmptySection

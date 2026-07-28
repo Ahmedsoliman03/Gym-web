@@ -6,9 +6,6 @@ import {
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
-import toast from 'react-hot-toast';
-
-import { api } from '@/utils/axios';
 import { Link } from '@/i18n/routing';
 import { SharePostModal } from '@/components/shared/share-post-modal';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -24,6 +21,7 @@ import {
 } from '../services/jobs.service';
 import { SPECIALIZATIONS } from '@/constants/specializations';
 import type { Job } from '../types';
+import { useTextTranslation } from '@/hooks/use-text-translation';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -108,46 +106,21 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
     const [closeOpen, setCloseOpen] = useState(false);
     const [reopenOpen, setReopenOpen] = useState(false);
     const [contentExpanded, setContentExpanded] = useState(false);
-    const [translatedContent, setTranslatedContent] = useState<string | null>(null);
-    const [showTranslation, setShowTranslation] = useState(false);
-    const [isTranslating, setIsTranslating] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const CONTENT_TRUNCATE_AT = 240;
-    const displayedContent =
-        showTranslation && translatedContent ? translatedContent : job.content;
-    const targetLanguage = locale === 'ar' ? 'en' : 'ar';
+    const {
+        displayedText: displayedContent,
+        isTranslating,
+        toggleTranslation,
+        buttonLabel: translationButtonLabel,
+    } = useTextTranslation(job.content);
     const contentNeedsToggle = (displayedContent?.length ?? 0) > CONTENT_TRUNCATE_AT;
 
     const handleTranslate = async () => {
-        if (!job.content) return;
-
-        if (translatedContent) {
-            setShowTranslation((current) => !current);
-            return;
-        }
-
-        setIsTranslating(true);
-
-        try {
-            const { data } = await api.post<{ translations: string[] }>(
-                '/api/core/translate/',
-                {
-                    texts: [job.content],
-                    targetLanguage,
-                },
-            );
-            const translation = data.translations?.[0];
-
-            if (!translation) throw new Error('Empty translation response');
-
-            setTranslatedContent(translation);
-            setShowTranslation(true);
+        const showingTranslation = await toggleTranslation();
+        if (showingTranslation) {
             setContentExpanded(true);
-        } catch {
-            toast.error(t('translationFailed'));
-        } finally {
-            setIsTranslating(false);
         }
     };
 
@@ -343,7 +316,10 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                             <div className={styles.specTagsInline}>
                                 {job.specialization.map((spec) => {
                                     const match = SPECIALIZATIONS.find((s) => s.value === spec);
-                                    const label = match ? t_root(match.label as any) : spec;
+                                    const labelKey = match?.label as Parameters<typeof t_root>[0] | undefined;
+                                    const label = labelKey && t_root.has(labelKey)
+                                        ? t_root(labelKey)
+                                        : (match?.fallback ?? spec);
                                     return (
                                         <span key={spec} className={styles.specTag}>
                                             <Briefcase size={11} className="inline mr-1" />
@@ -388,11 +364,7 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                                 disabled={isTranslating}
                                 className={`${styles.seeMoreBtn} block disabled:cursor-not-allowed disabled:opacity-60`}
                             >
-                                {isTranslating
-                                    ? t('translating')
-                                    : showTranslation
-                                        ? t('seeOriginal')
-                                        : t('seeTranslation')}
+                                {translationButtonLabel}
                             </button>
                         </>
                     )}
@@ -416,7 +388,7 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                 <div className={styles.statsRow}>
                     {isMine ? (
                         <Link
-                            href={`/applications?jobId=${job.id}` as any}
+                            href={{ pathname: '/applications', query: { jobId: job.id } }}
                             className={styles.statChipLink}
                             aria-label={t('applicationsLabel')}
                         >

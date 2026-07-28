@@ -1021,6 +1021,12 @@
     "areaPlaceholder": "مثلاً: 6 أكتوبر",
     "addressPlaceholder": "الشارع، المبنى..."
   },
+  "Translation": {
+    "seeTranslation": "عرض الترجمة",
+    "seeOriginal": "عرض النص الأصلي",
+    "translating": "جارٍ الترجمة...",
+    "translationFailed": "تعذرت ترجمة هذا النص. حاول مرة أخرى."
+  },
   "Common": {
     "clear": "مسح",
     "scrollToTop": "العودة إلى الأعلى"
