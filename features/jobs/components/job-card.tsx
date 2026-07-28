@@ -22,6 +22,7 @@ import {
 import { SPECIALIZATIONS } from '@/constants/specializations';
 import type { Job } from '../types';
 import { useTextTranslation } from '@/hooks/use-text-translation';
+import toast from 'react-hot-toast';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
