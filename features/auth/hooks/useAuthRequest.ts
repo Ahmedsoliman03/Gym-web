@@ -3,18 +3,21 @@
 import {
     useRequestAccessMutation,
     useActivateMutation,
-    useResendActivationMutation
+    useResendActivationMutation,
+    useUpdateCommunicationPreferenceMutation
 } from '../services/auth.service';
 import {
     RequestAccessRequest,
     ActivateRequest,
-    ResendActivationRequest
+    ResendActivationRequest,
+    UpdateCommunicationPreferenceRequest
 } from '../types';
 
 export const useAuthRequest = () => {
     const requestAccessMutation = useRequestAccessMutation();
     const activateMutation = useActivateMutation();
     const resendActivationMutation = useResendActivationMutation();
+    const updateCommunicationPreferenceMutation = useUpdateCommunicationPreferenceMutation();
 
     const requestAccess = async (values: RequestAccessRequest) => {
         return await requestAccessMutation.mutateAsync(values);
@@ -28,13 +31,19 @@ export const useAuthRequest = () => {
         return await resendActivationMutation.mutateAsync(values);
     };
 
+    const updateCommunicationPreference = async (values: UpdateCommunicationPreferenceRequest) => {
+        return await updateCommunicationPreferenceMutation.mutateAsync(values);
+    };
+
     return {
         requestAccess,
         activate,
         resendActivation,
+        updateCommunicationPreference,
         isLoading: requestAccessMutation.isPending || activateMutation.isPending,
         requestAccessMutation,
         activateMutation,
-        resendActivationMutation
+        resendActivationMutation,
+        updateCommunicationPreferenceMutation
     };
 };

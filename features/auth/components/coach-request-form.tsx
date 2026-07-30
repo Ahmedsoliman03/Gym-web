@@ -52,8 +52,14 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                     if (profile_image) mappedValues.profile_image = profile_image;
                     if (certifications.length > 0) mappedValues.certifications = certifications;
 
-                    await requestAccess(mappedValues as RequestAccessRequest);
+                    const response = await requestAccess(mappedValues as RequestAccessRequest);
                     sessionStorage.setItem('request-access-email', values.email);
+                    if (response.id !== undefined && response.id !== null) {
+                        sessionStorage.setItem('request-access-id', String(response.id));
+                    } else {
+                        sessionStorage.removeItem('request-access-id');
+                    }
+                    localStorage.setItem('request-access-otp-method', values.verification_method);
                     clearFormDraft('draft:coach-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();

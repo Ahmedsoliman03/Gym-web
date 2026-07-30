@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
 import { Link } from '@/i18n/routing';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuthRequest } from '@/features/auth/hooks/useAuthRequest';
 import { useResendCooldown } from '@/features/auth/hooks/useResendCooldown';
 import toast from 'react-hot-toast';
@@ -12,6 +12,17 @@ import type { OtpChannel } from '@/features/auth/types';
 
 const METHOD_KEY = 'request-access-otp-method';
 const RESEND_UNTIL_KEY = 'request-access-resend-until';
+
+const getStoredRequestId = () => {
+    if (typeof window === 'undefined') return null;
+    return sessionStorage.getItem('request-access-id');
+};
+
+const getStoredMethod = (): OtpChannel => {
+    if (typeof window === 'undefined') return 'whatsapp';
+    const storedMethod = localStorage.getItem(METHOD_KEY);
+    return storedMethod === 'email' || storedMethod === 'whatsapp' ? storedMethod : 'whatsapp';
+};
 
 const styles = {
   container: "flex flex-col items-center justify-center min-h-[400px] text-center space-y-8 py-12 px-4",
@@ -28,32 +39,23 @@ const styles = {
 
 export default function RequestAccessSuccessPage() {
     const t = useTranslations();
-    const { resendActivation, resendActivationMutation } = useAuthRequest();
-    const [email, setEmail] = useState<string | null>(null);
-    const [method, setMethod] = useState<OtpChannel>('whatsapp');
+    const { updateCommunicationPreference, updateCommunicationPreferenceMutation } = useAuthRequest();
+    const [requestId] = useState<string | null>(getStoredRequestId);
+    const [method, setMethod] = useState<OtpChannel>(getStoredMethod);
     const { secondsLeft, isCoolingDown, start: startCooldown } = useResendCooldown({
         storageKey: RESEND_UNTIL_KEY,
     });
 
-    useEffect(() => {
-        const stored = sessionStorage.getItem('request-access-email');
-        if (stored) {
-            setEmail(stored);
-        }
-        // Restore the previously chosen channel so a reload/lang-switch keeps state.
-        const storedMethod = localStorage.getItem(METHOD_KEY);
-        if (storedMethod === 'email' || storedMethod === 'whatsapp') {
-            setMethod(storedMethod);
-        }
-    }, []);
-
-    const isSwitchDisabled = resendActivationMutation.isPending || isCoolingDown;
+    const isSwitchDisabled = updateCommunicationPreferenceMutation.isPending || isCoolingDown;
 
     const handleSwitchMethod = async () => {
-        if (!email || isSwitchDisabled) return;
+        if (!requestId || isSwitchDisabled) return;
         const nextMethod: OtpChannel = method === 'whatsapp' ? 'email' : 'whatsapp';
         try {
-            await resendActivation({ email, verification_method: nextMethod });
+            await updateCommunicationPreference({
+                requestId,
+                communication_preference: nextMethod,
+            });
             setMethod(nextMethod);
             localStorage.setItem(METHOD_KEY, nextMethod);
             // Start a fresh 15s cooldown, persisted so it survives reload/lang-switch.
@@ -85,14 +87,14 @@ export default function RequestAccessSuccessPage() {
                         ? t('Auth.channelHintWhatsapp')
                         : t('Auth.channelHintEmail')}
                 </p>
-                {email && (
+                {requestId && (
                     <button
                         type="button"
                         onClick={handleSwitchMethod}
                         disabled={isSwitchDisabled}
                         className="w-full py-4 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/45 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary/10"
                     >
-                        {resendActivationMutation.isPending ? (
+                        {updateCommunicationPreferenceMutation.isPending ? (
                             <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
                         ) : isCoolingDown ? (
                             t('Auth.resendCountdown', { seconds: secondsLeft })

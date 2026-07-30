@@ -81,6 +81,16 @@ export interface RequestAccessRequest {
 
 export type OtpChannel = 'whatsapp' | 'email';
 
+export interface RequestAccessResponse {
+    id?: string | number;
+    [key: string]: unknown;
+}
+
+export interface UpdateCommunicationPreferenceRequest {
+    requestId: string | number;
+    communication_preference: OtpChannel;
+}
+
 export const OTP_TIMER_SECONDS = 300;
 export const OTP_TIMER_KEY = 'otp:timerUntil';
 

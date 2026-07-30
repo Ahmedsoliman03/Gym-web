@@ -11,6 +11,8 @@ import {
     GoogleSignupCompleteRequest,
     ResendOtpRequest,
     ResendActivationRequest,
+    RequestAccessResponse,
+    UpdateCommunicationPreferenceRequest,
 } from '../types';
 
 const syncAuthenticatedUser = (
@@ -109,6 +111,17 @@ export const useResendActivationMutation = () => {
     });
 };
 
+export const useUpdateCommunicationPreferenceMutation = () => {
+    return useMutation({
+        mutationFn: async ({ requestId, communication_preference }: UpdateCommunicationPreferenceRequest) => {
+            const { data } = await api.patch(`/api/access-requests/${encodeURIComponent(String(requestId))}/communication-preference`, {
+                communication_preference,
+            });
+            return data;
+        },
+    });
+};
+
 export const useActivateMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -124,7 +137,7 @@ export const useActivateMutation = () => {
 
 export const useRequestAccessMutation = () => {
     return useMutation({
-        mutationFn: async (values: RequestAccessRequest) => {
+        mutationFn: async (values: RequestAccessRequest): Promise<RequestAccessResponse> => {
             const formData = new FormData();
 
             Object.entries(values).forEach(([key, value]) => {
@@ -147,7 +160,7 @@ export const useRequestAccessMutation = () => {
                 }
             });
 
-            const { data } = await api.post('/api/request-access', formData, {
+            const { data } = await api.post<RequestAccessResponse>('/api/request-access', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

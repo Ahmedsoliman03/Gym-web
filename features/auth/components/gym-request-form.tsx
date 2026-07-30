@@ -51,8 +51,14 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                     if (gymLicense) mappedValues.gymLicense = gymLicense;
                     if (gymPhoto) mappedValues.gymPhoto = gymPhoto;
 
-                    await requestAccess(mappedValues as RequestAccessRequest);
+                    const response = await requestAccess(mappedValues as RequestAccessRequest);
                     sessionStorage.setItem('request-access-email', values.email);
+                    if (response.id !== undefined && response.id !== null) {
+                        sessionStorage.setItem('request-access-id', String(response.id));
+                    } else {
+                        sessionStorage.removeItem('request-access-id');
+                    }
+                    localStorage.setItem('request-access-otp-method', values.verification_method);
                     clearFormDraft('draft:gym-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
