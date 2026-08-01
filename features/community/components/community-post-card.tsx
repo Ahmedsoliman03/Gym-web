@@ -120,7 +120,7 @@ export function CommunityPostCard({
           onDeleted?.();
         } catch {}
       }} />
-    <EditPostModal isOpen={editOpen} post={post} onClose={() => setEditOpen(false)} />
+    {editOpen && <EditPostModal isOpen={editOpen} post={post} onClose={() => setEditOpen(false)} />}
     <ReportPostModal isOpen={reportOpen} isSubmitting={reportMutation.isPending}
       onCancel={() => setReportOpen(false)} onSubmit={async (reason) => {
         try {

@@ -2,11 +2,16 @@ import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query
 import { CoachDetailView } from '@/features/coaches/components/coach-detail-view';
 import { getCoachServer } from '@/features/coaches/services/coaches.server';
 import { getCoachPostsServer } from '@/features/community/services/community.server';
+import { coachShareMetadata } from '@/features/share-preview/metadata';
 
 interface CoachDetailPageProps {
   params: Promise<{ id: string; locale: string }>;
 }
 
+export async function generateMetadata({ params }: CoachDetailPageProps) {
+  const { id, locale } = await params;
+  return coachShareMetadata(id, locale);
+}
 
 export default async function CoachDetailPage({ params }: CoachDetailPageProps) {
   const { id } = await params;

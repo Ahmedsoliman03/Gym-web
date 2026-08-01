@@ -40,7 +40,10 @@ export default function proxy(request: NextRequest) {
     );
 
     const publicPaths = ['/', '/gyms', '/coaches', '/about' /* , '/plans' */];
-    const isPublicPath = publicPaths.includes(pathnameWithoutLocale);
+    const publicShareDetailPattern = /^\/(coaches|gyms|community|jobs)\/[^/]+$/;
+    const isPublicPath =
+        publicPaths.includes(pathnameWithoutLocale) ||
+        publicShareDetailPattern.test(pathnameWithoutLocale);
 
     // Get current locale or default to 'en'
     const localeMatch = pathname.match(/^\/(en|ar)/);

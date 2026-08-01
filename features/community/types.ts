@@ -58,6 +58,7 @@ export interface CommunityComment {
     downVoters?: CommentVoter[];
     myVote: VoteValue;
     createdAt?: string;
+    updatedAt?: string;
     replies?: CommunityComment[];
 }
 
