@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { Share2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
+import { Link } from '@/i18n/routing';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import {
@@ -27,6 +29,17 @@ const ReportPostModal = dynamic(() => import('./report-post-modal').then((mod) =
 const UpvotersSheet = dynamic(() => import('./upvoters-sheet').then((mod) => mod.UpvotersSheet), { ssr: false });
 const SharePostModal = dynamic(() => import('@/components/shared/share-post-modal').then((mod) => mod.SharePostModal), { ssr: false });
 
+const styles = {
+  article:
+    'bg-surface rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/10',
+  sharedBar:
+    'flex items-center gap-2 px-4 sm:px-6 py-3 border-b border-white/5 text-xs font-bold text-foreground/50',
+  sharedText: 'inline-flex items-center gap-1 min-w-0',
+  sharedName:
+    'text-foreground/80 hover:text-primary hover:underline truncate',
+  sharedFallback: 'text-foreground/80 truncate',
+};
+
 interface CommunityPostCardProps {
   post: CommunityPost;
   defaultCommentsOpen?: boolean;
@@ -34,6 +47,7 @@ interface CommunityPostCardProps {
   href?: string;
   highlightCommentId?: string;
   highlightReplyId?: string;
+  shareLabelMode?: 'sharer' | 'owner';
 }
 
 export function CommunityPostCard({
@@ -43,8 +57,10 @@ export function CommunityPostCard({
   href,
   highlightCommentId,
   highlightReplyId,
+  shareLabelMode = 'sharer',
 }: CommunityPostCardProps) {
   const t = useTranslations('Community');
+  const tShare = useTranslations('Share');
   const locale = useLocale();
   const { profile } = useProfileUser();
   const voteMutation = useVotePostMutation();
@@ -62,6 +78,7 @@ export function CommunityPostCard({
   const menuRef = useRef<HTMLDivElement>(null);
   const { data: votersData, isLoading: votersLoading } = usePostVoters(likesOpen ? post.id : null);
   const { href: authorHref } = useProfileLink(post.author?.profileId, post.author?.userType);
+  const { href: sharedByHref } = useProfileLink(post.sharedBy?.profileId, post.sharedBy?.userType);
   const liked = post.myVote === 'up';
   const saved = !!post.isSaved;
   const savesCount = post.savesCount ?? 0;
@@ -91,8 +108,33 @@ export function CommunityPostCard({
   const postUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/${locale}/community/${post.id}`
     : `/${locale}/community/${post.id}`;
+  const shareLabelTarget =
+    shareLabelMode === 'owner'
+      ? { href: authorHref, name: post.author.fullName, prefix: t('sharedFrom') }
+      : { href: sharedByHref, name: post.sharedBy?.fullName ?? '', prefix: t('sharedBy') };
+  const showSharedAsMine =
+    shareLabelMode === 'sharer' && !!profile?.id && profile.id === post.sharedBy?.id;
 
-  return <article className="bg-surface rounded-2xl overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/10">
+  return <article className={styles.article}>
+    {post.isShared && post.sharedBy && (
+      <div className={styles.sharedBar}>
+        <Share2 size={14} />
+        {showSharedAsMine ? (
+          <span>{t('youSharedThis')}</span>
+        ) : (
+          <span className={styles.sharedText}>
+            <span>{shareLabelTarget.prefix}</span>
+            {shareLabelTarget.href ? (
+              <Link href={shareLabelTarget.href} className={styles.sharedName}>
+                {shareLabelTarget.name}
+              </Link>
+            ) : (
+              <span className={styles.sharedFallback}>{shareLabelTarget.name}</span>
+            )}
+          </span>
+        )}
+      </div>
+    )}
     <CommunityPostHeader post={post} authorHref={authorHref ?? undefined} isMine={isMine} saved={saved}
       menuOpen={menuOpen} menuRef={menuRef} savePending={saveMutation.isPending}
       onMenuToggle={() => setMenuOpen((value) => !value)}
@@ -110,7 +152,16 @@ export function CommunityPostCard({
       highlightCommentId={highlightCommentId} highlightReplyId={highlightReplyId} />}
     <SharePostModal isOpen={shareOpen} onClose={() => setShareOpen(false)} url={postUrl}
       title={post.content?.slice(0, 80) || post.author.fullName}
-      onShared={() => shareMutation.mutate(post.id)} />
+      onShareToProfile={!isMine ? async () => {
+          try {
+            await shareMutation.mutateAsync(post.id);
+            toast.success(tShare('shareToProfileSuccess'));
+            setShareOpen(false);
+          } catch {
+            toast.error(tShare('shareToProfileFailed'));
+          }
+        } : undefined}
+      shareToProfilePending={shareMutation.isPending} />
     <DeletePostConfirm isOpen={deleteOpen} isSubmitting={deleteMutation.isPending}
       onCancel={() => setDeleteOpen(false)} onConfirm={async () => {
         try {

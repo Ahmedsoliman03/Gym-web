@@ -335,7 +335,10 @@
     "shareTitle": "مشاركة هذا المنشور",
     "shareCopy": "نسخ الرابط",
     "shareCopied": "تم النسخ!",
-    "shareViaDevice": "مشاركة عبر الجهاز"
+    "shareViaDevice": "مشاركة عبر الجهاز",
+    "shareToProfile": "مشاركة في الملف الشخصي",
+    "shareToProfileSuccess": "تمت مشاركة المنشور في ملفك الشخصي.",
+    "shareToProfileFailed": "تعذّرت مشاركة المنشور. حاول مرة أخرى."
   },
   "PostImage": {
     "postImage": "صورة المنشور",
@@ -388,6 +391,10 @@
     "sharePostFailed": "تعذّر تسجيل مشاركتك.",
     "savesCount": "{count, plural, zero {لا توجد حفظات} one {حفظ واحد} two {حفظان} few {# حفظات} many {# حفظاً} other {# حفظ}}",
     "sharesCount": "{count, plural, zero {لا توجد مشاركات} one {مشاركة واحدة} two {مشاركتان} few {# مشاركات} many {# مشاركة} other {# مشاركة}}",
+    "youSharedThis": "قمت بمشاركة هذا",
+    "userSharedThis": "{name} شارك هذا",
+    "sharedBy": "تمت المشاركة بواسطة",
+    "sharedFrom": "مشاركة من",
     "likesCount": "{count, plural, zero {لا يوجد حب} one {حب واحد} two {حبّان} few {# حب} many {# حب} other {# حب}}",
     "commentCount": "{count, plural, one {تعليق واحد} two {تعليقان} few {# تعليقات} many {# تعليقاً} other {# تعليق}}",
     "commentPlaceholder": "اكتب تعليقاً...",
@@ -451,6 +458,10 @@
     "myPostsHighlight": "في المجتمع",
     "myPostsDescription": "كل منشورات المجتمع التي نشرتها، في مكان واحد.",
     "myPostsEmpty": "لم تنشر أي منشور بعد.",
+    "publishedPostsTab": "المنشورة",
+    "sharedPostsTab": "المشاركة",
+    "myPublishedPostsEmpty": "لم تنشر أي منشور بعد.",
+    "mySharedPostsEmpty": "لم تشارك أي منشور بعد.",
     "missingLocation": "حدّد مدينتك في ملفك الشخصي لعرض منشورات المجتمع.",
     "loadMore": "تحميل المزيد",
     "loadingMore": "جارٍ التحميل...",

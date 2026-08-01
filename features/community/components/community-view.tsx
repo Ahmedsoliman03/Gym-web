@@ -95,7 +95,7 @@ export function CommunityView() {
         ) : (
           <div className={styles.feedList}>
             {posts.map((post) => (
-              <CommunityPostCard key={post.id} post={post} />
+              <CommunityPostCard key={post.feedItemId ?? post.id} post={post} />
             ))}
 
             {hasNextPage && (
