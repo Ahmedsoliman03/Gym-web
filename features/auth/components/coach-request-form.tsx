@@ -44,15 +44,16 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                         .filter(Boolean)
                         .join(' ');
                     
-                    const mappedValues = {
+                    const mappedValues: RequestAccessRequest = {
                         ...rest,
+                        type: 'coach',
                         name,
-                    } as any;
+                    };
 
                     if (profile_image) mappedValues.profile_image = profile_image;
                     if (certifications.length > 0) mappedValues.certifications = certifications;
 
-                    const response = await requestAccess(mappedValues as RequestAccessRequest);
+                    const response = await requestAccess(mappedValues);
                     sessionStorage.setItem('request-access-email', values.email);
                     if (response.id !== undefined && response.id !== null) {
                         sessionStorage.setItem('request-access-id', String(response.id));
@@ -63,7 +64,7 @@ export default function CoachRequestForm({ onSuccess }: CoachRequestFormProps) {
                     clearFormDraft('draft:coach-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
-                } catch (error: any) {
+                } catch (error: unknown) {
                     toastApiError(error, t('Validation.error'));
                 }
             }}

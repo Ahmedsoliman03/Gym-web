@@ -41,17 +41,18 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                         .map((part) => (part ?? '').toString().trim())
                         .filter(Boolean)
                         .join(', ');
-                    const mappedValues = {
+                    const mappedValues: RequestAccessRequest = {
                         ...rest,
+                        type: 'gym',
                         city: governorate,
                         area: city,
                         gymAddress: friendlyAddress,
-                    } as any;
+                    };
                     
                     if (gymLicense) mappedValues.gymLicense = gymLicense;
                     if (gymPhoto) mappedValues.gymPhoto = gymPhoto;
 
-                    const response = await requestAccess(mappedValues as RequestAccessRequest);
+                    const response = await requestAccess(mappedValues);
                     sessionStorage.setItem('request-access-email', values.email);
                     if (response.id !== undefined && response.id !== null) {
                         sessionStorage.setItem('request-access-id', String(response.id));
@@ -62,7 +63,7 @@ export default function GymRequestForm({ onSuccess }: GymRequestFormProps) {
                     clearFormDraft('draft:gym-request');
                     toast.success(t('Auth.requestSent'));
                     onSuccess();
-                } catch (error: any) {
+                } catch (error: unknown) {
                     toastApiError(error, t('Validation.error'));
                 }
             }}
