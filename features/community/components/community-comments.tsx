@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Send,
   Trash2,
@@ -10,6 +10,9 @@ import {
   Flag,
   MoreVertical,
   Loader2,
+  Pencil,
+  Check,
+  X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
@@ -21,6 +24,7 @@ import {
   useComments,
   useCreateCommentMutation,
   useDeleteCommentMutation,
+  useEditCommentMutation,
   useReplyToCommentMutation,
   useReportCommentMutation,
   useVoteCommentMutation,
@@ -56,6 +60,17 @@ const styles = {
   authorName: 'text-xs font-bold text-foreground',
   time: 'text-[10px] text-foreground/40 font-medium whitespace-nowrap',
   body: 'text-sm text-foreground/80 whitespace-pre-wrap break-words',
+  editedMark: 'text-[10px] text-foreground/35 font-medium',
+  editForm: 'space-y-2',
+  editInput:
+    'w-full min-h-[42px] resize-none rounded-xl bg-[#0D121F] border border-white/10 px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/30',
+  editActions: 'flex justify-end gap-1.5',
+  editIconBtn:
+    'h-7 w-7 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
+  editSaveBtn:
+    'bg-primary text-primary-foreground hover:opacity-90',
+  editCancelBtn:
+    'bg-white/5 text-foreground/60 hover:bg-white/10 hover:text-foreground',
   actionRow: 'flex items-center gap-3 mt-1.5 text-[11px] font-bold uppercase tracking-wider text-foreground/40',
   voteBtn: 'flex items-center gap-1 hover:text-primary transition-colors',
   voteBtnActive: 'flex items-center gap-1 text-primary transition-colors',
@@ -105,6 +120,7 @@ function CommentRow({
   const voteMutation = useVoteCommentMutation();
   const replyMutation = useReplyToCommentMutation();
   const deleteMutation = useDeleteCommentMutation();
+  const editMutation = useEditCommentMutation();
   const reportMutation = useReportCommentMutation();
 
   const isTarget = isReply
@@ -118,6 +134,8 @@ function CommentRow({
   const [menuOpen, setMenuOpen] = useState(false);
   const [replyOpen, setReplyOpen] = useState(containsTargetReply);
   const [replyDraft, setReplyDraft] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDraft, setEditDraft] = useState(comment.body);
   const [reportOpen, setReportOpen] = useState(false);
   const [votersOpen, setVotersOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -168,6 +186,12 @@ function CommentRow({
   const score = comment.score ?? (comment.upVotes ?? 0) - (comment.downVotes ?? 0);
   const replyCount = comment.replies?.length ?? 0;
   const hasReplies = replyCount > 0;
+  const canSaveEdit =
+    editDraft.trim().length > 0 && editDraft.trim() !== comment.body.trim();
+  const isEdited =
+    !!comment.createdAt &&
+    !!comment.updatedAt &&
+    new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 
   const handleVote = () => {
     if (voteMutation.isPending) return;
@@ -195,6 +219,35 @@ function CommentRow({
     deleteMutation.mutate(comment.id, {
       onSuccess: () => toast.success(t('commentDeleteSuccess')),
     });
+  };
+
+  const startEdit = () => {
+    setMenuOpen(false);
+    setReplyOpen(false);
+    setEditDraft(comment.body);
+    setIsEditing(true);
+  };
+
+  const cancelEdit = () => {
+    if (editMutation.isPending) return;
+    setEditDraft(comment.body);
+    setIsEditing(false);
+  };
+
+  const handleEditSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const body = editDraft.trim();
+    if (!body || !canSaveEdit || editMutation.isPending) return;
+    editMutation.mutate(
+      { commentId: comment.id, body },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+          toast.success(t('commentEditSuccess'));
+        },
+        onError: () => toast.error(t('commentEditFailed')),
+      },
+    );
   };
 
   return (
@@ -267,6 +320,17 @@ function CommentRow({
                         {t('reportComment')}
                       </button>
                     )}
+                    {isMine && (
+                      <button
+                        type="button"
+                        onClick={startEdit}
+                        className={styles.menuItem}
+                        disabled={editMutation.isPending}
+                      >
+                        <Pencil size={12} />
+                        {t('editComment')}
+                      </button>
+                    )}
                     {canDelete && (
                       <button
                         type="button"
@@ -282,10 +346,60 @@ function CommentRow({
                 )}
               </div>
             </div>
-            <p className={styles.body}>{comment.body}</p>
+            {isEditing ? (
+              <form className={styles.editForm} onSubmit={handleEditSubmit}>
+                <textarea
+                  autoFocus
+                  className={styles.editInput}
+                  value={editDraft}
+                  disabled={editMutation.isPending}
+                  onChange={(e) => setEditDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      e.preventDefault();
+                      cancelEdit();
+                    }
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleEditSubmit();
+                    }
+                  }}
+                />
+                <div className={styles.editActions}>
+                  <button
+                    type="submit"
+                    className={`${styles.editIconBtn} ${styles.editSaveBtn}`}
+                    disabled={!canSaveEdit || editMutation.isPending}
+                    aria-label={t('saveCommentEdit')}
+                    title={t('saveCommentEdit')}
+                  >
+                    {editMutation.isPending ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <Check size={13} />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.editIconBtn} ${styles.editCancelBtn}`}
+                    onClick={cancelEdit}
+                    disabled={editMutation.isPending}
+                    aria-label={t('cancelCommentEdit')}
+                    title={t('cancelCommentEdit')}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <p className={styles.body}>
+                {comment.body}
+                {isEdited && <span className={styles.editedMark}> {t('editedComment')}</span>}
+              </p>
+            )}
           </div>
 
-          <div className={styles.actionRow}>
+          {!isEditing && <div className={styles.actionRow}>
             <button
               type="button"
               onClick={handleVote}
@@ -322,7 +436,7 @@ function CommentRow({
                   : t('reply')}
               </button>
             )}
-          </div>
+          </div>}
 
           {/*
             Replies + reply composer are co-toggled: hidden by default, both
@@ -414,18 +528,18 @@ export function CommunityComments({
   const isPostOwner =
     !!profile?.id && !!postAuthorId && profile.id === postAuthorId;
 
-  useEffect(() => {
-    if (!comments || (!highlightCommentId && !highlightReplyId)) return;
+  const effectiveVisibleCount = useMemo(() => {
+    if (!comments || (!highlightCommentId && !highlightReplyId)) return visibleCount;
     const idx = comments.findIndex((c) =>
       highlightReplyId
         ? c.replies?.some((r) => r.id === highlightReplyId) ?? false
         : c.id === highlightCommentId,
     );
-    if (idx >= 0) setVisibleCount((n) => Math.max(n, idx + 1));
-  }, [comments, highlightCommentId, highlightReplyId]);
+    return idx >= 0 ? Math.max(visibleCount, idx + 1) : visibleCount;
+  }, [comments, highlightCommentId, highlightReplyId, visibleCount]);
 
-  const visibleComments = comments?.slice(0, visibleCount) ?? [];
-  const hasMore = (comments?.length ?? 0) > visibleCount;
+  const visibleComments = comments?.slice(0, effectiveVisibleCount) ?? [];
+  const hasMore = (comments?.length ?? 0) > effectiveVisibleCount;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

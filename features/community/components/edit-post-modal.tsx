@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
@@ -51,7 +51,6 @@ export function EditPostModal({ isOpen, post, onClose }: EditPostModalProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setContent(post.content);
     reset();
     requestAnimationFrame(() => {
       const el = textareaRef.current;
@@ -60,15 +59,15 @@ export function EditPostModal({ isOpen, post, onClose }: EditPostModalProps) {
       const end = el.value.length;
       el.setSelectionRange(end, end);
     });
-  }, [isOpen, post.content, post.id, reset]);
+  }, [isOpen, post.id, reset]);
 
   const isDirty = content !== post.content;
   const isBusy = isPending || isPreparingMedia;
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (isBusy) return;
     onClose();
-  };
+  }, [isBusy, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

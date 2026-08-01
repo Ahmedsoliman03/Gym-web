@@ -2,9 +2,15 @@ import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query
 import { GymDetailView } from '@/features/gyms/components/gym-detail-view';
 import { getGymServer } from '@/features/gyms/services/gyms.server';
 import { getGymPostsServer } from '@/features/community/services/community.server';
+import { gymShareMetadata } from '@/features/share-preview/metadata';
 
 interface GymDetailPageProps {
   params: Promise<{ id: string; locale: string }>;
+}
+
+export async function generateMetadata({ params }: GymDetailPageProps) {
+  const { id, locale } = await params;
+  return gymShareMetadata(id, locale);
 }
 
 export default async function GymDetailPage({ params }: GymDetailPageProps) {

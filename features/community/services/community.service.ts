@@ -791,6 +791,68 @@ export const useReplyToCommentMutation = () => {
     });
 };
 
+export const editComment = async ({
+    commentId,
+    body,
+}: {
+    commentId: string;
+    body: string;
+}): Promise<CommunityComment> => {
+    const { data } = await api.patch<CommunityComment>(
+        `/api/community/comments/${commentId}`,
+        { body },
+    );
+    return data;
+};
+
+export const useEditCommentMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: editComment,
+        onMutate: async ({ commentId, body }) => {
+            await queryClient.cancelQueries({ queryKey: ['community', 'comments'] });
+
+            const prev: { key: unknown[]; data: CommunityComment[] | undefined }[] = [];
+            queryClient
+                .getQueriesData<CommunityComment[] | undefined>({
+                    queryKey: ['community', 'comments'],
+                })
+                .forEach(([key, data]) => {
+                    prev.push({ key: key as unknown[], data });
+                });
+
+            const updatedAt = new Date().toISOString();
+            queryClient.setQueriesData<CommunityComment[] | undefined>(
+                { queryKey: ['community', 'comments'] },
+                (curr) =>
+                    curr
+                        ? mapCommentTree(curr, commentId, (comment) => ({
+                              ...comment,
+                              body,
+                              updatedAt,
+                          }))
+                        : curr,
+            );
+
+            return { prev };
+        },
+        onError: (_err, _vars, context) => {
+            context?.prev.forEach(({ key, data }) => {
+                queryClient.setQueryData(key, data);
+            });
+        },
+        onSuccess: (updated) => {
+            queryClient.setQueriesData<CommunityComment[] | undefined>(
+                { queryKey: ['community', 'comments'] },
+                (curr) =>
+                    curr
+                        ? mapCommentTree(curr, updated.id, () => updated)
+                        : curr,
+            );
+        },
+    });
+};
+
 export const deleteComment = async (commentId: string): Promise<void> => {
     await api.delete(`/api/community/comments/${commentId}`);
 };
