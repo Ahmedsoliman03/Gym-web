@@ -1,7 +1,10 @@
 export type NotificationType =
     | 'post_vote'
+    | 'post_share'
     | 'post_comment'
+    | 'comment_vote'
     | 'comment_reply'
+    | 'reply_vote'
     | 'job_application';
 
 export interface NotificationActor {
@@ -16,6 +19,7 @@ export interface NotificationActor {
 
 export interface NotificationData {
     postId?: string;
+    shareId?: string;
     commentId?: string;
     replyId?: string;
     jobId?: string;

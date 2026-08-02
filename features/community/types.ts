@@ -21,6 +21,7 @@ export type VoteValue = 'up' | 'down' | null;
 
 export interface CommunityPost {
     id: string;
+    feedItemId?: string;
     author: PostAuthor;
     content: string;
     media: PostMedia[];
@@ -30,6 +31,9 @@ export interface CommunityPost {
     commentsCount: number;
     savesCount?: number;
     sharesCount?: number;
+    isShared?: boolean;
+    sharedBy?: PostAuthor | null;
+    sharedAt?: string | null;
     isSaved?: boolean;
     myVote: VoteValue;
     createdAt: string;

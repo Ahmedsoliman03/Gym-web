@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { X, Copy, Check, Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Copy, Check, Share2, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 // ─── Platform data ────────────────────────────────────────────────────────────
@@ -72,6 +72,9 @@ const styles = {
   platformGrid: "grid grid-cols-4 gap-3 p-6",
   platformBtn: "flex flex-col items-center gap-2 p-3 rounded-xl transition-all hover:scale-105 active:scale-95",
   platformLabel: "text-[10px] font-bold text-foreground/60",
+  profileShareRow: "px-6 pt-6",
+  profileShareBtn: "w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-bold text-xs uppercase transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
+  spinner: "animate-spin",
   divider: "h-[1px] bg-white/5 mx-6",
   nativeRow: "flex items-center gap-3 px-6 pt-6",
   nativeBtn: "flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 text-foreground rounded-lg font-bold text-xs uppercase transition-all active:scale-95",
@@ -87,23 +90,24 @@ interface SharePostModalProps {
   onClose: () => void;
   url: string;
   title: string;
-  onShared?: () => void;
+  onShareToProfile?: () => Promise<void> | void;
+  shareToProfilePending?: boolean;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function SharePostModal({ isOpen, onClose, url, title, onShared }: SharePostModalProps) {
+export function SharePostModal({
+  isOpen,
+  onClose,
+  url,
+  title,
+  onShareToProfile,
+  shareToProfilePending = false,
+}: SharePostModalProps) {
   const t = useTranslations('Share');
   const [copied, setCopied] = useState(false);
-  const [hasNativeShare, setHasNativeShare] = useState(false);
-  const sharedFiredRef = useRef(false);
-
-  // Detect the Web Share API client-side only (it's undefined during SSR).
-  useEffect(() => {
-    setHasNativeShare(
-      typeof navigator !== 'undefined' && typeof navigator.share === 'function',
-    );
-  }, []);
+  const hasNativeShare =
+    typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   // Lock body scroll while open
   useEffect(() => {
@@ -111,17 +115,6 @@ export function SharePostModal({ isOpen, onClose, url, title, onShared }: ShareP
     else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
-
-  // Reset the one-shot "shared" guard whenever the modal reopens.
-  useEffect(() => {
-    if (isOpen) sharedFiredRef.current = false;
-  }, [isOpen]);
-
-  const fireShared = () => {
-    if (sharedFiredRef.current) return;
-    sharedFiredRef.current = true;
-    onShared?.();
-  };
 
   const handleCopy = async () => {
     try {
@@ -139,19 +132,16 @@ export function SharePostModal({ isOpen, onClose, url, title, onShared }: ShareP
       }
     }
     setCopied(true);
-    fireShared();
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handlePlatform = (platformUrl: string) => {
     window.open(platformUrl, '_blank', 'noopener,noreferrer');
-    fireShared();
   };
 
   const handleNativeShare = async () => {
     try {
       await navigator.share({ title, text: title, url });
-      fireShared();
     } catch (err) {
       void err;
     }
@@ -172,6 +162,26 @@ export function SharePostModal({ isOpen, onClose, url, title, onShared }: ShareP
         </div>
 
         {/* Native share — only when the device supports the Web Share API. */}
+        {onShareToProfile && (
+          <div className={styles.profileShareRow}>
+            <button
+              type="button"
+              className={styles.profileShareBtn}
+              onClick={async () => {
+                await onShareToProfile();
+              }}
+              disabled={shareToProfilePending}
+            >
+              {shareToProfilePending ? (
+                <Loader2 size={16} className={styles.spinner} />
+              ) : (
+                <Share2 size={16} />
+              )}
+              {t('shareToProfile')}
+            </button>
+          </div>
+        )}
+
         {hasNativeShare && (
           <div className={styles.nativeRow}>
             <button className={styles.nativeBtn} onClick={handleNativeShare}>

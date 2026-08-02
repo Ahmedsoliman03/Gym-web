@@ -44,8 +44,16 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
             if (!data.postId) return postHrefFromLink(link);
             return postHref(data.postId);
 
+        case "post_share":
+            if (!data.postId) return postHrefFromLink(link);
+            return postHref(data.postId);
+
         case "post_comment":
             // Anchor to the commented-on comment so the page scrolls to it.
+            if (!data.postId) return postHrefFromLink(link);
+            return postHref(data.postId, data.commentId);
+
+        case "comment_vote":
             if (!data.postId) return postHrefFromLink(link);
             return postHref(data.postId, data.commentId);
 
@@ -54,8 +62,11 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
             if (!data.postId) return postHrefFromLink(link);
             return postHref(data.postId, data.commentId, data.replyId);
 
+        case "reply_vote":
+            if (!data.postId) return postHrefFromLink(link);
+            return postHref(data.postId, data.commentId, data.replyId);
+
         case "job_application":
-            return { href: "/applications" };
             return {
                 href: data.jobId
                     ? `/applications?jobId=${data.jobId}`

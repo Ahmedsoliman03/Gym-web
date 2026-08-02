@@ -16,8 +16,11 @@ type PrefKey = keyof NotificationPreferences;
 
 const ROW_KEYS: PrefKey[] = [
     'post_vote',
+    'post_share',
     'post_comment',
+    'comment_vote',
     'comment_reply',
+    'reply_vote',
     'job_application',
 ];
 

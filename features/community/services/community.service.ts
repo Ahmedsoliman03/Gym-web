@@ -51,15 +51,19 @@ export const useSavedPosts = (enabled = true) =>
         enabled,
     });
 
-export const getMyPosts = async (): Promise<CommunityPost[]> => {
-    const { data } = await api.get<RawPostListResponse>('/api/community/posts/mine');
+export type MyPostsScope = 'all' | 'published' | 'shared';
+
+export const getMyPosts = async (scope: MyPostsScope = 'all'): Promise<CommunityPost[]> => {
+    const { data } = await api.get<RawPostListResponse>('/api/community/posts/mine', {
+        params: { scope },
+    });
     return unwrapPostList(data);
 };
 
-export const useMyPosts = (enabled = true) =>
+export const useMyPosts = (scope: MyPostsScope = 'all', enabled = true) =>
     useQuery<CommunityPost[]>({
-        queryKey: ['community', 'posts', 'mine'],
-        queryFn: getMyPosts,
+        queryKey: ['community', 'posts', 'mine', scope],
+        queryFn: () => getMyPosts(scope),
         enabled,
     });
 
@@ -1006,30 +1010,19 @@ export const useSavePostMutation = () => {
     });
 };
 
-export const sharePost = async (postId: string): Promise<void> => {
-    await api.post(`/api/community/posts/${postId}/share`);
+export const sharePost = async (postId: string): Promise<CommunityPost> => {
+    const { data } = await api.post<CommunityPost>(`/api/community/posts/${postId}/share`);
+    return data;
 };
-
-/** Increment a post's `sharesCount` in place. Pure. */
-const applyShareIncrement = (post: CommunityPost): CommunityPost => ({
-    ...post,
-    sharesCount: (post.sharesCount ?? 0) + 1,
-});
 
 export const useSharePostMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: sharePost,
-        onMutate: async (postId) => {
-            await queryClient.cancelQueries({ queryKey: ['community', 'feed'] });
-            await queryClient.cancelQueries({ queryKey: ['community', 'posts'] });
-            await queryClient.cancelQueries({ queryKey: ['community', 'post', postId] });
-
-            const snapshot = updateAllPostCaches(queryClient, postId, applyShareIncrement);
-            return snapshot;
-        },
-        onError: (_err, postId, context) => {
-            if (context) restorePostCaches(queryClient, postId, context);
+        onSuccess: (updated) => {
+            updateAllPostCaches(queryClient, updated.id, () => updated);
+            queryClient.invalidateQueries({ queryKey: ['community', 'feed'] });
+            queryClient.invalidateQueries({ queryKey: ['community', 'posts', 'mine'] });
         },
     });
 };
