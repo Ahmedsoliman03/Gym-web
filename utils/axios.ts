@@ -40,7 +40,10 @@ api.interceptors.response.use(
             );
             const isOnPublicPage = ['/', '/gyms', '/coaches'].includes(pathWithoutLocale);
             if (!isOnAuthPage && !isOnPublicPage) {
-                window.location.href = `/${locale}/login`;
+                const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+                const loginUrl = new URL(`/${locale}/login`, window.location.origin);
+                loginUrl.searchParams.set('next', currentPath);
+                window.location.href = `${loginUrl.pathname}${loginUrl.search}`;
             }
         }
         return Promise.reject(error);

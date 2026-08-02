@@ -15,8 +15,13 @@ const isAuthFlowPath = (path: string) =>
 export const normalizeAuthNextPath = (rawNext: string | null) => {
     if (!rawNext || !rawNext.startsWith('/') || rawNext.startsWith('//')) return '/';
 
-    const nextPath = stripLocale(rawNext);
-    if (isAuthFlowPath(nextPath)) return '/';
+    try {
+        const url = new URL(rawNext, 'http://gymspot.local');
+        const nextPath = stripLocale(url.pathname);
+        if (isAuthFlowPath(nextPath)) return '/';
 
-    return nextPath;
+        return `${nextPath}${url.search}${url.hash}`;
+    } catch {
+        return '/';
+    }
 };

@@ -113,8 +113,10 @@ const meAsChatUser = (
 
 export const MessageComposer = ({
     conversationId,
+    hideQuickReplies = false,
 }: {
     conversationId: string;
+    hideQuickReplies?: boolean;
 }) => {
     const t = useTranslations('Chat');
     const locale = useLocale();
@@ -303,7 +305,7 @@ export const MessageComposer = ({
             {showSocketStatusHint && (
                 <div className={styles.statusHint}>{t('socketDisconnected')}</div>
             )}
-            {profile && (
+            {profile && !hideQuickReplies && (
                 <div className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto border-t border-white/5 bg-surface/30 scrollbar-none">
                     {quickReplies.map((reply, idx) => (
                         <button

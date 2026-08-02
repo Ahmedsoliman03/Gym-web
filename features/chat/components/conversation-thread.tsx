@@ -82,6 +82,9 @@ export const ConversationThread = ({
     const meId = profile?.id;
     const other = conversation ? pickOtherUser(conversation, meId) : undefined;
     const otherStatus = other ? (presenceByUser[other.id] ?? other.status) : undefined;
+    const hideQuickReplies =
+        profile?.userType === 'gym' &&
+        (!conversation || other?.userType === 'gym');
 
     const otherParticipant = conversation?.participants.find(
         (p) => p.user?.id !== meId,
@@ -272,7 +275,10 @@ export const ConversationThread = ({
                 )}
             </div>
 
-            <MessageComposer conversationId={conversationId} />
+            <MessageComposer
+                conversationId={conversationId}
+                hideQuickReplies={hideQuickReplies}
+            />
         </>
     );
 };

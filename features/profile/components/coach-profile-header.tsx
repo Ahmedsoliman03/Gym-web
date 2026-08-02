@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Mail, MessageSquare, Settings, Loader2, Tag, UserX } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
 import { useStartChatMutation } from "@/features/chat/services/chat.service";
@@ -13,6 +13,8 @@ import toast from "react-hot-toast";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
+import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from "@/features/share-preview/whatsapp-share";
 import type { CoachProfileHeaderProps } from "../types";
 
 const styles = {
@@ -50,10 +52,11 @@ const styles = {
   statItem: "flex flex-col",
   statValue: "text-2xl font-bold text-foreground",
   statLabel: "text-xs text-foreground/40 uppercase",
-  actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
-  primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
-  secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-  dangerBtn: "flex-1 md:w-44 bg-red-500/10 hover:bg-red-500/15 text-red-300 font-bold py-3 px-6 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+  actionsWrapper: "flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto",
+  primaryBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed",
+  whatsappBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] font-bold py-3 px-4 rounded-xl border border-[#25D366]/25 flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98]",
+  secondaryBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-4 rounded-xl border border-white/10 flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98]",
+  dangerBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-red-500/10 hover:bg-red-500/15 text-red-300 font-bold py-3 px-4 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
 };
 
 export const CoachProfileHeader = ({
@@ -71,6 +74,7 @@ export const CoachProfileHeader = ({
   const t = useTranslations("Profile");
   const tChat = useTranslations("Chat");
   const tRoot = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const startChat = useStartChatMutation();
   const blockUser = useBlockUserMutation();
@@ -102,6 +106,18 @@ export const CoachProfileHeader = ({
         },
         onError: () => toast.error(tChat("requestErrorToast")),
       },
+    );
+  };
+
+  const handleWhatsAppShare = () => {
+    if (typeof window === 'undefined' || !coachId) return;
+    const shareUrl = `${window.location.origin}/${locale}/coaches/${coachId}`;
+    const message = `${getDefaultWhatsAppShareMessage('coach', locale)}\n${name}`;
+
+    window.open(
+      buildWhatsAppShareUrl({ url: shareUrl, message }),
+      '_blank',
+      'noopener,noreferrer',
     );
   };
 
@@ -224,6 +240,13 @@ export const CoachProfileHeader = ({
           {!isOwner ?
             <>
               <button
+                className={styles.whatsappBtn}
+                onClick={handleWhatsAppShare}
+              >
+                <WhatsAppIcon size={18} />
+                {t('shareOnWhatsApp')}
+              </button>
+              <button
                 className={styles.primaryBtn}
                 onClick={handleStartChat}
                 disabled={startChat.isPending || !coachUserId}
@@ -254,6 +277,15 @@ export const CoachProfileHeader = ({
               {t('editProfile')}
             </Link>
           }
+          {isOwner && (
+            <button
+              className={styles.whatsappBtn}
+              onClick={handleWhatsAppShare}
+            >
+              <WhatsAppIcon size={18} />
+              {t('shareOnWhatsApp')}
+            </button>
+          )}
         </div>
       </div>
 

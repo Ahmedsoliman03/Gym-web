@@ -61,6 +61,7 @@ export function ProfileChecklist() {
 
     const done = items.filter((i) => i.checked).length;
     const remaining = items.length - done;
+    if (remaining === 0) return null;
 
     const goToSection = (key: ChecklistKey) => {
         setOpen(false);

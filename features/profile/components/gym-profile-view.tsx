@@ -3,12 +3,13 @@
 import type { GymProfileViewModel, ProfilePlan } from "../types";
 import { MapPin, Users, MessageSquare, Settings, Mail, Loader2, UserX } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { TransformationGallery } from "@/components/shared/transformation-gallery";
 import { Plans } from "@/components/shared/membership-plans";
 import { EmptySection } from "@/components/shared/empty-section";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
@@ -24,6 +25,7 @@ import type { PresenceStatus } from "@/features/chat/types";
 import { SocialMediaLinks } from "./social-media-links";
 import { sectionDomId } from "../checklist-sections";
 import { useTextTranslation } from "@/hooks/use-text-translation";
+import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from "@/features/share-preview/whatsapp-share";
 
 const styles = {
   container: "space-y-8",
@@ -44,10 +46,11 @@ const styles = {
   statsList: "flex flex-wrap justify-start gap-4 text-foreground/60 text-sm",
   statItem: "flex items-center gap-1",
   ratingStar: "text-yellow-500",
-  actionsWrapper: "flex flex-row md:flex-col gap-3 w-full md:w-auto",
-  primaryBtn: "flex-1 md:w-44 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20",
-  secondaryBtn: "flex-1 md:w-44 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-6 rounded-xl border border-white/10 flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-  dangerBtn: "flex-1 md:w-44 bg-red-500/10 hover:bg-red-500/15 text-red-300 font-bold py-3 px-6 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed",
+  actionsWrapper: "flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto",
+  primaryBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed",
+  whatsappBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] font-bold py-3 px-4 rounded-xl border border-[#25D366]/25 flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98]",
+  secondaryBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-white/5 hover:bg-white/10 text-foreground font-bold py-3 px-4 rounded-xl border border-white/10 flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98]",
+  dangerBtn: "w-full sm:flex-1 md:w-44 min-w-0 bg-red-500/10 hover:bg-red-500/15 text-red-300 font-bold py-3 px-4 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed",
   card: "bg-surface p-8 rounded-3xl border border-white/5",
   sectionTitle: "text-xl font-bold mb-4 text-primary uppercase",
   description: "text-foreground/70 leading-relaxed",
@@ -86,6 +89,7 @@ export const GymProfileView = ({
   const t = useTranslations("Profile");
   const tChat = useTranslations("Chat");
   const t_root = useTranslations();
+  const locale = useLocale();
   const {
     displayedText: displayedDescription,
     isTranslating: isTranslatingDescription,
@@ -125,6 +129,18 @@ export const GymProfileView = ({
         },
         onError: () => toast.error(tChat("requestErrorToast")),
       },
+    );
+  };
+
+  const handleWhatsAppShare = () => {
+    if (typeof window === 'undefined' || !data.id) return;
+    const shareUrl = `${window.location.origin}/${locale}/gyms/${data.id}`;
+    const message = `${getDefaultWhatsAppShareMessage('gym', locale)}\n${data.name}`;
+
+    window.open(
+      buildWhatsAppShareUrl({ url: shareUrl, message }),
+      '_blank',
+      'noopener,noreferrer',
     );
   };
 
@@ -243,6 +259,13 @@ export const GymProfileView = ({
           {!isOwner && (
             <>
               <button
+                className={styles.whatsappBtn}
+                onClick={handleWhatsAppShare}
+              >
+                <WhatsAppIcon size={18} />
+                {t('shareOnWhatsApp')}
+              </button>
+              <button
                 className={styles.primaryBtn}
                 onClick={handleStartChat}
                 disabled={startChat.isPending || !data.userId}
@@ -269,10 +292,19 @@ export const GymProfileView = ({
             </>
           )}
           {isOwner && (
-            <Link href="/profile/edit" className={styles.secondaryBtn}>
-              <Settings size={18} />
-              {t('editProfile')}
-            </Link>
+            <>
+              <Link href="/profile/edit" className={styles.secondaryBtn}>
+                <Settings size={18} />
+                {t('editProfile')}
+              </Link>
+              <button
+                className={styles.whatsappBtn}
+                onClick={handleWhatsAppShare}
+              >
+                <WhatsAppIcon size={18} />
+                {t('shareOnWhatsApp')}
+              </button>
+            </>
           )}
         </div>
       </div>

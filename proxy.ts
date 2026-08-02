@@ -69,16 +69,38 @@ export default function proxy(request: NextRequest) {
         }
     }
 
+    const stripLocale = (path: string) => path.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
+
+    const isAuthFlowPath = (path: string) =>
+        authPaths.some((authPath) => path === authPath || path.startsWith(`${authPath}/`));
+
+    const normalizeNextPath = (rawNext: string | null) => {
+        if (!rawNext || !rawNext.startsWith('/') || rawNext.startsWith('//')) return null;
+
+        try {
+            const parsed = new URL(rawNext, request.url);
+            if (parsed.origin !== request.nextUrl.origin) return null;
+
+            const nextPathWithoutLocale = stripLocale(parsed.pathname);
+            if (isAuthFlowPath(nextPathWithoutLocale)) return null;
+
+            return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        } catch {
+            return null;
+        }
+    };
+
     if (!token && !isAuthPath && !isPublicPath) {
         const loginUrl = new URL(`/${locale}/login`, request.url);
-        loginUrl.searchParams.set('next', pathname);
+        loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
         return NextResponse.redirect(loginUrl);
     }
 
     // 6. If there IS a token and user tries to access auth pages, redirect to the home page
     if (token && isAuthPath) {
-        const homeUrl = new URL(`/${locale}`, request.url);
-        return NextResponse.redirect(homeUrl);
+        const nextPath = normalizeNextPath(request.nextUrl.searchParams.get('next'));
+        const redirectUrl = new URL(nextPath ?? `/${locale}`, request.url);
+        return NextResponse.redirect(redirectUrl);
     }
 
     // 7. Enforce role-based access control if user is logged in

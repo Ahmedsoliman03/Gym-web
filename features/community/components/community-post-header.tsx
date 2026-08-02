@@ -4,6 +4,7 @@ import type { ComponentProps, RefObject } from 'react';
 import { Bookmark, BookmarkCheck, Flag, MoreVertical, Pencil, Trash2, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { WhatsAppIcon } from '@/components/shared/whatsapp-icon';
 import { formatRelativeTime } from '@/utils/format';
 import type { CommunityPost } from '../types';
 
@@ -20,6 +21,7 @@ interface CommunityPostHeaderProps {
   onDelete: () => void;
   onSave: () => void;
   onReport: () => void;
+  onWhatsAppShare: () => void;
 }
 
 export function CommunityPostHeader(props: CommunityPostHeaderProps) {
@@ -59,11 +61,15 @@ function AuthorAvatar({ post, authorHref }: {
     aria-label={post.author.fullName}>{content}</Link> : <div className={className}>{content}</div>;
 }
 
-function PostMenu({ post, isMine, saved, savePending, onEdit, onDelete, onSave, onReport }: CommunityPostHeaderProps) {
+function PostMenu({ post, isMine, saved, savePending, onEdit, onDelete, onSave, onReport, onWhatsAppShare }: CommunityPostHeaderProps) {
   const t = useTranslations('Community');
+  const tShare = useTranslations('Share');
   const canEditContent = post.content.trim().length > 0;
   const item = 'flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-foreground/70 hover:text-white hover:bg-white/5 text-left';
   return <div className="absolute right-0 top-full mt-2 w-44 bg-[#161B22] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
+    <button className={`${item} text-[#25D366]`} onClick={onWhatsAppShare}>
+      <WhatsAppIcon size={14} />{tShare('shareWhatsApp')}
+    </button>
     {isMine ? <>
       {canEditContent && <button className={item} onClick={onEdit}><Pencil size={14} />{t('editPost')}</button>}
       <button className={`${item} text-red-500`} onClick={onDelete}><Trash2 size={14} />{t('deletePost')}</button>

@@ -1,7 +1,7 @@
 'use client';
 
 import {
-    Bookmark, BookmarkCheck, Share2, Zap, Briefcase, Building2, Banknote, Users,
+    Bookmark, BookmarkCheck, MessageCircle, Share2, Zap, Briefcase, Building2, Banknote, Users,
     MoreVertical, Edit2, Trash2, Power, RotateCcw,
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -23,6 +23,7 @@ import { SPECIALIZATIONS } from '@/constants/specializations';
 import type { Job } from '../types';
 import { useTextTranslation } from '@/hooks/use-text-translation';
 import toast from 'react-hot-toast';
+import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from '@/features/share-preview/whatsapp-share';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -159,6 +160,18 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
     };
 
     const handleShare = () => setShareOpen(true);
+
+    const handleWhatsAppShare = () => {
+        if (typeof window === 'undefined') return;
+        const message = `${getDefaultWhatsAppShareMessage('job', locale)}\n${job.title}`;
+
+        window.open(
+            buildWhatsAppShareUrl({ url: jobUrl, message }),
+            '_blank',
+            'noopener,noreferrer',
+        );
+        shareMutation.mutate(job.id);
+    };
 
     const confirmClose = () => {
         closeMutation.mutate(job.id, {
@@ -452,6 +465,10 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                             <Share2 size={18} />
                             <span>{t('sharePost')}</span>
                         </button>
+                        <button className={styles.actionButton} onClick={handleWhatsAppShare}>
+                            <MessageCircle size={18} />
+                            <span>{t_root('Share.shareWhatsApp')}</span>
+                        </button>
                     </div>
                 ) : (
                     <div className={styles.footerActions}>
@@ -487,6 +504,10 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                             <Share2 size={18} />
                             <span>{t('sharePost')}</span>
                         </button>
+                        <button className={styles.actionButton} onClick={handleWhatsAppShare}>
+                            <MessageCircle size={18} />
+                            <span>{t_root('Share.shareWhatsApp')}</span>
+                        </button>
                     </div>
                 )}
 
@@ -498,6 +519,7 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                 onClose={() => setShareOpen(false)}
                 url={jobUrl}
                 title={job.title}
+                contentType="job"
                 onShared={() => shareMutation.mutate(job.id)}
             />
 
