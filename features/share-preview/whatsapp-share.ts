@@ -1,4 +1,4 @@
-export type ShareContentType = 'post' | 'job' | 'coach' | 'gym';
+export type ShareContentType = 'post' | 'job' | 'coach' | 'gym' | 'progress';
 export type ShareLocale = 'en' | 'ar' | string;
 
 const DEFAULT_MESSAGES: Record<'en' | 'ar', Record<ShareContentType, string>> = {
@@ -7,12 +7,14 @@ const DEFAULT_MESSAGES: Record<'en' | 'ar', Record<ShareContentType, string>> = 
     job: 'Check out this job on GymSpot',
     coach: 'Check out this coach on GymSpot',
     gym: 'Check out this gym on GymSpot',
+    progress: 'Check out my weekly progress on GymSpot 💪',
   },
   ar: {
     post: 'شاهد هذا المنشور على GymSpot',
     job: 'شاهد هذه الوظيفة على GymSpot',
     coach: 'شاهد هذا المدرب على GymSpot',
     gym: 'شاهد هذا الجيم على GymSpot',
+    progress: 'شاهد تقدمي الأسبوعي على GymSpot 💪',
   },
 };
 

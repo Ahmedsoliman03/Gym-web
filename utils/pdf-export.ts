@@ -70,7 +70,7 @@ function triggerDownload(bytes: Uint8Array, fileName: string) {
 }
 
 /** Wait for fonts + every <img> inside the element so nothing captures half-loaded. */
-async function waitForAssets(element: HTMLElement): Promise<void> {
+export async function waitForAssets(element: HTMLElement): Promise<void> {
   if (typeof document !== 'undefined' && document.fonts?.ready) {
     try {
       await document.fonts.ready;

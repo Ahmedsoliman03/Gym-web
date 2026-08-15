@@ -9,6 +9,7 @@ import { UserProfile } from "../types";
 import * as Yup from "yup";
 import { getPhoneSchema, getFullNameSchema } from "@/utils/validations";
 import { WeightProgress } from "./WeightProgress";
+import { WeeklyProgressCardSection } from "./WeeklyProgressCard";
 import { useR2Upload } from "@/hooks/use-r2-upload";
 
 const styles = {
@@ -199,6 +200,9 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
 
       {/* Weight Progress Dashboard */}
       <WeightProgress />
+
+      {/* Shareable Weekly Progress Card */}
+      <WeeklyProgressCardSection />
 
       {/* Profile Details Edit Form */}
       <div className={styles.card}>
