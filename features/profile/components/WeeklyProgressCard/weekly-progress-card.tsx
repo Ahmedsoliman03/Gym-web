@@ -80,23 +80,22 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
     const changeLabel = L('This week', 'هذا الأسبوع');
 
     return (
-      <div className="flex flex-col gap-4">
-        {/* Live preview — full-resolution card scaled down visually; the ref
-            still targets it at its true 1080px layout size for capture. */}
+      // Live preview — full-resolution card scaled down visually; the ref
+      // still targets it at its true 1080px layout size for capture.
+      <div
+        className="shrink-0 rounded-2xl overflow-hidden border border-white/10 shadow-xl"
+        style={{ width: PREVIEW_WIDTH, height: height * previewScale }}
+      >
         <div
-          className="shrink-0 rounded-2xl overflow-hidden border border-white/10 shadow-xl"
-          style={{ width: PREVIEW_WIDTH, height: height * previewScale }}
+          style={{
+            width,
+            height,
+            transform: `scale(${previewScale})`,
+            transformOrigin: 'top left',
+          }}
         >
           <div
-            style={{
-              width,
-              height,
-              transform: `scale(${previewScale})`,
-              transformOrigin: 'top left',
-            }}
-          >
-            <div
-              ref={ref}
+            ref={ref}
               dir={isRtl ? 'rtl' : 'ltr'}
               style={{
                 boxSizing: 'border-box',
@@ -236,17 +235,6 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
             </div>
           </div>
         </div>
-
-        {/* <button
-          type="button"
-          onClick={onDownloadPdf}
-          disabled={isExportingPdf}
-          className="flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-white/10 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
-        >
-          {isExportingPdf ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-          {L('Download PDF', 'تحميل PDF')}
-        </button> */}
-      </div>
     );
   },
 );
