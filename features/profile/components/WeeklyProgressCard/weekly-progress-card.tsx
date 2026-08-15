@@ -96,19 +96,19 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
         >
           <div
             ref={ref}
-              dir={isRtl ? 'rtl' : 'ltr'}
-              style={{
-                boxSizing: 'border-box',
-                width,
-                height,
-                background: `linear-gradient(160deg, ${C.bg} 0%, #0F1B12 100%)`,
-                color: C.white,
-                padding: 80,
-                display: 'flex',
-                flexDirection: 'column',
-                fontFamily:
-                  'Geist, "Segoe UI", system-ui, -apple-system, sans-serif',
-              }}
+            dir={isRtl ? 'rtl' : 'ltr'}
+            style={{
+              boxSizing: 'border-box',
+              width,
+              height,
+              background: `linear-gradient(160deg, ${C.bg} 0%, #0F1B12 100%)`,
+              color: C.white,
+              padding: 80,
+              display: 'flex',
+              flexDirection: 'column',
+              fontFamily:
+                'Geist, "Segoe UI", system-ui, -apple-system, sans-serif',
+            }}
             >
               {/* Header */}
               <div

@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 
 import { WhatsAppIcon } from '@/components/shared/whatsapp-icon';
 import { useImageExport } from '@/hooks/use-image-export';
-import { usePdfExport } from '@/hooks/use-pdf-export';
 import {
   buildWhatsAppShareUrl,
   getDefaultWhatsAppShareMessage,
@@ -28,7 +27,6 @@ export function WeeklyProgressCardSection() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const { isExporting, isSharing, downloadImage, shareImage } = useImageExport();
-  const { isExporting: isExportingPdf } = usePdfExport();
 
   const logs = tracker?.logs ?? [];
   const goalWeight = tracker?.goalWeight ?? 0;
@@ -80,8 +78,6 @@ export function WeeklyProgressCardSection() {
       if (!ok) toast.error(isRtl ? 'تعذّر إنشاء الصورة' : 'Could not generate the image.');
     });
   };
-
-
 
   const handleShareWhatsApp = async () => {
     const message = getDefaultWhatsAppShareMessage('progress', locale);
