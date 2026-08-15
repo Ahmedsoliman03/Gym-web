@@ -28,12 +28,12 @@ export function WeeklyProgressCardSection() {
 
   const { isExporting, isSharing, downloadImage, shareImage } = useImageExport();
 
-  const logs = tracker?.logs ?? [];
   const goalWeight = tracker?.goalWeight ?? 0;
   const goalMode = tracker?.goalMode ?? 'lose';
 
   // Weekly window: the last 7 days ending on the most recent log entry.
   const weeklyData: WeeklyProgressData | null = useMemo(() => {
+    const logs = tracker?.logs ?? [];
     if (logs.length === 0) return null;
 
     const sorted = [...logs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -67,7 +67,7 @@ export function WeeklyProgressCardSection() {
       remainingToGoal,
       goalAchieved,
     };
-  }, [logs, goalWeight, goalMode]);
+  }, [tracker?.logs, goalWeight, goalMode]);
 
   if (!weeklyData) return null;
 
