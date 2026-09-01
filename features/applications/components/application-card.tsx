@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
     Mail, Phone, FileText, ExternalLink,
     MessageCircle, ChevronRight, Briefcase,
@@ -144,6 +144,7 @@ export interface ApplicationCardProps {
 
 export function ApplicationCard({ app }: ApplicationCardProps) {
     const t = useTranslations('Applications');
+    const locale = useLocale();
     const [contactOpen, setContactOpen] = useState(false);
     const markCvViewed = useMarkCvViewedMutation();
 
@@ -190,7 +191,7 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
                         </h3>
                         <p className={styles.appliedAt}>
                             <Calendar size={11} />
-                            {t('applied')} {formatRelativeTime(app.appliedAt, 'Just now')}
+                            {t('applied')} {formatRelativeTime(app.appliedAt, 'Just now', locale)}
                         </p>
                     </div>
                 </div>

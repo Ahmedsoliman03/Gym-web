@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, LogOut, MoreHorizontal, User, X } from 'lucide-react';
+import { ChevronDown, LifeBuoy, LogOut, MoreHorizontal, User, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { SUPPORT_WHATSAPP_URL } from '@/components/shared/contact-support';
 import { styles } from './navbar.styles';
 import { BrandLogo } from './brand-logo';
-import type { AccountLink, NavEntry } from './types';
+import type { AccountEntry, NavEntry } from './types';
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   entries: NavEntry[];
-  accountLinks: AccountLink[];
+  accountLinks: AccountEntry[];
   isLoggedIn: boolean;
   firstName: string;
   profilePhoto: string | null;
@@ -33,6 +34,7 @@ export function MobileMenu({
 }: MobileMenuProps) {
   const t = useTranslations('Navbar');
   const [moreOpen, setMoreOpen] = useState(false);
+  const [openMoreGroup, setOpenMoreGroup] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -40,6 +42,7 @@ export function MobileMenu({
     } else {
       document.body.style.overflow = 'unset';
       setMoreOpen(false);
+      setOpenMoreGroup(null);
     }
     return () => {
       document.body.style.overflow = 'unset';
@@ -49,6 +52,7 @@ export function MobileMenu({
   const closeAll = () => {
     onClose();
     setMoreOpen(false);
+    setOpenMoreGroup(null);
   };
 
   return (
@@ -185,17 +189,69 @@ export function MobileMenu({
                 >
                   <div className="overflow-hidden">
                     <div className="px-1 pb-2 flex flex-col">
-                      {accountLinks.map(({ href, label, icon: Icon }) => (
-                        <Link
-                          key={href}
-                          href={href as never}
-                          onClick={closeAll}
-                          className={styles.mobileMoreItem}
-                        >
-                          <Icon size={16} />
-                          {label}
-                        </Link>
-                      ))}
+                      {accountLinks.map((entry) => {
+                        if (entry.type === 'link') {
+                          const Icon = entry.icon;
+                          return (
+                            <Link
+                              key={entry.href}
+                              href={entry.href as never}
+                              onClick={closeAll}
+                              className={styles.mobileMoreItem}
+                            >
+                              <Icon size={16} />
+                              {entry.label}
+                            </Link>
+                          );
+                        }
+
+                        const GroupIcon = entry.icon;
+                        const isGroupOpen = openMoreGroup === entry.label;
+                        return (
+                          <div key={entry.label}>
+                            <button
+                              type="button"
+                              onClick={() => setOpenMoreGroup(isGroupOpen ? null : entry.label)}
+                              aria-expanded={isGroupOpen}
+                              className={styles.mobileMoreGroupTrigger}
+                            >
+                              <span className="flex items-center gap-3">
+                                <GroupIcon size={16} />
+                                {entry.label}
+                              </span>
+                              <ChevronDown size={14} className={styles.mobileMoreGroupChevron(isGroupOpen)} />
+                            </button>
+                            <div className={styles.mobileMoreSubPanel(isGroupOpen)}>
+                              <div className="overflow-hidden">
+                                {entry.items.map((item) => {
+                                  const ItemIcon = item.icon;
+                                  return (
+                                    <Link
+                                      key={item.href}
+                                      href={item.href as never}
+                                      onClick={closeAll}
+                                      className={styles.mobileMoreSubItem}
+                                    >
+                                      <ItemIcon size={16} />
+                                      {item.label}
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <a
+                        href={SUPPORT_WHATSAPP_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={closeAll}
+                        className={styles.mobileMoreItem}
+                      >
+                        <LifeBuoy size={16} />
+                        {t('contactSupport')}
+                      </a>
                     </div>
                   </div>
                 </div>

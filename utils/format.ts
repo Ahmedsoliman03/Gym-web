@@ -8,10 +8,11 @@ const RELATIVE_DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[
     { amount: Number.POSITIVE_INFINITY, unit: 'year' },
 ];
 
-export function formatRelativeTime(iso?: string, justNowLabel?: string): string {
+export function formatRelativeTime(iso?: string, justNowLabel?: string, locale?: string): string {
     if (!iso) return '';
     const date = new Date(iso);
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     if (Number.isNaN(seconds) || seconds < 0) return '';
     if (justNowLabel && seconds < 30) return justNowLabel;
     if (seconds < 60) return `${seconds}s`;
@@ -21,7 +22,19 @@ export function formatRelativeTime(iso?: string, justNowLabel?: string): string 
     if (h < 24) return `${h}h`;
     const d = Math.floor(h / 24);
     if (d < 7) return `${d}d`;
-    return date.toLocaleDateString();
+    // Older than a week: "2 Jul", or "2 Jul 2025" once it's crossed into a
+    // past calendar year — named month instead of the locale's numeric
+    // D/M/Y date, and the year omitted unless it's actually needed.
+    const sameYear = date.getFullYear() === now.getFullYear();
+    try {
+        return new Intl.DateTimeFormat(locale, {
+            day: 'numeric',
+            month: 'short',
+            ...(sameYear ? {} : { year: 'numeric' }),
+        }).format(date);
+    } catch {
+        return date.toLocaleDateString();
+    }
 }
 
 export function formatRelativeTimeLong(iso: string, locale: string): string {

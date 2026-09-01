@@ -10,6 +10,7 @@ import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import {
   useDeletePostMutation,
+  usePostSavers,
   usePostVoters,
   useReportPostMutation,
   useSavePostMutation,
@@ -21,13 +22,13 @@ import { CommunityMediaCarousel } from './community-media-carousel';
 import { CommunityPostContent } from './community-post-content';
 import { CommunityPostEngagement } from './community-post-engagement';
 import { CommunityPostHeader } from './community-post-header';
-import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from '@/features/share-preview/whatsapp-share';
 
 const CommunityComments = dynamic(() => import('./community-comments').then((mod) => mod.CommunityComments), { ssr: false });
 const DeletePostConfirm = dynamic(() => import('./delete-post-confirm').then((mod) => mod.DeletePostConfirm), { ssr: false });
 const EditPostModal = dynamic(() => import('./edit-post-modal').then((mod) => mod.EditPostModal), { ssr: false });
 const ReportPostModal = dynamic(() => import('./report-post-modal').then((mod) => mod.ReportPostModal), { ssr: false });
 const UpvotersSheet = dynamic(() => import('./upvoters-sheet').then((mod) => mod.UpvotersSheet), { ssr: false });
+const PostSaversSheet = dynamic(() => import('./post-savers-sheet').then((mod) => mod.PostSaversSheet), { ssr: false });
 const SharePostModal = dynamic(() => import('@/components/shared/share-post-modal').then((mod) => mod.SharePostModal), { ssr: false });
 
 const styles = {
@@ -76,8 +77,10 @@ export function CommunityPostCard({
   const [editOpen, setEditOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [likesOpen, setLikesOpen] = useState(false);
+  const [saversOpen, setSaversOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { data: votersData, isLoading: votersLoading } = usePostVoters(likesOpen ? post.id : null);
+  const { data: saversData, isLoading: saversLoading } = usePostSavers(saversOpen ? post.id : null);
   const { href: authorHref } = useProfileLink(post.author?.profileId, post.author?.userType);
   const { href: sharedByHref } = useProfileLink(post.sharedBy?.profileId, post.sharedBy?.userType);
   const liked = post.myVote === 'up';
@@ -114,16 +117,6 @@ export function CommunityPostCard({
     ? `${window.location.origin}/${locale}/community/${post.id}`
     : `/${locale}/community/${post.id}`;
   const postShareTitle = post.content?.slice(0, 80) || post.author.fullName;
-  const handleWhatsAppShare = () => {
-    if (typeof window === 'undefined') return;
-    const message = `${getDefaultWhatsAppShareMessage('post', locale)}\n${postShareTitle}`;
-
-    window.open(
-      buildWhatsAppShareUrl({ url: postUrl, message }),
-      '_blank',
-      'noopener,noreferrer',
-    );
-  };
   const shareLabelTarget =
     shareLabelMode === 'owner'
       ? { href: authorHref, name: post.author.fullName, prefix: t('sharedFrom') }
@@ -157,15 +150,15 @@ export function CommunityPostCard({
       onEdit={() => { setMenuOpen(false); setEditOpen(true); }}
       onDelete={() => { setMenuOpen(false); setDeleteOpen(true); }}
       onSave={() => { setMenuOpen(false); toggleSave(); }}
-      onReport={() => { setMenuOpen(false); setReportOpen(true); }}
-      onWhatsAppShare={() => { setMenuOpen(false); handleWhatsAppShare(); }} />
+      onReport={() => { setMenuOpen(false); setReportOpen(true); }} />
     <CommunityPostContent content={post.content} href={href} />
     {post.media.length > 0 && <CommunityMediaCarousel media={post.media} />}
-    <CommunityPostEngagement liked={liked} votePending={voteMutation.isPending}
+    <CommunityPostEngagement liked={liked} votePending={voteMutation.isPending} isMine={isMine}
       upVotes={post.upVotes} commentsCount={post.commentsCount} savesCount={savesCount}
       sharesCount={sharesCount} onLike={toggleLike} onComment={toggleComments}
       onShare={() => setShareOpen(true)}
-      onOpenLikes={() => setLikesOpen(true)} />
+      onOpenLikes={() => setLikesOpen(true)}
+      onOpenSavers={() => setSaversOpen(true)} />
     {commentsOpen && <CommunityComments postId={post.id} postAuthorId={post.author?.id}
       highlightCommentId={highlightCommentId} highlightReplyId={highlightReplyId} />}
     <SharePostModal isOpen={shareOpen} onClose={() => setShareOpen(false)} url={postUrl}
@@ -202,5 +195,8 @@ export function CommunityPostCard({
     <UpvotersSheet isOpen={likesOpen} onClose={() => setLikesOpen(false)}
       voters={votersData?.upVoters ?? []} isLoading={votersLoading}
       onVoterClick={() => setLikesOpen(false)} />
+    <PostSaversSheet isOpen={saversOpen} onClose={() => setSaversOpen(false)}
+      savers={saversData?.savers ?? []} isLoading={saversLoading}
+      onSaverClick={() => setSaversOpen(false)} />
   </article>;
 }

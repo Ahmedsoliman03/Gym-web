@@ -4,11 +4,13 @@ import { api } from '@/utils/axios';
 export interface NotificationPreferences {
     post_vote: boolean;
     post_share: boolean;
+    post_save: boolean;
     post_comment: boolean;
     comment_vote: boolean;
     comment_reply: boolean;
     reply_vote: boolean;
     job_application: boolean;
+    job_save: boolean;
 }
 
 export interface NotificationSettings {

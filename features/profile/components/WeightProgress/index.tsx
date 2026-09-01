@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { TrendingDown, TrendingUp, Target, Award, Sparkles, Check, X } from 'lucide-react';
+import { TrendingDown, TrendingUp, Target, Award, Sparkles } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
-import { CustomSelect } from '@/components/ui/custom-select';
-
 import { GoalMode } from './types';
+import { GoalSetupCard } from './goal-setup-card';
 import { ClearConfirmModal } from './clear-confirm-modal';
 import { CelebrationBanner } from './celebration-banner';
 import { WeightChart } from './weight-chart';
@@ -28,7 +27,11 @@ export function WeightProgress() {
   const locale = useLocale();
   const isRtl = locale === 'ar';
 
-  const { data: tracker } = useWeightTracker();
+  // `tracker` is undefined until the query resolves, which would otherwise
+  // make goalWeight/logs fall back to "nothing set yet" for a beat on every
+  // load — flashing the goal-setup prompt (or the empty-log state) even for
+  // clients who already have real data, right before it flips to the truth.
+  const { data: tracker, isPending: isTrackerLoading } = useWeightTracker();
   const upsertLog = useUpsertWeightLogMutation();
   const deleteLogMutation = useDeleteWeightLogMutation();
   const clearLogsMutation = useClearWeightLogsMutation();
@@ -46,9 +49,7 @@ export function WeightProgress() {
 
   const [newWeight, setNewWeight] = useState<string>('');
   const [newDate, setNewDate] = useState<string>('');
-  const [isEditingGoal, setIsEditingGoal] = useState<boolean>(false);
-  const [goalInput, setGoalInput] = useState<string>('0');
-  const [tempGoalMode, setTempGoalMode] = useState<GoalMode>('lose');
+  const [showGoalEditor, setShowGoalEditor] = useState<boolean>(false);
   const [weightError, setWeightError] = useState<string>('');
 
   // Track hovered point for SVG Chart tooltip
@@ -118,15 +119,12 @@ export function WeightProgress() {
     setShowClearConfirm(false);
   };
 
-  // Update goal weight + mode.
-  const handleSaveGoal = (mode: GoalMode) => {
-    const goalVal = parseFloat(goalInput);
-    if (!isNaN(goalVal) && goalVal > 0) {
-      updateGoalMutation.mutate(
-        { goalWeight: goalVal, goalMode: mode },
-        { onSuccess: () => setIsEditingGoal(false) },
-      );
-    }
+  // Update goal weight + mode (shared by first-time setup and later edits).
+  const handleSaveGoal = (value: number, mode: GoalMode) => {
+    updateGoalMutation.mutate(
+      { goalWeight: value, goalMode: mode },
+      { onSuccess: () => setShowGoalEditor(false) },
+    );
   };
 
   // Calculations
@@ -144,6 +142,30 @@ export function WeightProgress() {
   const isGoalAchieved = currentWeight > 0 && (
     goalMode === 'lose' ? currentWeight <= goalWeight : currentWeight >= goalWeight
   );
+
+  const hasGoal = goalWeight > 0;
+
+  // How far along the client is toward their goal, and — if there's enough
+  // history to estimate a pace — roughly how many weeks are left at that
+  // rate. Both are purely derived from data already on hand (no new fields).
+  const totalNeeded = Math.abs(initialWeight - goalWeight);
+  const progressPct = !hasGoal
+    ? 0
+    : isGoalAchieved
+      ? 100
+      : totalNeeded > 0
+        ? Math.min(100, Math.max(0, (weightDifference / totalNeeded) * 100))
+        : 0;
+
+  const weeksSpan = logs.length > 1
+    ? (new Date(logs[logs.length - 1].date).getTime() - new Date(logs[0].date).getTime()) / (7 * 86400000)
+    : 0;
+  // Require at least half a week of spread between the first and last log —
+  // anything shorter makes the extrapolated weekly rate wildly unreliable.
+  const weeklyRate = weeksSpan > 0.5 ? weightDifference / weeksSpan : 0;
+  const etaWeeks = hasGoal && !isGoalAchieved && weeklyRate > 0.05 && remainingToGoal > 0
+    ? Math.ceil(remainingToGoal / weeklyRate)
+    : null;
 
   // Stable props for the off-screen report so it doesn't re-render on unrelated
   // parent state changes (chart hover, input typing). Memoized + React.memo'd.
@@ -325,10 +347,15 @@ export function WeightProgress() {
           </h2>
         </div>
 
-        {/* Stats Summary cards — only meaningful once there's at least one
-            logged entry; otherwise they'd show a misleading "0.0kg". */}
-        {logs.length > 0 && (
-          <div className="flex items-center gap-4 flex-wrap">
+        {/* Stats Summary cards. "Total Lost/Gained" needs an actual logged
+            entry to mean anything; "To Goal" only needs a goal to exist —
+            deliberately independent so a client who set a goal but hasn't
+            logged a weight yet can still see/edit it (not stranded with no
+            way back to their own goal, which happened when this whole row
+            was gated on logs.length alone). */}
+        {(logs.length > 0 || hasGoal) && (
+          <div className="">
+            {logs.length > 0 && (
             <div className="bg-white/[0.02] border border-white/5 rounded-2xl px-4 py-2.5 flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 {goalMode === 'lose' ? <TrendingDown size={18} /> : <TrendingUp size={18} />}
@@ -348,7 +375,9 @@ export function WeightProgress() {
                 </p>
               </div>
             </div>
+            )}
 
+            {hasGoal && (
             <div className="bg-white/[0.02] border border-white/5 rounded-2xl px-4 py-2.5 flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <Target size={18} />
@@ -358,76 +387,65 @@ export function WeightProgress() {
                   <p className="text-[10px] uppercase font-bold text-foreground/40 tracking-wider">
                     {isRtl ? 'الهدف المتبقي' : 'To Goal'}
                   </p>
-                  {!isEditingGoal && (
-                    <button
-                      onClick={() => {
-                        setTempGoalMode(goalMode);
-                        setGoalInput(goalWeight.toString());
-                        setIsEditingGoal(true);
-                      }}
-                      className="text-[10px] text-primary hover:underline font-bold"
-                    >
-                      ({isRtl ? 'تعديل' : 'Edit'})
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setShowGoalEditor(true)}
+                    className="text-[10px] text-primary hover:underline font-bold"
+                  >
+                    ({isRtl ? 'تعديل' : 'Edit'})
+                  </button>
                 </div>
-                {isEditingGoal ? (
-                  <div className="flex flex-col gap-2 mt-2 z-20 relative">
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={goalInput}
-                        onChange={(e) => setGoalInput(e.target.value)}
-                        className="w-16 bg-white/[0.02] border border-white/5 rounded-xl px-2 py-1 text-xs text-white outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all text-center"
-                        autoFocus
-                      />
-                      <span className="text-xs text-foreground/40">{isRtl ? 'كجم' : 'kg'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CustomSelect
-                        value={tempGoalMode}
-                        onChange={(v) => setTempGoalMode(v as GoalMode)}
-                        options={[
-                          { value: 'lose', label: isRtl ? 'تنشيف / خسارة' : 'Cutting (Lose)' },
-                          { value: 'gain', label: isRtl ? 'تضخيم / زيادة' : 'Bulking (Gain)' },
-                        ]}
-                        placeholder={isRtl ? 'اختر الهدف' : 'Select goal'}
-                        className="flex-1 min-w-[150px]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSaveGoal(tempGoalMode)}
-                        aria-label={isRtl ? 'حفظ الهدف' : 'Save goal'}
-                        className="w-9 h-9 bg-primary text-black rounded-lg shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                      >
-                        <Check size={16} strokeWidth={3} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingGoal(false)}
-                        aria-label={isRtl ? 'إلغاء' : 'Cancel'}
-                        className="w-9 h-9 bg-white/10 text-white rounded-lg hover:bg-white/20 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
-                      >
-                        <X size={16} strokeWidth={3} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm font-black text-white">
-                    {remainingToGoal > 0 ? `${remainingToGoal.toFixed(1)}` : '0.0'} {isRtl ? 'كجم' : 'kg'}
-                    <span className="text-xs text-foreground/40 font-normal ms-1">
-                      ({isRtl ? 'من' : 'of'} {goalWeight}kg)
-                    </span>
-                  </p>
-                )}
+                <p className="text-sm font-black text-white">
+                  {remainingToGoal > 0 ? `${remainingToGoal.toFixed(1)}` : '0.0'} {isRtl ? 'كجم' : 'kg'}
+                  <span className="text-xs text-foreground/40 font-normal ms-1">
+                    ({isRtl ? 'من' : 'of'} {goalWeight}kg)
+                  </span>
+                </p>
               </div>
             </div>
+            )}
           </div>
         )}
       </div>
 
-      {logs.length === 0 ? (
+      {!isTrackerLoading && (!hasGoal || showGoalEditor) && (
+        <GoalSetupCard
+          isRtl={isRtl}
+          isSaving={updateGoalMutation.isPending}
+          onSave={handleSaveGoal}
+          initialGoalWeight={hasGoal ? goalWeight : undefined}
+          initialGoalMode={hasGoal ? goalMode : undefined}
+          onCancel={hasGoal ? () => setShowGoalEditor(false) : undefined}
+        />
+      )}
+
+      {hasGoal && logs.length > 0 && (
+        <div className="mb-8 relative z-10">
+          <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+            <span className="text-xs font-bold text-foreground/50">
+              {isRtl
+                ? `وصلت لـ ${progressPct.toFixed(0)}% من هدفك`
+                : `${progressPct.toFixed(0)}% of the way to your goal`}
+            </span>
+            {etaWeeks !== null && etaWeeks <= 104 && (
+              <span className="text-xs font-bold text-primary">
+                {isRtl
+                  ? `بالمعدل ده هتوصل خلال ~${etaWeeks} ${etaWeeks === 1 ? 'أسبوع' : 'أسابيع'}`
+                  : `At this pace, ~${etaWeeks} week${etaWeeks === 1 ? '' : 's'} to go`}
+              </span>
+            )}
+          </div>
+          <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-700"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {isTrackerLoading ? (
+        <div className="mb-8 h-40 rounded-2xl border border-white/5 bg-white/[0.02] animate-pulse relative z-10" />
+      ) : logs.length === 0 ? (
         <div className="mb-8 rounded-2xl border border-dashed border-white/10 bg-black/20 px-6 py-10 text-center relative z-10">
           <Sparkles size={22} className="text-primary mx-auto mb-3" />
           <p className="text-sm font-bold text-white">

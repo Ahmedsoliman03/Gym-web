@@ -6,6 +6,7 @@ import type {
     CreateJobInput,
     EditJobInput,
     Job,
+    JobSaver,
 } from '../types';
 
 // ─── Response shapes ──────────────────────────────────────────────────────────
@@ -298,6 +299,31 @@ export const useSaveJobMutation = () => {
         },
     });
 };
+
+// ─── Job savers (gym-owner-only — see JobSaversView) ───────────────────────────
+
+interface RawJobSaversResponse {
+    savesCount?: number;
+    savers?: JobSaver[];
+}
+
+export interface JobSaversResponse {
+    savesCount: number;
+    savers: JobSaver[];
+}
+
+export const getJobSavers = async (jobId: string): Promise<JobSaversResponse> => {
+    const { data } = await api.get<RawJobSaversResponse>(`/api/jobs/${jobId}/saves`);
+    const savers = data.savers ?? [];
+    return { savesCount: data.savesCount ?? savers.length, savers };
+};
+
+export const useJobSavers = (jobId: string | null, enabled = true) =>
+    useQuery<JobSaversResponse>({
+        queryKey: ['jobs', 'savers', jobId],
+        queryFn: () => getJobSavers(jobId as string),
+        enabled: enabled && !!jobId,
+    });
 
 export const shareJob = async (jobId: string): Promise<void> => {
     await api.post(`/api/jobs/${jobId}/share`);

@@ -14,7 +14,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Link } from '@/i18n/routing';
 import { formatRelativeTime } from '@/utils/format';
@@ -117,6 +117,7 @@ function CommentRow({
   highlightReplyId?: string;
 }) {
   const t = useTranslations('Community');
+  const locale = useLocale();
   const voteMutation = useVoteCommentMutation();
   const replyMutation = useReplyToCommentMutation();
   const deleteMutation = useDeleteCommentMutation();
@@ -289,7 +290,7 @@ function CommentRow({
                 )}
                 {comment.createdAt && (
                   <span className={styles.time}>
-                    {formatRelativeTime(comment.createdAt, t('justNow'))}
+                    {formatRelativeTime(comment.createdAt, t('justNow'), locale)}
                   </span>
                 )}
               </div>

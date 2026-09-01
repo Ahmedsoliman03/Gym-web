@@ -17,6 +17,11 @@ interface ContactSupportProps {
 // deployment. Falls back to the previously hardcoded number if unset.
 const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE || '201159133110';
 
+/** WhatsApp deep link to support — reused anywhere a plain `<a>` is needed
+ * instead of the `<ContactSupport>` component (e.g. inside a menu item that
+ * already renders its own icon). */
+export const SUPPORT_WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE}`;
+
 /**
  * Generic "Contact support" link that opens a WhatsApp chat with the support
  * number. Reused across auth screens (and anywhere support contact is needed).
@@ -31,7 +36,7 @@ export function ContactSupport({
 
     return (
         <a
-            href={`https://wa.me/${SUPPORT_PHONE}`}
+            href={SUPPORT_WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className={className}

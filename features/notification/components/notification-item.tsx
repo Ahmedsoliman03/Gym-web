@@ -6,6 +6,7 @@ import {
     Reply,
     Briefcase,
     Bell,
+    Bookmark,
     Share2,
     Trash2,
     User as UserIcon,
@@ -19,22 +20,26 @@ import { useProfileLink } from "@/features/profile/hooks/useProfileLink";
 const TYPE_ICON: Record<NotificationType, LucideIcon> = {
     post_vote: Heart,
     post_share: Share2,
+    post_save: Bookmark,
     post_comment: MessageCircle,
     comment_vote: Heart,
     comment_reply: Reply,
     reply_vote: Heart,
     job_application: Briefcase,
+    job_save: Bookmark,
 };
 
 // All notification types share the primary (green) accent for a consistent look.
 const TYPE_ACCENT: Record<NotificationType, string> = {
     post_vote: "bg-primary/20 text-primary",
     post_share: "bg-primary/20 text-primary",
+    post_save: "bg-primary/20 text-primary",
     post_comment: "bg-primary/20 text-primary",
     comment_vote: "bg-primary/20 text-primary",
     comment_reply: "bg-primary/20 text-primary",
     reply_vote: "bg-primary/20 text-primary",
     job_application: "bg-primary/20 text-primary",
+    job_save: "bg-primary/20 text-primary",
 };
 
 const styles = {

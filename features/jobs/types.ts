@@ -1,5 +1,20 @@
 export type JobStatus = 'open' | 'closed';
 
+/** A user who saved a job — can be any account type (client/coach/gym
+ * browsing jobs), mirrors community's PostAuthor shape. */
+export interface JobSaverUser {
+    id: string;
+    profileId: string;
+    fullName: string;
+    userType: 'coach' | 'gym' | 'client';
+    photo?: string | null;
+}
+
+export interface JobSaver {
+    user: JobSaverUser;
+    savedAt?: string;
+}
+
 export interface JobGym {
     id: string;
     gymName: string;

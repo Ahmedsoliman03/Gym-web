@@ -1,7 +1,7 @@
 'use client';
 
 import {
-    Bookmark, BookmarkCheck, MessageCircle, Share2, Zap, Briefcase, Building2, Banknote, Users,
+    Bookmark, BookmarkCheck, Share2, Zap, Briefcase, Building2, Banknote, Users,
     MoreVertical, Edit2, Trash2, Power, RotateCcw,
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -12,9 +12,11 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useProfileUser } from '@/features/profile/hooks/useProfileUser';
 import { formatRelativeTime } from '@/utils/format';
 import { useProfileLink } from '@/features/profile/hooks/useProfileLink';
+import { JobSaversSheet } from './job-savers-sheet';
 import {
     useCloseJobMutation,
     useDeleteJobMutation,
+    useJobSavers,
     useReopenJobMutation,
     useSaveJobMutation,
     useShareJobMutation,
@@ -23,7 +25,6 @@ import { SPECIALIZATIONS } from '@/constants/specializations';
 import type { Job } from '../types';
 import { useTextTranslation } from '@/hooks/use-text-translation';
 import toast from 'react-hot-toast';
-import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from '@/features/share-preview/whatsapp-share';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -104,11 +105,13 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
+    const [saversOpen, setSaversOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [closeOpen, setCloseOpen] = useState(false);
     const [reopenOpen, setReopenOpen] = useState(false);
     const [contentExpanded, setContentExpanded] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const { data: saversData, isLoading: saversLoading } = useJobSavers(saversOpen ? job.id : null);
 
     const CONTENT_TRUNCATE_AT = 240;
     const {
@@ -137,7 +140,7 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
         !!job.gym?.id &&
         (job.gym.id === myGymProfileId || job.gym.id === profile.id);
     const saved = !!job.isSaved;
-    const sharesCount = job.sharesCount ?? 0;
+    // const sharesCount = job.sharesCount ?? 0; // share badge hidden — see stats row below
     const savesCount = job.savesCount ?? 0;
     const applicationsCount = job.applicationsCount ?? 0;
     const isClosed = !!job.closedAt;
@@ -160,18 +163,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
     };
 
     const handleShare = () => setShareOpen(true);
-
-    const handleWhatsAppShare = () => {
-        if (typeof window === 'undefined') return;
-        const message = `${getDefaultWhatsAppShareMessage('job', locale)}\n${job.title}`;
-
-        window.open(
-            buildWhatsAppShareUrl({ url: jobUrl, message }),
-            '_blank',
-            'noopener,noreferrer',
-        );
-        shareMutation.mutate(job.id);
-    };
 
     const confirmClose = () => {
         closeMutation.mutate(job.id, {
@@ -250,9 +241,9 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                                 <h4 className={styles.authorName}>{gymName}</h4>
                             )}
                             <p className={styles.authorMeta}>
-                                {gymLocation || formatRelativeTime(job.createdAt, t('justNow'))}
+                                {gymLocation || formatRelativeTime(job.createdAt, t('justNow'), locale)}
                                 {gymLocation && job.createdAt
-                                    ? ` · ${formatRelativeTime(job.createdAt, t('justNow'))}`
+                                    ? ` · ${formatRelativeTime(job.createdAt, t('justNow'), locale)}`
                                     : ''}
                             </p>
                         </div>
@@ -417,16 +408,35 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                             <span className={styles.statNum}>{applicationsCount}</span>
                         </div>
                     )}
-                    <div className={styles.statChip}>
-                        <Bookmark size={14} />
-                        <span>{t('savesLabel')}</span>
-                        <span className={styles.statNum}>{savesCount}</span>
-                    </div>
+                    {isMine ? (
+                        <button
+                            type="button"
+                            onClick={() => setSaversOpen(true)}
+                            className={styles.statChipLink}
+                            aria-label={t('saversTitle')}
+                        >
+                            <Bookmark size={14} />
+                            <span>{t('savesLabel')}</span>
+                            <span className={styles.statNum}>{savesCount}</span>
+                        </button>
+                    ) : (
+                        <div className={styles.statChip}>
+                            <Bookmark size={14} />
+                            <span>{t('savesLabel')}</span>
+                            <span className={styles.statNum}>{savesCount}</span>
+                        </div>
+                    )}
+                    {/* Unlike a post, a job can't be "shared to your profile" —
+                        this counter is just generic external-share clicks
+                        (WhatsApp/copy-link), not a comparable social signal.
+                        Hidden rather than a meaningful stat to show alongside
+                        applications/saves.
                     <div className={styles.statChip}>
                         <Share2 size={14} />
                         <span>{t('sharesLabel')}</span>
                         <span className={styles.statNum}>{sharesCount}</span>
                     </div>
+                    */}
                 </div>
 
                 {/* Footer actions */}
@@ -465,10 +475,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                             <Share2 size={18} />
                             <span>{t('sharePost')}</span>
                         </button>
-                        <button className={styles.actionButton} onClick={handleWhatsAppShare}>
-                            <MessageCircle size={18} />
-                            <span>{t_root('Share.shareWhatsApp')}</span>
-                        </button>
                     </div>
                 ) : (
                     <div className={styles.footerActions}>
@@ -504,10 +510,6 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                             <Share2 size={18} />
                             <span>{t('sharePost')}</span>
                         </button>
-                        <button className={styles.actionButton} onClick={handleWhatsAppShare}>
-                            <MessageCircle size={18} />
-                            <span>{t_root('Share.shareWhatsApp')}</span>
-                        </button>
                     </div>
                 )}
 
@@ -521,6 +523,14 @@ export function JobCard({ job, onApply, onEdit, onDelete, index }: JobCardProps)
                 title={job.title}
                 contentType="job"
                 onShared={() => shareMutation.mutate(job.id)}
+            />
+
+            <JobSaversSheet
+                isOpen={saversOpen}
+                onClose={() => setSaversOpen(false)}
+                savers={saversData?.savers ?? []}
+                isLoading={saversLoading}
+                onSaverClick={() => setSaversOpen(false)}
             />
 
             {/* Close confirmation */}

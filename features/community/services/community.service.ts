@@ -11,6 +11,7 @@ import type {
     CommunityPost,
     FeedPage,
     PostAuthor,
+    PostSaver,
     VoteValue,
 } from '../types';
 import {
@@ -641,6 +642,53 @@ export const usePostVoters = (postId: string | null, enabled = true) =>
     useQuery<PostVotersResponse>({
         queryKey: ['community', 'posts', 'voters', postId],
         queryFn: () => getPostVoters(postId as string),
+        enabled: enabled && !!postId,
+    });
+
+// ─── Post savers (owner-only — see PostSaversView) ─────────────────────────────
+
+interface RawPostSaversResponse {
+    savesCount?: number;
+    savers?: unknown[];
+}
+
+export interface PostSaversResponse {
+    savesCount: number;
+    savers: PostSaver[];
+}
+
+const normalizeSaver = (raw: unknown): PostSaver | null => {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, unknown>;
+    if (r.user && typeof r.user === 'object') {
+        return r as unknown as PostSaver;
+    }
+    if (typeof r.id === 'string' && typeof r.fullName === 'string') {
+        return {
+            user: {
+                id: r.id as string,
+                profileId: (r.profileId as string) ?? (r.id as string),
+                fullName: r.fullName as string,
+                userType: (r.userType as PostAuthor['userType']) ?? 'client',
+                photo: (r.photo as string | null | undefined) ?? null,
+            },
+        };
+    }
+    return null;
+};
+
+export const getPostSavers = async (postId: string): Promise<PostSaversResponse> => {
+    const { data } = await api.get<RawPostSaversResponse>(
+        `/api/community/posts/${postId}/saves`,
+    );
+    const savers = (data.savers ?? []).map(normalizeSaver).filter((s): s is PostSaver => s !== null);
+    return { savesCount: data.savesCount ?? savers.length, savers };
+};
+
+export const usePostSavers = (postId: string | null, enabled = true) =>
+    useQuery<PostSaversResponse>({
+        queryKey: ['community', 'posts', 'savers', postId],
+        queryFn: () => getPostSavers(postId as string),
         enabled: enabled && !!postId,
     });
 

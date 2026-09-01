@@ -1,11 +1,13 @@
 export type NotificationType =
     | 'post_vote'
     | 'post_share'
+    | 'post_save'
     | 'post_comment'
     | 'comment_vote'
     | 'comment_reply'
     | 'reply_vote'
-    | 'job_application';
+    | 'job_application'
+    | 'job_save';
 
 export interface NotificationActor {
     id: string;

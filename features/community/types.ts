@@ -51,6 +51,11 @@ export interface CommentVoter {
     votedAt?: string;
 }
 
+export interface PostSaver {
+    user: PostAuthor;
+    savedAt?: string;
+}
+
 export interface CommunityComment {
     id: string;
     author: PostAuthor;

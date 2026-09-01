@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
     Building2, MapPin, FileText, ExternalLink,
     Calendar, CheckCircle2, Clock, Eye, EyeOff,
@@ -40,6 +40,7 @@ export interface MyApplicationCardProps {
 
 export function MyApplicationCard({ app }: MyApplicationCardProps) {
     const t = useTranslations('Applications');
+    const locale = useLocale();
     const job = app.job;
     const gym = job?.gym;
     const gymPhoto = gym?.mainPhoto ?? null;
@@ -70,7 +71,7 @@ export function MyApplicationCard({ app }: MyApplicationCardProps) {
                     </Link>
                     <p className={styles.appliedAt}>
                         <Calendar size={11} />
-                        {t('applied')} {formatRelativeTime(app.appliedAt, 'Just now')}
+                        {t('applied')} {formatRelativeTime(app.appliedAt, 'Just now', locale)}
                     </p>
                 </div>
             </div>

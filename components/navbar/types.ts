@@ -9,3 +9,7 @@ export type NavEntry =
   | { type: 'group'; label: string; items: NavItem[] };
 
 export type AccountLink = { href: string; label: string; icon: LucideIcon };
+
+export type AccountEntry =
+  | { type: 'link'; href: string; label: string; icon: LucideIcon }
+  | { type: 'group'; label: string; icon: LucideIcon; items: AccountLink[] };

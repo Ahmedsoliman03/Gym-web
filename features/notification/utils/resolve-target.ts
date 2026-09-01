@@ -35,6 +35,40 @@ const postHrefFromLink = (link?: string): NotificationTarget => {
     return null;
 };
 
+/** Query keys to invalidate so the destination page refetches fresh data
+ * (e.g. a new comment/reply/save) instead of showing a stale cached view. */
+export const notificationInvalidationKeys = (notification: AppNotification): unknown[][] => {
+    const { type, data } = notification;
+
+    switch (type) {
+        case "post_vote":
+        case "post_share":
+        case "post_save":
+        case "post_comment":
+        case "comment_vote":
+        case "comment_reply":
+        case "reply_vote":
+            return data.postId
+                ? [
+                      ["community", "post", data.postId],
+                      ["community", "comments", data.postId],
+                  ]
+                : [];
+
+        case "job_application":
+            return [
+                ["applications", "mine-jobs"],
+                ...(data.jobId ? [["applications", "by-job", data.jobId]] : []),
+            ];
+
+        case "job_save":
+            return data.jobId ? [["jobs", data.jobId]] : [];
+
+        default:
+            return [];
+    }
+};
+
 export const resolveNotificationTarget = (notification: AppNotification): NotificationTarget => {
     const { type, data, link } = notification;
 
@@ -45,6 +79,10 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
             return postHref(data.postId);
 
         case "post_share":
+            if (!data.postId) return postHrefFromLink(link);
+            return postHref(data.postId);
+
+        case "post_save":
             if (!data.postId) return postHrefFromLink(link);
             return postHref(data.postId);
 
@@ -72,6 +110,9 @@ export const resolveNotificationTarget = (notification: AppNotification): Notifi
                     ? `/applications?jobId=${data.jobId}`
                     : "/applications",
             };
+
+        case "job_save":
+            return data.jobId ? { href: `/jobs/${data.jobId}` } : null;
 
         default:
             return null;

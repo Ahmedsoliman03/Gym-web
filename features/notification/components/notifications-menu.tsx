@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell, X, CheckCheck, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/routing";
 import { NotificationItem } from "./notification-item";
 import { NotificationItemSkeleton } from "@/components/ui/skeletons/notification-item-skeleton";
-import { resolveNotificationTarget } from "../utils/resolve-target";
+import { resolveNotificationTarget, notificationInvalidationKeys } from "../utils/resolve-target";
 import type { AppNotification } from "../types";
 import {
     useNotificationsQuery,
@@ -41,6 +42,7 @@ export const NotificationsMenu = ({
     const locale = useLocale();
     const isRtl = locale === 'ar';
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const [isOpen, setIsOpen] = useState(false);
     const [visibleCount, setVisibleCount] = useState(10);
@@ -77,6 +79,11 @@ export const NotificationsMenu = ({
 
         const target = resolveNotificationTarget(notification);
         if (!target) return;
+
+        for (const key of notificationInvalidationKeys(notification)) {
+            queryClient.invalidateQueries({ queryKey: key });
+        }
+
         router.push(target.href);
     };
 

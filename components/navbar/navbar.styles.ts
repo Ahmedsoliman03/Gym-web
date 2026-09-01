@@ -10,14 +10,14 @@ export const styles = {
   logoTitle: "font-black text-xl leading-none",
   desktopNav: "hidden md:flex items-center gap-8",
   navLink: (isActive: boolean) => `
-    text-sm font-bold transition-all uppercase relative group/nav
+    text-sm font-bold transition-all uppercase relative group/nav whitespace-nowrap shrink-0
     ${isActive ? "text-primary" : "text-foreground/60 hover:text-primary"}
   `,
   activeIndicator: "absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]",
   hoverIndicator: "absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 origin-center opacity-50",
   navGroup: "relative",
   navGroupTrigger: (isActive: boolean) => `
-    flex items-center gap-1 text-sm font-bold uppercase transition-all relative group/nav cursor-pointer
+    flex items-center gap-1 text-sm font-bold uppercase transition-all relative group/nav cursor-pointer whitespace-nowrap shrink-0
     ${isActive ? "text-primary" : "text-foreground/60 hover:text-primary"}
   `,
   navGroupChevron: (isOpen: boolean) =>
@@ -53,6 +53,12 @@ export const styles = {
   `,
   userMenuPanel: "absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-[120] overflow-hidden py-2 animate-in fade-in slide-in-from-top-2",
   userMenuItem: "flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all",
+  userMenuGroupTrigger: "flex items-center justify-between gap-3 w-full px-4 py-3 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 transition-all cursor-pointer",
+  userMenuGroupChevron: (isOpen: boolean) =>
+    `transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`,
+  userMenuSubPanel: (isOpen: boolean) =>
+    `grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`,
+  userMenuSubItem: "flex items-center gap-3 w-full ps-9 pe-4 py-2.5 text-sm font-bold text-foreground/60 hover:text-primary hover:bg-white/5 transition-all",
   userMenuDanger: "flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-500/80 hover:text-red-500 hover:bg-red-500/5 transition-all cursor-pointer text-left",
   userMenuDivider: "h-[1px] bg-white/5 my-1",
   mobileMenuBtn: (isOpen: boolean) => `
@@ -78,6 +84,12 @@ export const styles = {
   mobileLinkDot: "w-3 h-3 rounded-full bg-primary transform scale-0 group-hover/mobile:scale-100 transition-transform",
   mobileProfileChip: "flex items-center gap-3 mb-8 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all",
   mobileMoreItem: "flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all",
+  mobileMoreGroupTrigger: "flex items-center justify-between gap-3 w-full px-3 py-2.5 text-sm font-bold text-foreground/70 hover:text-primary hover:bg-white/5 rounded-lg transition-all cursor-pointer",
+  mobileMoreGroupChevron: (isOpen: boolean) =>
+    `transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`,
+  mobileMoreSubPanel: (isOpen: boolean) =>
+    `grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`,
+  mobileMoreSubItem: "flex items-center gap-3 w-full ps-8 pe-3 py-2 text-sm font-bold text-foreground/60 hover:text-primary hover:bg-white/5 rounded-lg transition-all",
   mobileLogout: "flex items-center gap-3 w-full px-3 py-3 text-base font-black uppercase text-red-500/80 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all text-left cursor-pointer",
   mobileFooter: "mt-auto pt-12 border-t border-white/5 opacity-50 text-xs font-bold uppercase",
 };

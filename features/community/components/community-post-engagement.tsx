@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 interface CommunityPostEngagementProps {
   liked: boolean;
   votePending: boolean;
+  isMine: boolean;
   upVotes: number;
   commentsCount: number;
   savesCount: number;
@@ -14,6 +15,7 @@ interface CommunityPostEngagementProps {
   onComment: () => void;
   onShare: () => void;
   onOpenLikes: () => void;
+  onOpenSavers: () => void;
 }
 
 export function CommunityPostEngagement(props: CommunityPostEngagementProps) {
@@ -23,7 +25,7 @@ export function CommunityPostEngagement(props: CommunityPostEngagementProps) {
   </>;
 }
 
-function EngagementMeta({ upVotes, commentsCount, savesCount, onOpenLikes, onComment }: CommunityPostEngagementProps) {
+function EngagementMeta({ upVotes, commentsCount, savesCount, isMine, onOpenLikes, onOpenSavers, onComment }: CommunityPostEngagementProps) {
   const t = useTranslations('Community');
   if (upVotes === 0 && commentsCount === 0 && savesCount === 0) return null;
   const button = 'inline-flex items-center gap-1 text-primary/80 hover:text-primary rounded';
@@ -34,9 +36,19 @@ function EngagementMeta({ upVotes, commentsCount, savesCount, onOpenLikes, onCom
     {commentsCount > 0 && <button type="button" onClick={onComment} className={button} aria-label={t('comment')}>
       <MessageCircle size={12} />{t('commentCount', { count: commentsCount })}
     </button>}
-    {savesCount > 0 && <span className="inline-flex items-center gap-1 text-primary/80">
-      <Bookmark size={12} />{t('savesCount', { count: savesCount })}
-    </span>}
+    {savesCount > 0 && (
+      // Who saved a post is private — only the owner can open the list;
+      // everyone else still sees the count, just not as a clickable button.
+      isMine ? (
+        <button type="button" onClick={onOpenSavers} className={button} aria-label={t('viewSavers')}>
+          <Bookmark size={12} />{t('savesCount', { count: savesCount })}
+        </button>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-primary/80">
+          <Bookmark size={12} />{t('savesCount', { count: savesCount })}
+        </span>
+      )
+    )}
   </div>;
 }
 
