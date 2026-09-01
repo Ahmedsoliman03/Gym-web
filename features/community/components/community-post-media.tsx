@@ -18,7 +18,7 @@ export function CommunityPostMedia({
   if (mediaType === 'video') {
     return (
       <button type="button" className="relative w-full h-full" onClick={onOpen}>
-        <video src={file} className={className} muted playsInline preload="metadata" />
+        <video src={file} className={className} muted autoPlay loop playsInline preload="auto" />
         <span className="absolute inset-0 flex items-center justify-center bg-black/10">
           <Maximize2 className="text-white drop-shadow-lg" size={28} />
         </span>

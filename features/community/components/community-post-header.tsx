@@ -36,7 +36,7 @@ export function CommunityPostHeader(props: CommunityPostHeaderProps) {
         </Link> : <p className="font-bold text-foreground text-sm">{post.author.fullName}</p>}
         <p className="text-[11px] text-foreground/40 uppercase font-bold tracking-wider">
           {t(`role.${post.author.userType}`)}
-          {post.createdAt ? ` · ${formatRelativeTime(post.createdAt)}` : ''}
+          {post.createdAt ? ` · ${formatRelativeTime(post.createdAt, t('justNow'))}` : ''}
         </p>
       </div>
     </div>

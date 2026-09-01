@@ -28,7 +28,7 @@ const styles = {
   title: 'text-lg font-bold text-foreground',
   subtitle: 'text-sm text-foreground/60 mt-2',
   footer:
-    'flex items-center justify-end gap-3 px-5 py-4 border-t border-white/5',
+    'flex items-center  gap-3 px-5 py-4 border-t border-white/5',
   cancelBtn:
     'px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-foreground font-bold text-sm transition-all disabled:opacity-50',
   dangerBtn:
@@ -82,15 +82,7 @@ export function ConfirmDialog({
           {body && <p className={styles.subtitle}>{body}</p>}
         </div>
         <div className={styles.footer}>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className={styles.cancelBtn}
-          >
-            {cancelLabel}
-          </button>
-          <button
+            <button
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
@@ -99,6 +91,15 @@ export function ConfirmDialog({
             {isSubmitting && <span className={styles.spinner} />}
             {isSubmitting && submittingLabel ? submittingLabel : confirmLabel}
           </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className={styles.cancelBtn}
+          >
+            {cancelLabel}
+          </button>
+        
         </div>
       </div>
     </div>

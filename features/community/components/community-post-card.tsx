@@ -85,6 +85,10 @@ export function CommunityPostCard({
   const savesCount = post.savesCount ?? 0;
   const sharesCount = post.sharesCount ?? 0;
   const isMine = !!profile?.id && profile.id === post.author?.id;
+  // Only gyms/coaches can publish to their profile, so only they can share
+  // someone else's post onto it — mirrors the backend's `can_publish` gate.
+  const canShareToProfile =
+    !isMine && (profile?.userType === 'gym' || profile?.userType === 'coach');
 
   useEffect(() => {
     const closeMenu = (event: MouseEvent) => {
@@ -167,7 +171,7 @@ export function CommunityPostCard({
     <SharePostModal isOpen={shareOpen} onClose={() => setShareOpen(false)} url={postUrl}
       contentType="post"
       title={postShareTitle}
-      onShareToProfile={!isMine ? async () => {
+      onShareToProfile={canShareToProfile ? async () => {
           try {
             await shareMutation.mutateAsync(post.id);
             toast.success(tShare('shareToProfileSuccess'));

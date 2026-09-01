@@ -289,7 +289,7 @@ function CommentRow({
                 )}
                 {comment.createdAt && (
                   <span className={styles.time}>
-                    {formatRelativeTime(comment.createdAt)}
+                    {formatRelativeTime(comment.createdAt, t('justNow'))}
                   </span>
                 )}
               </div>

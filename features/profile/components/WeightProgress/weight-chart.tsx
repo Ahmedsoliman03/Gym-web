@@ -177,6 +177,7 @@ export function WeightChart({
                 className="cursor-pointer"
                 onMouseEnter={() => onHoverPoint(i, { x: p.x, y: p.y, weight: p.weight, date: p.date })}
                 onMouseLeave={() => onHoverPoint(null, null)}
+                onClick={() => onHoverPoint(isHovered ? null : i, isHovered ? null : { x: p.x, y: p.y, weight: p.weight, date: p.date })}
               />
             </g>
           );

@@ -16,7 +16,6 @@ import { useWeightTracker } from '../../services/weight-tracker.service';
 import { WeeklyProgressCard } from './weekly-progress-card';
 import type { CardFormat, WeeklyProgressData } from './types';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const FORMAT: CardFormat = 'square';
 
 export function WeeklyProgressCardSection() {
@@ -31,21 +30,19 @@ export function WeeklyProgressCardSection() {
   const goalWeight = tracker?.goalWeight ?? 0;
   const goalMode = tracker?.goalMode ?? 'lose';
 
-  // Weekly window: the last 7 days ending on the most recent log entry.
-  const weeklyData: WeeklyProgressData | null = useMemo(() => {
+  // Whole journey: first-ever log to the most recent one, so the shareable
+  // card always reflects real progress instead of collapsing to "0kg" when
+  // check-ins happen weeks apart (see the sibling Body Analytics dashboard,
+  // which uses the same full-history approach for its chart and totals).
+  const journeyData: WeeklyProgressData | null = useMemo(() => {
     const logs = tracker?.logs ?? [];
     if (logs.length === 0) return null;
 
     const sorted = [...logs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const firstLog = sorted[0];
     const currentLog = sorted[sorted.length - 1];
+    const startWeight = firstLog.weight;
     const currentWeight = currentLog.weight;
-    const weekEnd = currentLog.date;
-    const weekStartCutoff = new Date(currentLog.date).getTime() - 6 * DAY_MS;
-
-    const withinWeek = sorted.filter((l) => new Date(l.date).getTime() >= weekStartCutoff);
-    const startLog = withinWeek[0] ?? sorted[0];
-    const startWeight = startLog.weight;
-    const weekStart = startLog.date;
 
     const remainingToGoal =
       goalWeight > 0
@@ -57,19 +54,20 @@ export function WeeklyProgressCardSection() {
       goalWeight > 0 && (goalMode === 'lose' ? currentWeight <= goalWeight : currentWeight >= goalWeight);
 
     return {
-      weekStart,
-      weekEnd,
+      journeyStart: firstLog.date,
+      journeyEnd: currentLog.date,
       startWeight,
       currentWeight,
-      weeklyChange: currentWeight - startWeight,
+      totalChange: currentWeight - startWeight,
       goalWeight,
       goalMode,
       remainingToGoal,
       goalAchieved,
+      chartPoints: sorted.map((l) => ({ date: l.date, weight: l.weight })),
     };
   }, [tracker?.logs, goalWeight, goalMode]);
 
-  if (!weeklyData) return null;
+  if (!journeyData) return null;
 
   const fileBase = `gymspot-weekly-progress${isRtl ? '-ar' : ''}`;
 
@@ -99,42 +97,42 @@ export function WeeklyProgressCardSection() {
           {isRtl ? 'بطاقة قابلة للمشاركة' : 'Shareable Card'}
         </span>
         <h2 className="text-2xl font-black tracking-tight text-white">
-          {isRtl ? 'بطاقة التقدم الأسبوعي' : 'Weekly Progress Card'}
+          {isRtl ? 'بطاقة رحلتك' : 'Your Journey Card'}
         </h2>
         <p className="text-sm text-foreground/50 mt-1 max-w-md">
           {isRtl
-            ? 'شارك تقدمك الأسبوعي مع أصدقائك — صورة جاهزة للنشر على وسائل التواصل.'
-            : 'Share your weekly progress with friends — a ready-to-post social image.'}
+            ? 'شارك رحلتك الكاملة مع أصدقائك — صورة جاهزة للنشر على وسائل التواصل.'
+            : 'Share your full progress journey with friends — a ready-to-post social image.'}
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+      <div className="flex flex-col items-center gap-6">
         <WeeklyProgressCard
           ref={cardRef}
-          data={weeklyData}
+          data={journeyData}
           isRtl={isRtl}
           format={FORMAT}
         />
 
-        <div className="flex-1 w-full flex flex-col gap-3 max-w-xs">
+        <div className="flex flex-row gap-3 w-full max-w-sm">
           <button
             type="button"
             onClick={handleDownloadImage}
             disabled={isExporting}
-            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-primary text-black rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-primary text-black rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
           >
             {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            {isRtl ? 'تحميل كصورة' : 'Download Image'}
+            {isRtl ? 'تحميل كصورة' : 'Download'}
           </button>
 
           <button
             type="button"
             onClick={handleShareWhatsApp}
             disabled={isSharing}
-            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-[#25D366]/15 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-[#25D366]/15 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
           >
             {isSharing ? <Loader2 size={16} className="animate-spin" /> : <WhatsAppIcon size={16} />}
-            {isRtl ? 'مشاركة عبر واتساب' : 'Share to WhatsApp'}
+            {isRtl ? 'واتساب' : 'WhatsApp'}
           </button>
         </div>
       </div>

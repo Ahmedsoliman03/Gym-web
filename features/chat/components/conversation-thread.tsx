@@ -278,6 +278,7 @@ export const ConversationThread = ({
             <MessageComposer
                 conversationId={conversationId}
                 hideQuickReplies={hideQuickReplies}
+                otherUserType={other?.userType}
             />
         </>
     );

@@ -114,9 +114,11 @@ const meAsChatUser = (
 export const MessageComposer = ({
     conversationId,
     hideQuickReplies = false,
+    otherUserType,
 }: {
     conversationId: string;
     hideQuickReplies?: boolean;
+    otherUserType?: ChatUser['userType'];
 }) => {
     const t = useTranslations('Chat');
     const locale = useLocale();
@@ -124,10 +126,15 @@ export const MessageComposer = ({
     const { profile } = useProfileUser();
     const { sendMessage, startTyping, stopTyping, status } = useChatSocket();
     const userType = profile?.userType || 'client';
+    // Prefer suggestions tailored to who's on the other end of the
+    // conversation (e.g. a coach messaging a gym vs. messaging a client);
+    // fall back to the generic per-role set when that pairing has no copy.
+    const pairedKey = otherUserType ? `reply_${userType}_to_${otherUserType}` : null;
+    const replyKeyBase = pairedKey && t.has(`${pairedKey}_1`) ? pairedKey : `reply_${userType}`;
     const quickReplies = [
-        t(`reply_${userType}_1`),
-        t(`reply_${userType}_2`),
-        t(`reply_${userType}_3`),
+        t(`${replyKeyBase}_1`),
+        t(`${replyKeyBase}_2`),
+        t(`${replyKeyBase}_3`),
     ];
     const [value, setValue] = useState('');
     const [showEmoji, setShowEmoji] = useState(false);

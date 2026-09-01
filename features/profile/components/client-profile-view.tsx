@@ -20,18 +20,23 @@ const styles = {
   avatarOverlay: "absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 z-20 text-white",
   avatarImage: "w-full h-full object-cover",
   avatarFallback: "w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-black text-3xl",
-  infoWrapper: "flex-1 text-center md:text-left relative z-10",
+  infoWrapper: "flex-1 text-center md:text-start relative z-10",
   subtitle: "text-primary/80 font-bold text-xs uppercase tracking-widest mb-1.5",
   name: "text-3xl font-black tracking-tight mb-1 text-white",
+  contactRow: "flex flex-col sm:flex-row sm:items-center justify-center md:justify-start gap-1.5 sm:gap-4 text-sm text-foreground/50",
+  contactItem: "flex items-center justify-center md:justify-start gap-1.5",
+  sectionHeading: "flex items-center gap-3 mb-2",
+  sectionLabel: "text-primary/80 font-bold text-xs uppercase tracking-widest",
+  sectionLine: "flex-1 h-px bg-white/5",
   card: "bg-surface p-8 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden",
   cardTitle: "text-lg font-black mb-8 flex items-center gap-2 text-white uppercase tracking-wider",
   form: "space-y-6",
   fieldWrapper: "space-y-2",
   label: "text-xs font-bold uppercase tracking-wider text-foreground/40",
   inputWrapper: "relative group/input",
-  inputIcon: "absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-foreground/30 group-focus-within/input:text-primary transition-colors",
+  inputIcon: "absolute inset-y-0 start-0 ps-4 flex items-center pointer-events-none text-foreground/30 group-focus-within/input:text-primary transition-colors",
   inputIconSize: "w-5 h-5",
-  input: "w-full pl-12 pr-4 py-3.5 bg-white/[0.02] border border-white/5 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed",
+  input: "w-full ps-12 pe-4 py-3.5 bg-white/[0.02] border border-white/5 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all outline-none text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed",
   buttonRow: "flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/5",
   saveBtn: "flex-1 py-4 bg-primary text-black rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm uppercase tracking-wider",
   resetBtn: "flex-1 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold hover:bg-white/10 active:scale-[0.99] transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm uppercase tracking-wider",
@@ -122,7 +127,7 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
         formData.append('photo', uploadedPhotoPath);
       }
       await updateProfile(formData);
-      toast.success(t('Navbar.changePasswordSuccess') || 'Changes saved successfully!');
+      toast.success(t('Profile.saveSuccess') || 'Changes saved successfully!');
     } catch (error: any) {
       if (error instanceof Yup.ValidationError) {
         const newErrors: { fullName?: string; phone?: string } = {};
@@ -195,17 +200,40 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
         <div className={styles.infoWrapper}>
           <p className={styles.subtitle}>{t('Profile.client') || 'Client Member'}</p>
           <h1 className={styles.name}>{fullName || data.fullName}</h1>
+          <div className={styles.contactRow}>
+            <span className={styles.contactItem}>
+              <Mail size={13} className="text-foreground/30 shrink-0" />
+              {data.email}
+            </span>
+            {(phone || data.phone) && (
+              <span className={styles.contactItem}>
+                <Phone size={13} className="text-foreground/30 shrink-0" />
+                {phone || data.phone}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Weight Progress Dashboard */}
-      <WeightProgress />
+      {/* Fitness Tracking zone — dashboard + shareable journey card grouped
+          under one labeled section so the page reads as distinct zones
+          instead of an undifferentiated stack of cards. */}
+      <div className="space-y-8">
+        <div className={styles.sectionHeading}>
+          <span className={styles.sectionLabel}>{t('Profile.fitnessTrackingSection') || 'Fitness Tracking'}</span>
+          <div className={styles.sectionLine} />
+        </div>
+        <WeightProgress />
+        <WeeklyProgressCardSection />
+      </div>
 
-      {/* Shareable Weekly Progress Card */}
-      <WeeklyProgressCardSection />
-
-      {/* Profile Details Edit Form */}
-      <div className={styles.card}>
+      {/* Account Settings zone */}
+      <div className="space-y-4">
+        <div className={styles.sectionHeading}>
+          <span className={styles.sectionLabel}>{t('Profile.accountSettingsSection') || 'Account Settings'}</span>
+          <div className={styles.sectionLine} />
+        </div>
+        <div className={styles.card}>
         <h2 className={styles.cardTitle}>
           <User size={18} className="text-primary" /> {t('Profile.basicInfo') || 'Personal Details'}
         </h2>
@@ -289,6 +317,7 @@ export const ClientProfileView = ({ data }: { data: UserProfile }) => {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

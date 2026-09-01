@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Mail, MessageSquare, Settings, Loader2, Tag, UserX } from "lucide-react";
+import { Mail, MessageSquare, Settings, Loader2, Tag, UserX, Share2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
@@ -13,8 +13,7 @@ import toast from "react-hot-toast";
 import { StoryAvatarBadge } from "@/features/stories/components/story-avatar-badge";
 import { SPECIALIZATIONS } from "@/constants/specializations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
-import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from "@/features/share-preview/whatsapp-share";
+import { SharePostModal } from "@/components/shared/share-post-modal";
 import type { CoachProfileHeaderProps } from "../types";
 
 const styles = {
@@ -109,17 +108,10 @@ export const CoachProfileHeader = ({
     );
   };
 
-  const handleWhatsAppShare = () => {
-    if (typeof window === 'undefined' || !coachId) return;
-    const shareUrl = `${window.location.origin}/${locale}/coaches/${coachId}`;
-    const message = `${getDefaultWhatsAppShareMessage('coach', locale)}\n${name}`;
-
-    window.open(
-      buildWhatsAppShareUrl({ url: shareUrl, message }),
-      '_blank',
-      'noopener,noreferrer',
-    );
-  };
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareUrl = typeof window !== 'undefined' && coachId
+    ? `${window.location.origin}/${locale}/coaches/${coachId}`
+    : `/${locale}/coaches/${coachId ?? ''}`;
 
   const [blockOpen, setBlockOpen] = useState(false);
 
@@ -241,10 +233,10 @@ export const CoachProfileHeader = ({
             <>
               <button
                 className={styles.whatsappBtn}
-                onClick={handleWhatsAppShare}
+                onClick={() => setShareOpen(true)}
               >
-                <WhatsAppIcon size={18} />
-                {t('shareOnWhatsApp')}
+                <Share2 size={18} />
+                {t('shareProfile')}
               </button>
               <button
                 className={styles.primaryBtn}
@@ -280,14 +272,22 @@ export const CoachProfileHeader = ({
           {isOwner && (
             <button
               className={styles.whatsappBtn}
-              onClick={handleWhatsAppShare}
+              onClick={() => setShareOpen(true)}
             >
-              <WhatsAppIcon size={18} />
-              {t('shareOnWhatsApp')}
+              <Share2 size={18} />
+              {t('shareProfile')}
             </button>
           )}
         </div>
       </div>
+
+      <SharePostModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={shareUrl}
+        title={name}
+        contentType="coach"
+      />
 
       <ConfirmDialog
         isOpen={blockOpen}

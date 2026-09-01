@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Formik, Form, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getOtpSchema } from '../validations';
@@ -51,14 +52,24 @@ const OTP_TIMER_MS = OTP_TIMER_SECONDS * 1000;
 export default function OtpForm() {
     const t = useTranslations();
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // The "Confirm Code Automatically" button in the OTP email links here
+    // with ?email=&code= so the recipient doesn't have to copy/paste it —
+    // email clients strip JavaScript, so a real clipboard-copy button in the
+    // email itself isn't possible. These are read once at mount, before
+    // Formik/otp state initialize, so they land as the actual starting values.
+    const urlEmail = searchParams.get('email') || '';
+    const urlCode = (searchParams.get('code') || '').replace(/\D/g, '').slice(0, 6);
 
     const { verifyOTP, resendOtp } = useAuthUser();
     const validationSchema = getOtpSchema(t);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    // Email is stashed in localStorage by the register step (not the URL).
-    const [email, setEmail] = useState('');
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    // Email is normally stashed in localStorage by the register step; a code
+    // sent via email can also arrive pre-filled through the URL (see above).
+    const [email, setEmail] = useState(urlEmail);
+    const [otp, setOtp] = useState(() => Array.from({ length: 6 }, (_, i) => urlCode[i] ?? ''));
     const [timeLeft, setTimeLeft] = useState(OTP_TIMER_SECONDS);
     const [isExpired, setIsExpired] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -70,23 +81,30 @@ export default function OtpForm() {
         storageKey: OTP_SWITCH_COOLDOWN_KEY,
     });
 
-    
+
     useEffect(() => {
 
-        const storedEmail = localStorage.getItem(OTP_EMAIL_KEY);
-        if (storedEmail) {
-            setEmail(storedEmail);
+        if (urlEmail) {
+            setEmail(urlEmail);
+            localStorage.setItem(OTP_EMAIL_KEY, urlEmail);
+            localStorage.setItem(OTP_CHANNEL_KEY, 'email');
+            setOtpType('email');
         } else {
-            router.replace('/register');
-            return;
+            const storedEmail = localStorage.getItem(OTP_EMAIL_KEY);
+            if (storedEmail) {
+                setEmail(storedEmail);
+            } else {
+                router.replace('/register');
+                return;
+            }
+
+            const storedType = localStorage.getItem(OTP_CHANNEL_KEY);
+            if (storedType === 'whatsapp' || storedType === 'email') {
+                setOtpType(storedType);
+            }
         }
 
-        const storedType = localStorage.getItem(OTP_CHANNEL_KEY);
-        if (storedType === 'whatsapp' || storedType === 'email') {
-            setOtpType(storedType);
-        }
 
-    
         const timerUntil = Number(localStorage.getItem(OTP_TIMER_KEY)) || 0;
         if (timerUntil) {
             const remaining = Math.ceil((timerUntil - Date.now()) / 1000);
@@ -231,7 +249,7 @@ export default function OtpForm() {
             </div>
 
             <Formik
-                initialValues={{ code: '' }}
+                initialValues={{ code: urlCode }}
                 validationSchema={validationSchema}
                 onSubmit={async (values) => {
                     await handleVerify(values.code, otpType);

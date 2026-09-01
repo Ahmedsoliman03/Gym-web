@@ -61,8 +61,9 @@ export function LogsHistory({
               <button
                 type="button"
                 onClick={() => onDeleteLog(log.id)}
-                className="text-foreground/30 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg opacity-0 group-hover/item:opacity-100 transition-all cursor-pointer"
+                className="text-foreground/30 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg opacity-40 group-hover/item:opacity-100 transition-all cursor-pointer"
                 title={isRtl ? 'حذف القراءة' : 'Delete log'}
+                aria-label={isRtl ? 'حذف القراءة' : 'Delete log'}
               >
                 <Trash2 size={13} />
               </button>

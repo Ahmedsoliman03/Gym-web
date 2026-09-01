@@ -1,7 +1,7 @@
 "use client";
 
 import type { GymProfileViewModel, ProfilePlan } from "../types";
-import { MapPin, Users, MessageSquare, Settings, Mail, Loader2, UserX } from "lucide-react";
+import { MapPin, Users, MessageSquare, Settings, Mail, Loader2, UserX, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
@@ -9,7 +9,7 @@ import { TransformationGallery } from "@/components/shared/transformation-galler
 import { Plans } from "@/components/shared/membership-plans";
 import { EmptySection } from "@/components/shared/empty-section";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
+import { SharePostModal } from "@/components/shared/share-post-modal";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { triggerChatOpen } from "@/features/chat/hooks/use-chat";
@@ -25,7 +25,6 @@ import type { PresenceStatus } from "@/features/chat/types";
 import { SocialMediaLinks } from "./social-media-links";
 import { sectionDomId } from "../checklist-sections";
 import { useTextTranslation } from "@/hooks/use-text-translation";
-import { buildWhatsAppShareUrl, getDefaultWhatsAppShareMessage } from "@/features/share-preview/whatsapp-share";
 
 const styles = {
   container: "space-y-8",
@@ -132,17 +131,10 @@ export const GymProfileView = ({
     );
   };
 
-  const handleWhatsAppShare = () => {
-    if (typeof window === 'undefined' || !data.id) return;
-    const shareUrl = `${window.location.origin}/${locale}/gyms/${data.id}`;
-    const message = `${getDefaultWhatsAppShareMessage('gym', locale)}\n${data.name}`;
-
-    window.open(
-      buildWhatsAppShareUrl({ url: shareUrl, message }),
-      '_blank',
-      'noopener,noreferrer',
-    );
-  };
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareUrl = typeof window !== 'undefined' && data.id
+    ? `${window.location.origin}/${locale}/gyms/${data.id}`
+    : `/${locale}/gyms/${data.id ?? ''}`;
 
   const [blockOpen, setBlockOpen] = useState(false);
 
@@ -260,10 +252,10 @@ export const GymProfileView = ({
             <>
               <button
                 className={styles.whatsappBtn}
-                onClick={handleWhatsAppShare}
+                onClick={() => setShareOpen(true)}
               >
-                <WhatsAppIcon size={18} />
-                {t('shareOnWhatsApp')}
+                <Share2 size={18} />
+                {t('shareProfile')}
               </button>
               <button
                 className={styles.primaryBtn}
@@ -299,15 +291,23 @@ export const GymProfileView = ({
               </Link>
               <button
                 className={styles.whatsappBtn}
-                onClick={handleWhatsAppShare}
+                onClick={() => setShareOpen(true)}
               >
-                <WhatsAppIcon size={18} />
-                {t('shareOnWhatsApp')}
+                <Share2 size={18} />
+                {t('shareProfile')}
               </button>
             </>
           )}
         </div>
       </div>
+
+      <SharePostModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={shareUrl}
+        title={data.name}
+        contentType="gym"
+      />
 
       <div className="space-y-8">
         {/* About */}

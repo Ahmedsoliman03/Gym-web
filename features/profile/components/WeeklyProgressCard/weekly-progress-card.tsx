@@ -34,6 +34,45 @@ function fmtRange(startIso: string, endIso: string, isRtl: boolean): string {
   return `${s.toLocaleDateString(locale, short)} – ${e.toLocaleDateString(locale, { ...short, year: 'numeric' })}`;
 }
 
+function fmtShortDate(iso: string, isRtl: boolean): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(isRtl ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' });
+}
+
+/** Static (non-interactive) line chart of the whole weigh-in history, built
+ * with plain SVG so the card stays a self-contained node for html-to-image
+ * capture — same reasoning as the rest of this file's inline styling. */
+function buildJourneyChart(
+  points: { date: string; weight: number }[],
+  goalWeight: number,
+  width: number,
+  height: number,
+) {
+  const paddingX = 8;
+  const paddingTop = 16;
+  const paddingBottom = 28;
+  const allWeights = [...points.map((p) => p.weight), ...(goalWeight > 0 ? [goalWeight] : [])];
+  const maxW = allWeights.length ? Math.max(...allWeights) + 3 : 100;
+  const minW = allWeights.length ? Math.max(0, Math.min(...allWeights) - 3) : 0;
+  const rangeY = maxW - minW || 10;
+
+  const coords = points.map((p, i) => ({
+    x: points.length > 1 ? paddingX + (i / (points.length - 1)) * (width - 2 * paddingX) : width / 2,
+    y: height - paddingBottom - ((p.weight - minW) / rangeY) * (height - paddingTop - paddingBottom),
+    weight: p.weight,
+    date: p.date,
+  }));
+
+  const linePath = coords.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = coords.length
+    ? `${linePath} L ${coords[coords.length - 1].x} ${height - paddingBottom} L ${coords[0].x} ${height - paddingBottom} Z`
+    : '';
+  const goalY = height - paddingBottom - ((goalWeight - minW) / rangeY) * (height - paddingTop - paddingBottom);
+
+  return { coords, linePath, areaPath, goalY, paddingBottom };
+}
+
 export interface WeeklyProgressCardProps {
   data: WeeklyProgressData;
   isRtl: boolean;
@@ -53,31 +92,36 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
     const { width, height } = SIZE[format];
     const previewScale = PREVIEW_WIDTH / width;
     const {
-      weekStart,
-      weekEnd,
+      journeyStart,
+      journeyEnd,
       startWeight,
       currentWeight,
-      weeklyChange,
+      totalChange,
       goalWeight,
       goalMode,
       remainingToGoal,
       goalAchieved,
       userName,
+      chartPoints,
     } = data;
 
-    const onTrack = goalMode === 'lose' ? weeklyChange < 0 : weeklyChange > 0;
-    const changeSign = weeklyChange > 0 ? '+' : weeklyChange < 0 ? '−' : '';
-    const changeColor = weeklyChange === 0 ? C.muted : onTrack ? C.primary : C.red;
+    const onTrack = goalMode === 'lose' ? totalChange < 0 : totalChange > 0;
+    const changeSign = totalChange > 0 ? '+' : totalChange < 0 ? '−' : '';
+    const changeColor = totalChange === 0 ? C.muted : onTrack ? C.primary : C.red;
 
     const statusMessage = goalAchieved
       ? L('Goal achieved! 🏆', 'تم تحقيق الهدف! 🏆')
       : onTrack
         ? L('Great progress — keep going! 💪', 'تقدم رائع — استمر! 💪')
-        : weeklyChange === 0
-          ? L('No change this week', 'لا يوجد تغيير هذا الأسبوع')
+        : totalChange === 0
+          ? L('No change yet', 'لا يوجد تغيير بعد')
           : L('Stay consistent — you can do it!', 'استمر بالالتزام — تقدر على ذلك!');
 
-    const changeLabel = L('This week', 'هذا الأسبوع');
+    const changeLabel = L('Total Change', 'إجمالي التغيير');
+
+    const chartWidth = width - 160;
+    const chartHeight = 200;
+    const chart = buildJourneyChart(chartPoints, goalWeight, chartWidth, chartHeight);
 
     return (
       // Live preview — full-resolution card scaled down visually; the ref
@@ -134,50 +178,98 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
                     padding: '10px 20px',
                   }}
                 >
-                  {fmtRange(weekStart, weekEnd, isRtl)}
+                  {fmtRange(journeyStart, journeyEnd, isRtl)}
                 </div>
               </div>
 
               {/* Title */}
-              <div style={{ marginTop: 56 }}>
-                <div style={{ fontSize: 26, fontWeight: 700, color: C.muted, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  {L('Weekly Progress', 'التقدم الأسبوعي')}
+              <div style={{ marginTop: 32 }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: C.muted, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  {L('Your Journey', 'رحلتك')}
                 </div>
                 {userName && (
-                  <div style={{ fontSize: 32, fontWeight: 800, marginTop: 6 }}>{userName}</div>
+                  <div style={{ fontSize: 30, fontWeight: 800, marginTop: 6 }}>{userName}</div>
                 )}
               </div>
 
               {/* Hero stat */}
-              <div style={{ marginTop: 48, textAlign: isRtl ? 'right' : 'left' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: C.muted }}>
+              <div style={{ marginTop: 32, textAlign: isRtl ? 'right' : 'left' }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: C.muted }}>
                   {L('Current Weight', 'الوزن الحالي')}
                 </div>
-                <div style={{ fontSize: 148, fontWeight: 900, lineHeight: 1.05, marginTop: 8, display: 'flex', alignItems: 'baseline', gap: 16 }}>
+                <div style={{ fontSize: 108, fontWeight: 900, lineHeight: 1.05, marginTop: 6, display: 'flex', alignItems: 'baseline', gap: 14 }}>
                   {currentWeight.toFixed(1)}
-                  <span style={{ fontSize: 44, fontWeight: 800, color: C.muted }}>{kg}</span>
+                  <span style={{ fontSize: 38, fontWeight: 800, color: C.muted }}>{kg}</span>
+                </div>
+              </div>
+
+              {/* Journey chart — the whole weigh-in history, not just the
+                  latest week, so the card always shows real progress. */}
+              <div
+                style={{
+                  marginTop: 32,
+                  background: C.panel,
+                  border: `1px solid ${C.line}`,
+                  borderRadius: 28,
+                  padding: '20px 20px 12px',
+                }}
+              >
+                <svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                  {goalWeight > 0 && (
+                    <line
+                      x1={0}
+                      y1={chart.goalY}
+                      x2={chartWidth}
+                      y2={chart.goalY}
+                      stroke={C.primary}
+                      strokeWidth={2}
+                      strokeDasharray="6 6"
+                      opacity={0.5}
+                    />
+                  )}
+                  {chart.coords.length > 1 && (
+                    <>
+                      <path d={chart.areaPath} fill={C.primarySoft} />
+                      <path d={chart.linePath} fill="none" stroke={C.primary} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+                    </>
+                  )}
+                  {chart.coords.map((p, i) => (
+                    <circle
+                      key={i}
+                      cx={p.x}
+                      cy={p.y}
+                      r={i === 0 || i === chart.coords.length - 1 ? 7 : 4}
+                      fill={i === chart.coords.length - 1 ? C.primary : C.bg}
+                      stroke={C.primary}
+                      strokeWidth={3}
+                    />
+                  ))}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, color: C.muted, fontWeight: 700, marginTop: 4 }}>
+                  <span>{fmtShortDate(journeyStart, isRtl)}</span>
+                  <span>{fmtShortDate(journeyEnd, isRtl)}</span>
                 </div>
               </div>
 
               {/* Secondary stats */}
-              <div style={{ display: 'flex', gap: 24, marginTop: 56 }}>
+              <div style={{ display: 'flex', gap: 24, marginTop: 28 }}>
                 <div
                   style={{
                     flex: 1,
                     background: C.panel,
                     border: `1px solid ${C.line}`,
                     borderRadius: 28,
-                    padding: '32px 36px',
+                    padding: '24px 32px',
                   }}
                 >
-                  <div style={{ fontSize: 22, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {changeLabel}
                   </div>
-                  <div style={{ fontSize: 56, fontWeight: 900, color: changeColor, marginTop: 10 }}>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: changeColor, marginTop: 8 }}>
                     {changeSign}
-                    {Math.abs(weeklyChange).toFixed(1)} {kg}
+                    {Math.abs(totalChange).toFixed(1)} {kg}
                   </div>
-                  <div style={{ fontSize: 18, color: C.muted, marginTop: 4 }}>
+                  <div style={{ fontSize: 16, color: C.muted, marginTop: 4 }}>
                     {startWeight.toFixed(1)} {kg} {'→'} {currentWeight.toFixed(1)} {kg}
                   </div>
                 </div>
@@ -188,16 +280,16 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
                     background: goalAchieved ? C.primarySoft : C.panel,
                     border: `1px solid ${goalAchieved ? C.primary : C.line}`,
                     borderRadius: 28,
-                    padding: '32px 36px',
+                    padding: '24px 32px',
                   }}
                 >
-                  <div style={{ fontSize: 22, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {L('To Goal', 'المتبقي للهدف')}
                   </div>
-                  <div style={{ fontSize: 56, fontWeight: 900, color: goalAchieved ? C.primary : C.white, marginTop: 10 }}>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: goalAchieved ? C.primary : C.white, marginTop: 8 }}>
                     {goalAchieved ? '✓' : remainingToGoal.toFixed(1)} {!goalAchieved && kg}
                   </div>
-                  <div style={{ fontSize: 18, color: C.muted, marginTop: 4 }}>
+                  <div style={{ fontSize: 16, color: C.muted, marginTop: 4 }}>
                     {L('Goal', 'الهدف')} {goalWeight.toFixed(1)} {kg}
                   </div>
                 </div>
@@ -206,8 +298,8 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
               {/* Status message */}
               <div
                 style={{
-                  marginTop: 40,
-                  fontSize: 30,
+                  marginTop: 24,
+                  fontSize: 26,
                   fontWeight: 700,
                   color: onTrack || goalAchieved ? C.primary : C.white,
                 }}
@@ -219,7 +311,7 @@ export const WeeklyProgressCard = forwardRef<HTMLDivElement, WeeklyProgressCardP
               <div
                 style={{
                   marginTop: 'auto',
-                  paddingTop: 40,
+                  paddingTop: 28,
                   borderTop: `1px solid ${C.line}`,
                   display: 'flex',
                   direction: 'ltr',

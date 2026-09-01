@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useTranslations } from 'next-intl';
 import { getActivateProfileSchema } from '../validations';
@@ -68,6 +69,12 @@ export default function ActivateProfileForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // The "Open Activation Page" button in the account-approval email links
+    // here with ?code= so the recipient doesn't have to copy/paste it — email
+    // clients strip JavaScript, so a real clipboard-copy button isn't possible.
+    const searchParams = useSearchParams();
+    const urlInviteCode = (searchParams.get('code') || '').toUpperCase().slice(0, 8);
+
     const schema = getActivateProfileSchema(t);
 
     if (step === 'success') {
@@ -109,7 +116,7 @@ export default function ActivateProfileForm() {
             </div>
 
             <Formik
-                initialValues={{ inviteCode: '', password: '', confirmPassword: '' }}
+                initialValues={{ inviteCode: urlInviteCode, password: '', confirmPassword: '' }}
                 validationSchema={schema}
                 onSubmit={async (values) => {
                     try {
@@ -131,10 +138,15 @@ export default function ActivateProfileForm() {
                 {({ isSubmitting }) => (
                     <Form className={styles.form}>
                         <LiveValidate />
-                        <FormPersist
-                            storageKey="draft:activate-profile"
-                            exclude={['password', 'confirmPassword']}
-                        />
+                        {/* Skip draft persistence when the code came from the
+                            email link — restoring an older saved draft would
+                            silently overwrite the code we just pre-filled. */}
+                        {!urlInviteCode && (
+                            <FormPersist
+                                storageKey="draft:activate-profile"
+                                exclude={['password', 'confirmPassword']}
+                            />
+                        )}
 
                         <div className={styles.fieldWrapper}>
                             <label className={styles.label}>
