@@ -151,6 +151,14 @@ export default function proxy(request: NextRequest) {
     }
 
     // 8. Otherwise, let next-intl middleware handle localization
+    const userAgent = request.headers.get('user-agent') || '';
+    const isSocialBot = /TelegramBot|Twitterbot|facebookexternalhit|WhatsApp|LinkedInBot|Discordbot|Slackbot/i.test(userAgent);
+    if (pathWithoutBase === '/' && isSocialBot) {
+        const acceptLang = request.headers.get('accept-language') || '';
+        const botLocale = acceptLang.toLowerCase().includes('en') && !acceptLang.toLowerCase().startsWith('ar') ? 'en' : 'ar';
+        return NextResponse.rewrite(new URL(`/platform/${botLocale}`, request.url));
+    }
+
     return intlMiddleware(request);
 }
 
