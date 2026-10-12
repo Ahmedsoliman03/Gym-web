@@ -274,9 +274,18 @@ export const MessageComposer = ({
                
                 let label = '';
                 try {
-                    const res = await fetch(
-                        `/api/location?lat=${latitude}&lon=${longitude}&lang=${locale}`,
+                    const basePath =
+                        typeof window !== 'undefined' && window.location.pathname.startsWith('/platform')
+                            ? '/platform'
+                            : '/platform';
+                    let res = await fetch(
+                        `${basePath}/api/location?lat=${latitude}&lon=${longitude}&lang=${locale}`,
                     );
+                    if (!res.ok && basePath) {
+                        res = await fetch(
+                            `/api/location?lat=${latitude}&lon=${longitude}&lang=${locale}`,
+                        );
+                    }
                     if (res.ok) {
                         const data = (await res.json()) as { display_name?: string };
                         label = data.display_name?.trim() ?? '';

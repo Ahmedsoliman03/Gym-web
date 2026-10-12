@@ -49,7 +49,15 @@ export function useLocationDetect(
             lang: locale,
           });
 
-          const res = await fetch(`/api/location?${params}`);
+          const basePath =
+            typeof window !== 'undefined' && window.location.pathname.startsWith('/platform')
+              ? '/platform'
+              : '/platform';
+
+          let res = await fetch(`${basePath}/api/location?${params}`);
+          if (!res.ok && basePath) {
+            res = await fetch(`/api/location?${params}`);
+          }
           if (!res.ok) {
             throw new Error(`API error: ${res.status}`);
           }
