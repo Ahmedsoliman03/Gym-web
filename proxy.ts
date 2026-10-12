@@ -22,8 +22,11 @@ export default function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 2. Check for token in cookies (checking both 'access_token' and 'token')
-    const token = request.cookies.get('access_token')?.value || request.cookies.get('token')?.value;
+    // 2. Check for token in cookies (checking both 'access_token', 'refresh_token', and legacy 'token')
+    const accessToken = request.cookies.get('access_token')?.value || request.cookies.get('token')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
+    const token = accessToken || refreshToken;
+    const hasSession = Boolean(token);
 
     // 3. Extract path without locale prefix (e.g. /en/login -> /login)
     const pathnameWithoutLocale = pathWithoutBase.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
@@ -96,7 +99,7 @@ export default function proxy(request: NextRequest) {
         }
     };
 
-    if (!token && !isAuthPath && !isPublicPath) {
+    if (!hasSession && !isAuthPath && !isPublicPath) {
         const loginUrl = request.nextUrl.clone();
         loginUrl.pathname = `/${locale}/login`;
         const currentNext = request.nextUrl.searchParams.get('next');
@@ -106,8 +109,8 @@ export default function proxy(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // 6. If there IS a token and user tries to access auth pages, redirect to the home page
-    if (token && isAuthPath) {
+    // 6. If there IS a session and user tries to access auth pages, redirect to the home page
+    if (hasSession && isAuthPath) {
         const nextPath = normalizeNextPath(request.nextUrl.searchParams.get('next'));
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = nextPath ?? `/${locale}`;
@@ -115,10 +118,14 @@ export default function proxy(request: NextRequest) {
     }
 
     // 7. Enforce role-based access control if user is logged in
-    if (token && !isAuthPath) {
+    if (hasSession && !isAuthPath) {
 
-        const jwtPayload = decodeJwt(token);
-        const userType = jwtPayload?.userType || jwtPayload?.user_type || jwtPayload?.role;
+        const jwtPayload = token ? decodeJwt(token) : null;
+        const userType =
+            jwtPayload?.userType ||
+            jwtPayload?.user_type ||
+            jwtPayload?.role ||
+            request.cookies.get('user_type')?.value;
 
         const isJobsPath =
             pathnameWithoutLocale === '/jobs' ||
