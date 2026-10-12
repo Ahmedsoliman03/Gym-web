@@ -99,7 +99,10 @@ export default function proxy(request: NextRequest) {
     if (!token && !isAuthPath && !isPublicPath) {
         const loginUrl = request.nextUrl.clone();
         loginUrl.pathname = `/${locale}/login`;
-        loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
+        const currentNext = request.nextUrl.searchParams.get('next');
+        if (!currentNext && !isAuthFlowPath(pathnameWithoutLocale)) {
+            loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
+        }
         return NextResponse.redirect(loginUrl);
     }
 
