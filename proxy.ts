@@ -10,11 +10,14 @@ const intlMiddleware = createMiddleware({
 export default function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Strip optional basePath (/system)
+    const pathWithoutBase = pathname.replace(/^\/system(?=\/|$)/, '') || '/';
+
     // 1. Exclude public static files and API routes
     if (
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
-        pathname.includes('.')
+        pathWithoutBase.startsWith('/_next') ||
+        pathWithoutBase.startsWith('/api') ||
+        pathWithoutBase.includes('.')
     ) {
         return NextResponse.next();
     }
@@ -23,7 +26,7 @@ export default function proxy(request: NextRequest) {
     const token = request.cookies.get('access_token')?.value || request.cookies.get('token')?.value;
 
     // 3. Extract path without locale prefix (e.g. /en/login -> /login)
-    const pathnameWithoutLocale = pathname.replace(/^\/(en|ar)/, '') || '/';
+    const pathnameWithoutLocale = pathWithoutBase.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
 
     // 4. Define paths that are part of the auth flow (accessible without login)
     const authPaths = [
@@ -46,7 +49,7 @@ export default function proxy(request: NextRequest) {
         publicShareDetailPattern.test(pathnameWithoutLocale);
 
     // Get current locale or default to 'en'
-    const localeMatch = pathname.match(/^\/(en|ar)/);
+    const localeMatch = pathWithoutBase.match(/^\/(en|ar)/);
     const locale = localeMatch ? localeMatch[1] : 'en';
 
     // Helper to decode JWT payload safely in Next.js Edge runtime
@@ -69,7 +72,10 @@ export default function proxy(request: NextRequest) {
         }
     }
 
-    const stripLocale = (path: string) => path.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
+    const stripLocale = (path: string) =>
+        path
+            .replace(/^\/system(?=\/|$)/, '')
+            .replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
 
     const isAuthFlowPath = (path: string) =>
         authPaths.some((authPath) => path === authPath || path.startsWith(`${authPath}/`));
@@ -125,7 +131,7 @@ export default function proxy(request: NextRequest) {
             const isBlocked = pathnameWithoutLocale === '/applications' || pathnameWithoutLocale.startsWith('/applications/');
             if (isBlocked) {
                 const homeUrl = request.nextUrl.clone();
-            homeUrl.pathname = `/${locale}`;
+                homeUrl.pathname = `/${locale}`;
                 return NextResponse.redirect(homeUrl);
             }
         }
@@ -135,7 +141,7 @@ export default function proxy(request: NextRequest) {
                 pathnameWithoutLocale.startsWith('/applications/');
             if (isBlocked) {
                 const homeUrl = request.nextUrl.clone();
-            homeUrl.pathname = `/${locale}`;
+                homeUrl.pathname = `/${locale}`;
                 return NextResponse.redirect(homeUrl);
             }
         }
