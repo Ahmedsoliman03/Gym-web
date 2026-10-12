@@ -234,12 +234,12 @@ export default function LoginForm() {
                 </div>
 
                 <div className={styles.secondaryWrapper}>
-                    {/* <div className={styles.secondaryText}>
+                    <div className={styles.secondaryText}>
                         <span className={styles.dimText}>{t('Auth.noAccount')}</span>
                         <Link href="/register" className={styles.boldLink}>
                             {t('Auth.registerHere')}
                         </Link>
-                    </div> */}
+                    </div>
 
                     <div className={styles.secondaryText}>
                         <span className={styles.dimText}>{t('Auth.needHelp')}</span>
