@@ -36,6 +36,7 @@ declare global {
                         client_id: string;
                         scope: string;
                         ux_mode: 'popup';
+                        redirect_uri?: string;
                         callback: (response: GoogleCodeResponse) => void;
                         error_callback?: (error: GooglePopupError) => void;
                     }) => GoogleCodeClient;
@@ -143,7 +144,7 @@ export function GoogleAuthButton({
         try {
             const result = await googleAuth.mutateAsync({
                 code: response.code,
-                redirectUri: window.location.origin,
+                redirectUri: 'postmessage',
             });
             if (result.status === 'authenticated') {
                 clearGoogleSignupProfile();
@@ -176,6 +177,7 @@ export function GoogleAuthButton({
                 client_id: clientId,
                 scope: 'openid email profile',
                 ux_mode: 'popup',
+                redirect_uri: 'postmessage',
                 callback: handleGoogleCode,
                 error_callback: (error) => {
                     setLoading(false);
