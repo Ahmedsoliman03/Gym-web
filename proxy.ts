@@ -10,8 +10,8 @@ const intlMiddleware = createMiddleware({
 export default function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Strip optional basePath (/system)
-    const pathWithoutBase = pathname.replace(/^\/system(?=\/|$)/, '') || '/';
+    // Strip optional basePath (/platform or /system)
+    const pathWithoutBase = pathname.replace(/^\/(platform|system)(?=\/|$)/, '') || '/';
 
     // 1. Exclude public static files and API routes
     if (
@@ -74,7 +74,7 @@ export default function proxy(request: NextRequest) {
 
     const stripLocale = (path: string) =>
         path
-            .replace(/^\/system(?=\/|$)/, '')
+            .replace(/^\/(platform|system)(?=\/|$)/, '')
             .replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
 
     const isAuthFlowPath = (path: string) =>
