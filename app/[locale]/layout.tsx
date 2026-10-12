@@ -5,16 +5,36 @@ import { routing } from '@/i18n/routing';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { GeistSans } from 'geist/font/sans';
-import { Almarai } from 'next/font/google';
+import localFont from 'next/font/local';
 import '../globals.css';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
-
-const almarai = Almarai({
-    subsets: ['arabic'],
-    weight: ['300', '400', '700', '800'],
+const almarai = localFont({
+    src: [
+        {
+            path: '../fonts/Almarai-Light.ttf',
+            weight: '300',
+            style: 'normal',
+        },
+        {
+            path: '../fonts/Almarai-Regular.ttf',
+            weight: '400',
+            style: 'normal',
+        },
+        {
+            path: '../fonts/Almarai-Bold.ttf',
+            weight: '700',
+            style: 'normal',
+        },
+        {
+            path: '../fonts/Almarai-ExtraBold.ttf',
+            weight: '800',
+            style: 'normal',
+        },
+    ],
     variable: '--font-almarai',
+    display: 'swap',
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';

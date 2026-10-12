@@ -91,7 +91,8 @@ export default function proxy(request: NextRequest) {
     };
 
     if (!token && !isAuthPath && !isPublicPath) {
-        const loginUrl = new URL(`/${locale}/login`, request.url);
+        const loginUrl = request.nextUrl.clone();
+        loginUrl.pathname = `/${locale}/login`;
         loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
         return NextResponse.redirect(loginUrl);
     }
@@ -99,7 +100,8 @@ export default function proxy(request: NextRequest) {
     // 6. If there IS a token and user tries to access auth pages, redirect to the home page
     if (token && isAuthPath) {
         const nextPath = normalizeNextPath(request.nextUrl.searchParams.get('next'));
-        const redirectUrl = new URL(nextPath ?? `/${locale}`, request.url);
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = nextPath ?? `/${locale}`;
         return NextResponse.redirect(redirectUrl);
     }
 
@@ -113,7 +115,8 @@ export default function proxy(request: NextRequest) {
             pathnameWithoutLocale === '/jobs' ||
             pathnameWithoutLocale.startsWith('/jobs/');
         if (isJobsPath && userType !== 'gym' && userType !== 'coach') {
-            const homeUrl = new URL(`/${locale}`, request.url);
+            const homeUrl = request.nextUrl.clone();
+            homeUrl.pathname = `/${locale}`;
             return NextResponse.redirect(homeUrl);
         }
 
@@ -121,7 +124,8 @@ export default function proxy(request: NextRequest) {
         if (userType === 'coach') {
             const isBlocked = pathnameWithoutLocale === '/applications' || pathnameWithoutLocale.startsWith('/applications/');
             if (isBlocked) {
-                const homeUrl = new URL(`/${locale}`, request.url);
+                const homeUrl = request.nextUrl.clone();
+            homeUrl.pathname = `/${locale}`;
                 return NextResponse.redirect(homeUrl);
             }
         }
@@ -130,7 +134,8 @@ export default function proxy(request: NextRequest) {
                 pathnameWithoutLocale === '/applications' ||
                 pathnameWithoutLocale.startsWith('/applications/');
             if (isBlocked) {
-                const homeUrl = new URL(`/${locale}`, request.url);
+                const homeUrl = request.nextUrl.clone();
+            homeUrl.pathname = `/${locale}`;
                 return NextResponse.redirect(homeUrl);
             }
         }

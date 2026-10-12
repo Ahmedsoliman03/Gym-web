@@ -4,6 +4,8 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  basePath: '/system',
   skipTrailingSlashRedirect: true,
   experimental: {
     // Transform these barrel imports so only the icons/entrypoints actually used
